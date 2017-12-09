@@ -3,6 +3,7 @@ require 'ks'
 module FormatParser
   FileInformation = Ks.strict(:width_px, :height_px)
   require_relative 'io_utils'
+  require_relative 'care'
   require_relative 'parsers/png_parser'
   require_relative 'parsers/jpeg_parser'
 
