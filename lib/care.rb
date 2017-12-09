@@ -33,7 +33,8 @@ class Care
     end
   end
 
-  # Stores slabs from a given source in contiguous pages.
+  # Stores cached pages of data from the given IO as strings.
+  # Pages are sized to be `page_size` or less (for the last page).
   class Cache
     def initialize(page_size = DEFAULT_PAGE_SIZE)
       @page_size = page_size.to_i
@@ -46,7 +47,6 @@ class Care
     # recovered from the given `io` at the given offset.
     # If the IO has been exhausted, `nil` will be returned
     # instead. Will use the cached pages where available,
-    # 
     def byteslice(io, at, n_bytes)
       first_page = at / @page_size
       last_page = (at + n_bytes) / @page_size
