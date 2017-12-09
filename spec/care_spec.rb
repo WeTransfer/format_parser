@@ -14,6 +14,14 @@ describe Care do
       expect(cache.byteslice(source, 120, 12)).to be_nil
     end
 
+    it 'can be cleared' do
+      cache = Care::Cache.new(3)
+      expect(cache.byteslice(source, 0, 3)).to eq("Hel")
+      expect(cache.instance_variable_get("@pages")).not_to be_empty
+      cache.clear
+      expect(cache.instance_variable_get("@pages")).to be_empty
+    end
+
     it 'fits all the reads into one if the input fits into one page' do
       expect(source).to receive(:read).at_most(2).times.and_call_original
 

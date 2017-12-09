@@ -4,8 +4,10 @@
 # is only available via HTTP, for example, we can have less
 # fetches and perform them in larger chunks
 class Care
+  DEFAULT_PAGE_SIZE = 512 * 1024
+
   class IOWrapper
-    def initialize(io, cache)
+    def initialize(io, cache=Cache.new(DEFAULT_PAGE_SIZE))
       @io, @cache = io, cache
       @pos = 0
     end
@@ -20,17 +22,31 @@ class Care
       @pos += read.bytesize
       read
     end
+
+    def clear
+      @cache.clear
+    end
+
+    def close
+      clear
+      @io.close if @io.respond_to?(:close)
+    end
   end
 
   # Stores slabs from a given source in contiguous pages.
   class Cache
-    def initialize(page_size)
+    def initialize(page_size = DEFAULT_PAGE_SIZE)
       @page_size = page_size.to_i
       raise ArgumentError, "The page size must be a positive Integer" unless @page_size > 0
       @pages = {}
       @lowest_known_empty_page = nil
     end
 
+    # Returns the maximum possible byte string that can be
+    # recovered from the given `io` at the given offset.
+    # If the IO has been exhausted, `nil` will be returned
+    # instead. Will use the cached pages where available,
+    # 
     def byteslice(io, at, n_bytes)
       first_page = at / @page_size
       last_page = (at + n_bytes) / @page_size
@@ -46,6 +62,10 @@ class Care
       else
         nil
       end
+    end
+
+    def clear
+      @pages.clear
     end
 
     def hydrate_page(io, page_i)
