@@ -34,4 +34,21 @@ describe Care do
     cache = Care.new(4)
     expect(cache.byteslice(StringIO.new(''), 0, 1)).to be_nil
   end
+
+  describe Care::IOWrapper do
+    it 'forwards calls to read() to the Care' do
+      cache_double = double('Care')
+      io_double = double('IO')
+
+      expect(cache_double).to receive(:byteslice).with(io_double, 0, 2).ordered
+      expect(cache_double).to receive(:byteslice).with(io_double, 2, 3).ordered
+      expect(cache_double).to receive(:byteslice).with(io_double, 11, 5).ordered
+
+      subject = Care::IOWrapper.new(io_double, cache_double)
+      subject.read(2)
+      subject.read(3)
+      subject.seek(11)
+      subject.read(5)
+    end
+  end
 end

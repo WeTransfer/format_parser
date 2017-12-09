@@ -1,4 +1,19 @@
 class Care
+  class IOWrapper
+    def initialize(io, cache)
+      @io, @cache = io, cache
+      @pos = 0
+    end
+
+    def seek(to)
+      @pos = to
+    end
+
+    def read(n_bytes)
+      @cache.byteslice(@io, @pos, n_bytes).tap {|read| @pos += read.to_s.bytesize }
+    end
+  end
+
   def initialize(page_size)
     @page_size = page_size.to_i
     raise ArgumentError, "The page size must be a positive Integer" unless @page_size > 0
