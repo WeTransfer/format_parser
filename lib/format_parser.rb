@@ -7,8 +7,9 @@ module FormatParser
   require_relative 'parsers/png_parser'
   require_relative 'parsers/jpeg_parser'
 
-  def self.parse(io) # #seek(n_bytes, IO::SEEK_SET), #read(n_bytes_or_nil)
-    parsers = [PNGParser, JPEGParser]
+  def self.parse(io)
+    io = Care::IOWrapper.new(io) unless io.is_a?(Care::IOWrapper)
+    parsers = [PNGParser.new, JPEGParser.new]
     parsers.each do |parser|
       if info = parser.information_from_io(io)
         return info
@@ -24,7 +25,7 @@ if __FILE__ == $0
 #  file_info = FormatParser::PNGParser.new.information_from_io(fi)
 #  $stderr.puts file_info.inspect
 
-  fi = File.open('/Users/julik/Code/we/fastimage/test/fixtures/test4.jpg', 'rb')
+  fi = File.open(__dir__ + '/../spec/fixtures/test4.jpg', 'rb')
   file_info = FormatParser::JPEGParser.new.information_from_io(fi)
 #  fi = File.open('/Users/julik/Code/we/fastimage/test/fixtures/test1.jpg', 'rb')
 #  file_info = FormatParser::JPEGParser.new.information_from_io(fi)

@@ -2,7 +2,7 @@
 # possibly remote IO to parsers that tend to read (and skip)
 # in very small increments. This way, with a remote source that
 # is only available via HTTP, for example, we can have less
-# fetches and perform them in larger chunks
+# fetches and have them return more data for one fetch
 class Care
   DEFAULT_PAGE_SIZE = 512 * 1024
 
@@ -50,12 +50,16 @@ class Care
     def byteslice(io, at, n_bytes)
       first_page = at / @page_size
       last_page = (at + n_bytes) / @page_size
-      local_offset_on_first_page = at % @page_size
 
       relevant_pages = (first_page..last_page).map{|i| hydrate_page(io, i) }
 
+      # Create one string combining all the pages which are relevant for
+      # us - it is much easier to address that string instead of piecing
+      # the output together page by page, and joining arrays of strings
+      # is supposed to be optimized.
       slab = relevant_pages.join
-      slice = slab.byteslice(local_offset_on_first_page, n_bytes)
+      offset_in_slab = at % @page_size
+      slice = slab.byteslice(offset_in_slab, n_bytes)
 
       if slice && !slice.empty?
         slice
