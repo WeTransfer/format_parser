@@ -57,7 +57,19 @@ class Care
       # us - it is much easier to address that string instead of piecing
       # the output together page by page, and joining arrays of strings
       # is supposed to be optimized.
-      slab = relevant_pages.join
+      slab = if relevant_pages.length == 1
+        # Optimize a little. If we only have one page that we need to read from
+        # - which is likely going to be the case *often* we can avoid allocating
+        # a new string for the joined pages and juse use the only page
+        # directly as the slab. Since it might contain a `nil` and we do
+        # not join (which casts nils to strings) we take care of that too
+        relevant_pages.first || ''
+      else
+        # If our read overlaps multiple pages, we do have to join them, this is
+        # the general case
+        relevant_pages.join
+      end
+
       offset_in_slab = at % @page_size
       slice = slab.byteslice(offset_in_slab, n_bytes)
 
