@@ -1,6 +1,7 @@
 class FormatParser::DPXParser
+  include FormatParser::IOUtils
   FILE_INFO = [
-    :x4,   # magic bytes SDPX
+#    :x4,   # magic bytes SDPX, we read them anyway so not in the pattern
     :x4,   # u32  :image_offset,   :desc => 'Offset to image data in bytes', :req => true
     :x8,   # char :version, 8,     :desc => 'Version of header format', :req => true
     :x4,   # u32  :file_size,      :desc => "Total image size in bytes", :req => true
@@ -101,6 +102,8 @@ class FormatParser::DPXParser
     ORIENTATION_INFO,
   ].join
 
+  DPX_INFO_LE = DPX_INFO.tr("n", "v").tr("N", "V")
+  
   SIZEOF = ->(pattern) {
     bytes_per_element = {
       "v" => 2, # 16bit uints
@@ -119,29 +122,17 @@ class FormatParser::DPXParser
 
   BE_MAGIC = 'SDPX'
   LE_MAGIC = BE_MAGIC.reverse
-
-  READ_SIZE = SIZEOF[DPX_INFO]
-  def make_le(pattern)
-    pattern.tr("n", "v").tr("N", "V")
-  end
+  HEADER_SIZE = SIZEOF[DPX_INFO] # Does not include the initial 4 bytes
 
   def information_from_io(io)
     io.seek(0)
     magic = io.read(4)
-    is_le = false
 
-    if magic == BE_MAGIC
-      is_le = false
-    elsif magic == LE_MAGIC
-      is_le = true
-    else
-      return nil
-    end
-    io.seek(0) # Our pattern includes the magic bytes
+    return nil unless [BE_MAGIC, LE_MAGIC].include?(magic)
 
-    pattern = is_le ? make_le(DPX_INFO) : DPX_INFO
-    header_blob = io.read(READ_SIZE)
-    num_elements, pixels_per_line, num_lines, *rest = header_blob.unpack(pattern)
+    unpack_pattern = DPX_INFO
+    unpack_pattern = DPX_INFO_LE if magic == LE_MAGIC
+    num_elements, pixels_per_line, num_lines, *_ = safe_read(io, HEADER_SIZE).unpack(unpack_pattern)
     FormatParser::FileInformation.new(width_px: pixels_per_line, height_px: num_lines)
   end
 end
