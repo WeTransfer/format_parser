@@ -42,8 +42,10 @@ class FormatParser::DPXParser
     :x4, # u32 :high_data,     :desc => 'Reference high data code value (1023 for 10bit per channel)'
     :x4, # r32 :high_quantity, :desc => 'Reference high quantity represented'
     # 
-    # # TODO: Autoreplace with enum values. 
     :x1, # u8 :descriptor,   :desc => 'Descriptor for this image element (ie Video or Film), by enum', :req => true
+    # TODO - colirimetry information might be handy to recover,
+    # as well as "bit size per element" (how many bits _per component_ we have) - 
+    # this will be different for, say, 8-bit DPX files versus 10-bit etc.
     :x1, # u8 :transfer,     :desc => 'Transfer function (ie Linear), by enum', :req => true
     :x1, # u8 :colorimetric, :desc => 'Colorimetric (ie YcbCr), by enum', :req => true
     :x1, # u8 :bit_size,     :desc => 'Bit size for element (ie 10)', :req => true
@@ -85,6 +87,8 @@ class FormatParser::DPXParser
     :x4,
     :x4,
 
+    # TODO - the aspect ratio might be handy to recover since it
+    # will be used in DPX files in, say, anamorphic (non-square pixels)
     :x4,   #  array :aspect_ratio , :u32, 2, :desc => "Aspect (H:V)"
     :x4,
     #
