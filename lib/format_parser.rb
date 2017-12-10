@@ -6,10 +6,11 @@ module FormatParser
   require_relative 'care'
   require_relative 'parsers/png_parser'
   require_relative 'parsers/jpeg_parser'
+  require_relative 'parsers/dpx_parser'
 
   def self.parse(io)
     io = Care::IOWrapper.new(io) unless io.is_a?(Care::IOWrapper)
-    parsers = [PNGParser.new, JPEGParser.new]
+    parsers = [PNGParser.new, JPEGParser.new, DPXParser.new]
     parsers.each do |parser|
       if info = parser.information_from_io(io)
         return info
