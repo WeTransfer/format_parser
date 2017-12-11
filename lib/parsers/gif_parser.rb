@@ -14,7 +14,7 @@ class FormatParser::GIFParser
 
     # and actually onwards for this:
     # http://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
-    
+
     # Determine how big our color table is
     has_gct = gct_byte[0] == 1
     bytes_per_color = gct_byte >> 6
@@ -27,10 +27,16 @@ class FormatParser::GIFParser
       safe_read(io, gct_table_size)
     end
 
-    # Now it gets interesting - potentially we are at the place where an
-    # application extension for the NETSCAPE2.0 block will occur
-    raise safe_read(io, 64).inspect
+    # Now it gets interesting - we are at the place where an
+    # application extension for the NETSCAPE2.0 block will occur.
+    # If it does, it most likely means the application that wrote the
+    # GIF needed looping, and if it did, it means that the GIF is
+    # very, very likely to be animated. To read the actual animation
+    # we need to skip over actual image data frames, which, in case
+    # of our paged reads, will incur
+    potentially_netscape_app_header = safe_read(io, 64)
+    is_animated = potentially_netscape_app_header.include?(NETSCAPE_AND_AUTHENTICATION_CODE)
 
-    return FormatParser::FileInformation.new(width_px: w, height_px: h)
+    FormatParser::FileInformation.new(width_px: w, height_px: h)
   end
 end
