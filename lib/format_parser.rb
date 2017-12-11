@@ -7,6 +7,7 @@ module FormatParser
   require_relative 'parsers/png_parser'
   require_relative 'parsers/jpeg_parser'
   require_relative 'parsers/psd_parser'
+  require_relative 'parsers/tiff_parser'
   require_relative 'parsers/dpx_parser'
 
   def self.parse(io)
