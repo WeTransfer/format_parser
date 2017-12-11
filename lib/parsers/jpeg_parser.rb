@@ -41,8 +41,8 @@ class FormatParser::JPEGParser
         scan_start_of_frame
       when EOI_MARKER, SOS_MARKER
         break
-#     when APP1_MARKER
-#       scan_app1_frame
+      when APP1_MARKER
+        scan_app1_frame
       else
         skip_frame
       end
@@ -85,9 +85,9 @@ class FormatParser::JPEGParser
   end
 
   def scan_app1_frame
-    frame = read_frame
-    if frame[0..5] == "Exif\000\000"
-      scanner = ExifScanner.new(frame[6..-1])
+    if read_frame[0..5] == "Exif\000\000"
+      scanner = FormatParser::EXIFParser.new(@buf)
+      scanner.scan
       if scanner.scan
         case scanner.orientation
         when :bottom_right
@@ -99,12 +99,11 @@ class FormatParser::JPEGParser
         end
       end
     end
-  rescue ExifScanner::ScanError
   end
 
   def read_frame
     length = read_short - 2
-    read_data(length)
+    safe_read(@buf, length)
   end
 
   def skip_frame

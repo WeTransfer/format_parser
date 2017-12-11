@@ -8,6 +8,7 @@ module FormatParser
   require_relative 'parsers/jpeg_parser'
   require_relative 'parsers/psd_parser'
   require_relative 'parsers/tiff_parser'
+  require_relative 'parsers/exif_parser'
   require_relative 'parsers/dpx_parser'
   require_relative 'parsers/gif_parser'
 

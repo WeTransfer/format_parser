@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe FormatParser::TIFFParser do
-  describe 'is able to parse all the examples from FastImage' do
+  describe 'is able to parse all the tiff examples' do
     Dir.glob(__dir__ + '/fixtures/TIFF/*.tif').each do |tiff_path|
       it "is able to parse #{File.basename(tiff_path)}" do
         parsed = subject.information_from_io(File.open(tiff_path, 'rb'))
