@@ -21,7 +21,7 @@ class FormatParser::PNGParser
         # Compression method: 1 byte
         # Filter method:      1 byte
         # Interlace method:   1 byte
-        w, h, depth, color_type, compression, filter, interlace = chunk_data.unpack("N2C5")
+        w, h = chunk_data.unpack("N2C5")
         return FileInformation.new(width_px: w, height_px: h)
       end
     end

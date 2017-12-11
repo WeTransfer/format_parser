@@ -12,7 +12,7 @@ module FormatParser
 
   def self.parse(io)
     io = Care::IOWrapper.new(io) unless io.is_a?(Care::IOWrapper)
-    parsers = [PNGParser.new, JPEGParser.new, DPXParser.new]
+    parsers = [PNGParser.new, JPEGParser.new, TIFFParser.new, PSDParser.new, DPXParser.new]
     parsers.each do |parser|
       if info = parser.information_from_io(io)
         return info
@@ -28,8 +28,8 @@ if __FILE__ == $0
 #  file_info = FormatParser::PNGParser.new.information_from_io(fi)
 #  $stderr.puts file_info.inspect
 
-  fi = File.open(__dir__ + '/../spec/fixtures/test4.jpg', 'rb')
-  file_info = FormatParser::JPEGParser.new.information_from_io(fi)
+  # fi = File.open(__dir__ + '/../spec/fixtures/test4.jpg', 'rb')
+  # file_info = FormatParser::JPEGParser.new.information_from_io(fi)
 #  fi = File.open('/Users/julik/Code/we/fastimage/test/fixtures/test1.jpg', 'rb')
 #  file_info = FormatParser::JPEGParser.new.information_from_io(fi)
 

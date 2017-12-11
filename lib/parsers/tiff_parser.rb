@@ -1,27 +1,56 @@
 class FormatParser::TIFFParser
   LITTLE_ENDIAN_TIFF_HEADER_BYTES = [0x49, 0x49, 0x2A, 0x0]
   BIG_ENDIAN_TIFF_HEADER_BYTES = [0x4D, 0x4D, 0x0, 0x2A]
+  WIDTH_TAG  = 0x100
+  HEIGHT_TAG = 0x101
+
   include FormatParser::IOUtils
+
 
   def information_from_io(io)
     io.seek(0)
     magic_bytes = safe_read(io, 4).unpack("C4")
-    return unless magic_bytes == LITTLE_ENDIAN_TIFF_HEADER_BYTES || magic_bytes == BIG_ENDIAN_TIFF_HEADER_BYTES
-
-    # # This is mostly likely a PNG, so let's read some chunks
-    # loop do
-    #   chunk_length = safe_read(io, 4).unpack("N").first
-    #   chunk_type = safe_read(io, 4)
-    #   if chunk_type == "IHDR"
-    #     chunk_data = safe_read(io, chunk_length)
-    #     # Width:              4 bytes
-    #     # Height:             4 bytes
-    #     # Bit depth:          1 byte
-    #     # Color type:         1 byte (0, 2, 3, 4, 6)
-    #     # Compression method: 1 byte
-    #     # Filter method:      1 byte
-    #     # Interlace method:   1 byte
-    #     w, h, depth, color_type, compression, filter, interlace = chunk_data.unpack("N2C5")
+    endianness = scan_tiff_endianness(magic_bytes)
+    return unless endianness
+    w, h = read_tiff_by_endianness(io, endianness)
     return FormatParser::FileInformation.new(width_px: w, height_px: h)
   end
+
+  def scan_tiff_endianness(magic_bytes)
+    if magic_bytes == LITTLE_ENDIAN_TIFF_HEADER_BYTES
+      endianness = "v"
+    elsif magic_bytes == BIG_ENDIAN_TIFF_HEADER_BYTES
+      endianness = "n"
+    else
+      endianness = nil
+    end
+  end
+
+  def scan_ifd(cache, offset, endianness)
+    entry_count = safe_read(cache, 4).unpack(endianness)[0]
+    entry_count.times do |i|
+      cache.seek(offset + 2 + (12 * i))
+      tag = safe_read(cache, 4).unpack(endianness)[0]
+      if tag == WIDTH_TAG
+        @width = safe_read(cache, 4).unpack(endianness)[0]
+      elsif tag == HEIGHT_TAG
+        @height = safe_read(cache, 4).unpack(endianness)[0]
+      end
+    end
+
+  end
+
+
+  def read_tiff_by_endianness(io, endianness)
+    offset = safe_read(io, 4).unpack(endianness.upcase)[0]
+    cache = Care::IOWrapper.new(io)
+    cache.seek(offset)
+    scan_ifd(cache, offset, endianness)
+    [@width, @height]
+  end
+
+  def raise_tiff_scan_error
+    raise TIFFScanError
+  end
+
 end
