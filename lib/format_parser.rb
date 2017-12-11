@@ -6,6 +6,7 @@ module FormatParser
   require_relative 'care'
   require_relative 'parsers/png_parser'
   require_relative 'parsers/jpeg_parser'
+  require_relative 'parsers/psd_parser'
   require_relative 'parsers/dpx_parser'
 
   def self.parse(io)
@@ -16,7 +17,7 @@ module FormatParser
         return info
       end
     end
-  
+
     raise "No parser could parse #{io.inspect}"
   end
 end
