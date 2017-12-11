@@ -22,20 +22,3 @@ module FormatParser
     raise "No parser could parse #{io.inspect}"
   end
 end
-
-if __FILE__ == $0
-#  fi = File.open('/Users/julik/Code/we/fastimage/test/fixtures/test.png', 'rb')
-#  file_info = FormatParser::PNGParser.new.information_from_io(fi)
-#  $stderr.puts file_info.inspect
-
-  # fi = File.open(__dir__ + '/../spec/fixtures/test4.jpg', 'rb')
-  # file_info = FormatParser::JPEGParser.new.information_from_io(fi)
-#  fi = File.open('/Users/julik/Code/we/fastimage/test/fixtures/test1.jpg', 'rb')
-#  file_info = FormatParser::JPEGParser.new.information_from_io(fi)
-
-#  fi = File.open('/Users/julik/Code/we/fastimage/test/fixtures/test2.jpg', 'rb')
-#  file_info = FormatParser::JPEGParser.new.information_from_io(fi)
-
-#  fi = File.open('/Users/julik/Code/we/fastimage/test/fixtures/test3.jpg', 'rb')
-#  file_info = FormatParser::JPEGParser.new.information_from_io(fi)
-end

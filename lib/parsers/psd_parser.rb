@@ -8,7 +8,7 @@ class FormatParser::PSDParser
 
     return unless magic_bytes == PSD_HEADER
 
-    # We can be reasonably certain this is a PSD so lets grab the height
+    # We can be reasonably certain this is a PSD so we grab the height
     # and width bytes
     w,h = safe_read(io, 22).unpack("x10N2")
     return FormatParser::FileInformation.new(width_px: w, height_px: h)

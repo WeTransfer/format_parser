@@ -6,7 +6,6 @@ class FormatParser::TIFFParser
 
   include FormatParser::IOUtils
 
-
   def information_from_io(io)
     io.seek(0)
     magic_bytes = safe_read(io, 4).unpack("C4")
@@ -16,16 +15,24 @@ class FormatParser::TIFFParser
     return FormatParser::FileInformation.new(width_px: w, height_px: h)
   end
 
+  # TIFFs can be either big or little endian, so we check here
+  # and set our unpack method argument to suit.
   def scan_tiff_endianness(magic_bytes)
     if magic_bytes == LITTLE_ENDIAN_TIFF_HEADER_BYTES
-      endianness = "v"
+      "v"
     elsif magic_bytes == BIG_ENDIAN_TIFF_HEADER_BYTES
-      endianness = "n"
+      "n"
     else
-      endianness = nil
+      nil
     end
   end
 
+  # The TIFF format stores metadata in a flexible set of information fields 
+  # called tags, which are stored in a header referred to as the IFD or 
+  # Image File Directory. It is not necessarily in the same place in every image,
+  # so we need to do some work to scan through it and find the tags we need.
+  # For more information the TIFF wikipedia page is a reasonable place to start:
+  # https://en.wikipedia.org/wiki/TIFF 
   def scan_ifd(cache, offset, endianness)
     entry_count = safe_read(cache, 4).unpack(endianness)[0]
     entry_count.times do |i|
@@ -37,9 +44,7 @@ class FormatParser::TIFFParser
         @height = safe_read(cache, 4).unpack(endianness.upcase)[0]
       end
     end
-
   end
-
 
   def read_tiff_by_endianness(io, endianness)
     offset = safe_read(io, 4).unpack(endianness.upcase)[0]
@@ -47,10 +52,6 @@ class FormatParser::TIFFParser
     cache.seek(offset)
     scan_ifd(cache, offset, endianness)
     [@width, @height]
-  end
-
-  def raise_tiff_scan_error
-    raise TIFFScanError
   end
 
 end
