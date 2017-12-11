@@ -32,9 +32,9 @@ class FormatParser::TIFFParser
       cache.seek(offset + 2 + (12 * i))
       tag = safe_read(cache, 4).unpack(endianness)[0]
       if tag == WIDTH_TAG
-        @width = safe_read(cache, 4).unpack(endianness)[0]
+        @width = safe_read(cache, 4).unpack(endianness.upcase)[0]
       elsif tag == HEIGHT_TAG
-        @height = safe_read(cache, 4).unpack(endianness)[0]
+        @height = safe_read(cache, 4).unpack(endianness.upcase)[0]
       end
     end
 
