@@ -49,10 +49,12 @@ class FormatParser::JPEGParser
 
       # Return at the earliest possible opportunity
       if @width && @height
-        file_info = FormatParser::FileInformation.new
-        file_info.width_px = @width
-        file_info.height_px = @height
-        file_info.exif_orientation_angle = @angle if @angle
+        file_info = FormatParser::FileInformation.image(
+          file_type: :jpg,
+          width_px: @width,
+          height_px: @height,
+        )
+        file_info.exif_orientation_angle = @angle # will be nil otherwise, so no harm
         return file_info
       end
     end

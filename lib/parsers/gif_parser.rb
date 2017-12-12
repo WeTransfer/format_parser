@@ -37,7 +37,8 @@ class FormatParser::GIFParser
     potentially_netscape_app_header = safe_read(io, 64)
     is_animated = potentially_netscape_app_header.include?(NETSCAPE_AND_AUTHENTICATION_CODE)
 
-    FormatParser::FileInformation.new(
+    FormatParser::FileInformation.image(
+      file_type: :gif,
       width_px: w,
       height_px: h,
       has_multiple_frames: is_animated,

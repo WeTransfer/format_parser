@@ -22,10 +22,11 @@ class FormatParser::PNGParser
         # Filter method:      1 byte
         # Interlace method:   1 byte
         w, h = chunk_data.unpack("N2C5")
-        file_info = FormatParser::FileInformation.new
-        file_info.width_px = w
-        file_info.height_px = h
-        return file_info
+        return FormatParser::FileInformation.image(
+          file_type: :png,
+          width_px: w,
+          height_px: h,
+        )
       else
         safe_skip(io, chunk_length)
       end

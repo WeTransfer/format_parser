@@ -5,7 +5,11 @@ describe FormatParser::GIFParser do
     Dir.glob(__dir__ + '/fixtures/*.gif').each do |gif_path|
       it "is able to parse #{File.basename(gif_path)}" do
         parsed = subject.information_from_io(File.open(gif_path, 'rb'))
+
         expect(parsed).not_to be_nil
+
+        expect(parsed.file_nature).to eq(:image)
+        expect(parsed.file_type).to eq(:gif)
 
         expect(parsed.width_px).to be_kind_of(Integer)
         expect(parsed.width_px).to be > 0
