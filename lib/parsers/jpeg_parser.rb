@@ -46,12 +46,13 @@ class FormatParser::JPEGParser
       else
         skip_frame
       end
+
       # Return at the earliest possible opportunity
       if @width && @height
-        file_info = FormatParser::FileInformation
+        file_info = FormatParser::FileInformation.new
         file_info.width_px = @width
         file_info.height_px = @height
-        file_info.orientation_angle = @angle if @angle
+        file_info.exif_orientation_angle = @angle if @angle
         return file_info
       end
     end
