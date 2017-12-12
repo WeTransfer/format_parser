@@ -1,7 +1,7 @@
 require 'ostruct'
 
 module FormatParser
-  FileInformation = OpenStruct.new
+  require_relative 'file_information'
   require_relative 'io_utils'
   require_relative 'care'
   require_relative 'parsers/png_parser'

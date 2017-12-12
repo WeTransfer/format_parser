@@ -37,10 +37,10 @@ class FormatParser::GIFParser
     potentially_netscape_app_header = safe_read(io, 64)
     is_animated = potentially_netscape_app_header.include?(NETSCAPE_AND_AUTHENTICATION_CODE)
 
-    file_info = FormatParser::FileInformation
-    file_info.width_px = w
-    file_info.height_px = h
-    file_info.is_animated = is_animated
-    return file_info
+    FormatParser::FileInformation.new(
+      width_px: w,
+      height_px: h,
+      has_multiple_frames: is_animated,
+    )
   end
 end

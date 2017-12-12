@@ -12,7 +12,7 @@ class FormatParser::TIFFParser
     endianness = scan_tiff_endianness(magic_bytes)
     return unless endianness
     w, h = read_tiff_by_endianness(io, endianness)
-    file_info = FormatParser::FileInformation
+    file_info = FormatParser::FileInformation.new
     file_info.width_px = w
     file_info.height_px = h
     return file_info

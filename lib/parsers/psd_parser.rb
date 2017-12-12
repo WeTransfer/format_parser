@@ -11,7 +11,7 @@ class FormatParser::PSDParser
     # We can be reasonably certain this is a PSD so we grab the height
     # and width bytes
     w,h = safe_read(io, 22).unpack("x10N2")
-    file_info = FormatParser::FileInformation
+    file_info = FormatParser::FileInformation.new
     file_info.width_px = w
     file_info.height_px = h
     return file_info
