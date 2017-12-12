@@ -12,7 +12,7 @@ class FormatParser::JPEGParser
     @buf.seek(0)
     @width  = nil
     @height = nil
-    @angle  = nil
+    @angle  = 0
     scan
   end
 

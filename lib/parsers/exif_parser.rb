@@ -1,5 +1,3 @@
-require_relative '../care'
-
 class FormatParser::EXIFParser
 
   ORIENTATION_TAG = 0x0112
