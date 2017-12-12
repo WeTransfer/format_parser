@@ -26,6 +26,8 @@ class FormatParser::PNGParser
         file_info.width_px = w
         file_info.height_px = h
         return file_info
+      else
+        safe_skip(io, chunk_length)
       end
     end
   end
