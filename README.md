@@ -7,6 +7,23 @@ minimum amount of data possible.
 `format_parser` is inspired by [imagesize,](https://rubygems.org/gem/imagesize) [fastimage](https://github.com/sdsykes/fastimage)
 and [dimensions,](https://github.com/sstephenson/dimensions) borrowing from them where appropriate.
 
+## Basic usage
+
+Pass an IO object that responds to `read` and `seek` to `FormatParser`.
+
+```ruby
+file_info = FormatParser.parse(File.open("myimage.jpg", "rb"))
+file_info.file_nature           #=> :image
+file_info.file_format           #=> :JPG
+file_info.width_px              #=> 320
+file_info.height_px             #=> 240
+file_info.exif_rotation_degrees #=> 90
+file_info.display_aspect_ratio  #=> [3, 4]
+file_info.image_channel_names   #=> ["R", "G", "B"]
+file_info.bits_per_channel      #=> 8
+```
+If nothing is detected, the result will be `nil`.
+
 ## Design rationale
 
 We need to recover medatata from various file types, and we need to do so satisfying the following constraints:
@@ -32,17 +49,3 @@ Therefore we adapt the following approaches:
 * Minimal dependencies, and if dependencies are to be used they should be very stable and low-level
 * Where possible, use small subsets of full-feature format parsers since we only care about a small subset of the data
 * Avoid using C libraries which are likely to contain buffer overflows/underflows - we stay memory safe
-
-## Basic usage
-
-```ruby
-file_info = FormatParser.parse(File.open("myimage.jpg", "rb"))
-file_info.file_nature           #=> :image
-file_info.file_format           #=> :JPG
-file_info.width_px              #=> 320
-file_info.height_px             #=> 240
-file_info.exif_rotation_degrees #=> 90
-file_info.display_aspect_ratio  #=> [3, 4]
-file_info.image_channel_names   #=> ["R", "G", "B"]
-file_info.bits_per_channel      #=> 8
-```
