@@ -87,7 +87,7 @@ class FormatParser::JPEGParser
   def scan_app1_frame
     frame = read_frame
     if frame[0..5] == "Exif\000\000"
-      scanner = FormatParser::EXIFParser.new(frame[6..-1])
+      scanner = FormatParser::EXIFParser.new(@buf)
       scanner.scan
       if scanner.scan
         case scanner.orientation

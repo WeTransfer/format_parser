@@ -37,7 +37,8 @@ class FormatParser::EXIFParser
   end
 
   def scan_endianness
-    magic_bytes = @exif_data[0..1].unpack("C2")
+    @exif_data.seek(30)
+    magic_bytes = @exif_data.read(2).unpack("C2")
     if magic_bytes[0..1] == [0x4D, 0x4D]
       @short, @long = "n", "N"
     else
