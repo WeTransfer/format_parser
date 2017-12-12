@@ -1,5 +1,7 @@
 class FormatParser::EXIFParser
 
+  WIDTH_TAG = 0x0100
+  HEIGHT_TAG = 0x0101
   ORIENTATION_TAG = 0x0112
   ORIENTATIONS = [
     :top_left,
@@ -11,6 +13,7 @@ class FormatParser::EXIFParser
     :right_bottom,
     :left_bottom
   ]
+
   include FormatParser::IOUtils
 
   attr_reader :orientation
@@ -49,13 +52,13 @@ class FormatParser::EXIFParser
     if check_place.first == 42
       tag_count = @exif_data[8..9].unpack(@short).first
       tag_count.downto(1) do
-        exif_tag_parser
+        exif_orientation_parser
       end
     end
   end
 
   # Make sure we're looking at the right tag
-  def exif_tag_parser
+  def exif_orientation_parser
     tag = @exif_data[10..11].unpack(@short).first
     if tag == ORIENTATION_TAG
       orientation_type_parser
