@@ -1,3 +1,5 @@
+require_relative '../care'
+
 class FormatParser::EXIFParser
 
   ORIENTATION_TAG = 0x0112
@@ -13,92 +15,71 @@ class FormatParser::EXIFParser
   ]
   include FormatParser::IOUtils
 
+  attr_reader :orientation
+
   def initialize(exif_data)
     @exif_data = exif_data
     @orientation = nil
-    @endianness = nil
+    @rotated = false
+    @short = nil
+    @long = nil
   end
 
   def scan
-    @endianness = scan_endianness
-    scan_and_skip_to_offset
-    scan_ifd do |tag|
-      if tag == ORIENTATION_TAG
-        value = read_integer_value
-        if valid_orientation?(value)
-          @orientation = ORIENTATIONS[value - 1]
-        end
-      end
+    scan_endianness
+    # cache = scan_and_skip_to_offset
+    value = scan_ifd
+    if valid_orientation?(value)
+      @orientation = ORIENTATIONS[value - 1]
     end
 
     @orientation
   end
 
-  # def scan_header
-  #   # scan_endianness
-  #   # scan_tag_mark
-  #   scan_and_skip_to_offset
-  # end
-
   def scan_endianness
-    magic_bytes = safe_read(@exif_data, 2).unpack("C2")
-    magic_bytes[0..1] == [0x4D, 0x4D] ? "n" : "v"
+    magic_bytes = @exif_data[0..1].unpack("C2")
+    if magic_bytes[0..1] == [0x4D, 0x4D]
+      @short, @long = "n", "N"
+    else
+      @short, @long = "v", "V"
+    end
   end
-  #
-  # def scan_tag_mark
-  #   raise_scan_error unless safe_read(@buf, 2).unpack("C2") == 0x002A
-  # end
 
   def scan_and_skip_to_offset
-    offset = safe_read(@exif_data, 4).unpack(@endianness.upcase)
+    offset = safe_read(@exif_data, 4).unpack(@long)
     cache = Care::IOWrapper.new(@exif_data)
     cache.seek(offset)
   end
 
   def scan_ifd
-    offset = 0
-    entry_count = read_short
-
-    entry_count.first.times do |i|
-      @exif_data.seek(offset + 2 + (12 * i))
-      tag = read_short
-      return tag
+    check_place = @exif_data[2..3].unpack(@short)
+    # Make sure we're at the right place in the EXIF metadata
+    if check_place.first == 42
+      tag_count = @exif_data[8..9].unpack(@short).first
+      tag_count.downto(1) do
+        exif_tag_parser
+      end
     end
   end
 
-  def read_short
-    safe_read(@exif_data, 2).unpack(@endianness)
+  def exif_tag_parser
+    tag = @exif_data[10..11].unpack(@short).first
+    if tag == ORIENTATION_TAG
+      orientation_type_parser
+    end
   end
 
-  # def scan_ifd
-  #   offset = 0
-  #   entry_count = read_short
-  #
-  #   tag = entry_count.times do |i|
-  #     cache = Care::IOWrapper.new(@exif_data)
-  #     cache.seek(offset + 2 + (12 * i))
-  #   end
-  #   tag
-  # end
-  #
-  # def read_short
-  #   endianness = detect_endianness
-  #   @exif_data.unpack("x12" + endianness + "2").first
-  # end
+  def orientation_type_parser
+    type = @exif_data[12..18].unpack(@short).first
+    if type == 3
+      @exif_data[15..21].unpack(@short).first
+    elsif type == 4
+      @exif_data[15..21].unpack(@long).first
+    end
+  end
 
   def valid_orientation?(value)
     (1..ORIENTATIONS.length).include?(value)
-  end
-
-  def detect_endianness
-    if @exif_data[0..1] == "II"
-    endianness = "v"
-    elsif @exif_data[0..1] == "MM"
-      endianness = "n"
-    else
-      endianness = nil
-    end
-    endianness
   end
 
 end
