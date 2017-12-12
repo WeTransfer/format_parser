@@ -22,12 +22,12 @@ class FormatParser::EXIFParser
     @exif_data = exif_data
     @orientation = nil
     @rotated = false
+    @width = nil
     @short = nil
     @long = nil
   end
 
   def scan
-    scan_endianness
     value = scan_file_data
     if valid_orientation?(value)
       @orientation = ORIENTATIONS[value - 1]
@@ -48,12 +48,17 @@ class FormatParser::EXIFParser
 
   # Once we're at the right place figure out how many tags we need to parse
   def scan_file_data
-    check_place = @exif_data[2..3].unpack(@short)
+    # Grab the position here and then look forward for the tags we need
+    scan_endianness
+    check_place = @exif_data.read(5).unpack(@short)
     # Make sure we're at the right place in the EXIF metadata
     if check_place.first == 42
-      tag_count = @exif_data[8..9].unpack(@short).first
+      # @exif_data.seek(42)
+      tag_count = @exif_data.read(5).unpack(@short).first
       tag_count.downto(1) do
-        exif_orientation_parser
+        exif_width_parser
+        exif_height_parser
+        # exif_orientation_parser
       end
     end
   end
@@ -63,6 +68,22 @@ class FormatParser::EXIFParser
     tag = @exif_data[10..11].unpack(@short).first
     if tag == ORIENTATION_TAG
       orientation_type_parser
+    end
+  end
+
+  def exif_width_parser
+    @exif_data.seek(67)
+    tag = @exif_data.read(2).unpack(@short).first
+    if tag == WIDTH_TAG
+      @exif_data.read(6)
+      @width = @exif_data.read(2).unpack(@short)
+    end
+  end
+
+  def exif_height_parser
+    tag = @exif_data.read(5).unpack(@short).first
+    if tag == HEIGHT_TAG
+      @height = @exif_data.read(2).unpack(@short)
     end
   end
 

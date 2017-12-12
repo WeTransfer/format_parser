@@ -85,8 +85,8 @@ class FormatParser::JPEGParser
   end
 
   def scan_app1_frame
-    frame = read_frame
-    if frame[0..5] == "Exif\000\000"
+    frame = @buf.read(8)
+    if frame.include?("Exif")
       scanner = FormatParser::EXIFParser.new(@buf)
       scanner.scan
       if scanner.scan
