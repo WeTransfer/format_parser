@@ -30,27 +30,27 @@ class FormatParser::DPXParser
     :x4, # u32 :held_count,      :desc => 'For how many frames the frame is held'
     :x4, # r32 :frame_rate,      :desc => 'Frame rate'
     :x4, # r32 :shutter_angle,   :desc => 'Shutter angle'
-    :x4, # char :frame_id, 32,   :desc => 'Frame identification (keyframe)' 
+    :x4, # char :frame_id, 32,   :desc => 'Frame identification (keyframe)'
     :x4, # char :slate, 100,     :desc => 'Slate information'
     :x4, # blanking :reserve, 56
   ].join
 
   IMAGE_ELEMENT = [
     :x4, # u32 :data_sign, :desc => 'Data sign (0=unsigned, 1=signed). Core is unsigned', :req => true
-    # 
+    #
     :x4, # u32 :low_data,      :desc => 'Reference low data code value'
     :x4, # r32 :low_quantity,  :desc => 'Reference low quantity represented'
     :x4, # u32 :high_data,     :desc => 'Reference high data code value (1023 for 10bit per channel)'
     :x4, # r32 :high_quantity, :desc => 'Reference high quantity represented'
-    # 
+    #
     :x1, # u8 :descriptor,   :desc => 'Descriptor for this image element (ie Video or Film), by enum', :req => true
     # TODO - colirimetry information might be handy to recover,
-    # as well as "bit size per element" (how many bits _per component_ we have) - 
+    # as well as "bit size per element" (how many bits _per component_ we have) -
     # this will be different for, say, 8-bit DPX files versus 10-bit etc.
     :x1, # u8 :transfer,     :desc => 'Transfer function (ie Linear), by enum', :req => true
     :x1, # u8 :colorimetric, :desc => 'Colorimetric (ie YcbCr), by enum', :req => true
     :x1, # u8 :bit_size,     :desc => 'Bit size for element (ie 10)', :req => true
-    # 
+    #
     :x2, # u16 :packing,     :desc => 'Packing (0=Packed into 32-bit words, 1=Filled to 32-bit words))', :req => true
     :x2, # u16 :encoding,    :desc => "Encoding (0=None, 1=RLE)", :req => true
     :x4, # u32 :data_offset, :desc => 'Offset to data for this image element', :req => true
@@ -77,7 +77,7 @@ class FormatParser::DPXParser
     #
     :x4, #  u32 :x_size, :desc => 'Original X size'
     :x4, #  u32 :y_size, :desc => 'Original Y size'
-    #  
+    #
     :x100, #  char :filename, 100, :desc => "Source image filename"
     :x24,  #  char :timestamp, 24, :desc => "Source image/tape timestamp"
     :x32,  #  char :device,    32, :desc => "Input device or tape"
@@ -103,7 +103,7 @@ class FormatParser::DPXParser
   ].join
 
   DPX_INFO_LE = DPX_INFO.tr("n", "v").tr("N", "V")
-  
+
   SIZEOF = ->(pattern) {
     bytes_per_element = {
       "v" => 2, # 16bit uints
@@ -133,6 +133,10 @@ class FormatParser::DPXParser
     unpack_pattern = DPX_INFO
     unpack_pattern = DPX_INFO_LE if magic == LE_MAGIC
     num_elements, pixels_per_line, num_lines, *_ = safe_read(io, HEADER_SIZE).unpack(unpack_pattern)
-    FormatParser::FileInformation.new(width_px: pixels_per_line, height_px: num_lines)
+    file_info = FormatParser::FileInformation
+    file_info.width_px = pixels_per_line
+    file_info.height_px = num_lines
+    file_info.num_elements = num_elements
+    return file_info
   end
 end

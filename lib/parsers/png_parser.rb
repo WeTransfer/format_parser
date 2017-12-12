@@ -22,7 +22,10 @@ class FormatParser::PNGParser
         # Filter method:      1 byte
         # Interlace method:   1 byte
         w, h = chunk_data.unpack("N2C5")
-        return FileInformation.new(width_px: w, height_px: h)
+        file_info = FormatParser::FileInformation
+        file_info.width_px = w
+        file_info.height_px = h
+        return file_info
       end
     end
   end
