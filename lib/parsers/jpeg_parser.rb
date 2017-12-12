@@ -12,7 +12,7 @@ class FormatParser::JPEGParser
     @buf.seek(0)
     @width  = nil
     @height = nil
-    @angle  = 0
+    @angle  = nil
     scan
   end
 
@@ -48,7 +48,11 @@ class FormatParser::JPEGParser
       end
       # Return at the earliest possible opportunity
       if @width && @height
-        return FormatParser::FileInformation.new(width_px: @width, height_px: @height)
+        file_info = FormatParser::FileInformation
+        file_info.width_px = @width
+        file_info.height_px = @height
+        file_info.orientation_angle = @angle if @angle
+        return file_info
       end
     end
     nil # We could not parse anything

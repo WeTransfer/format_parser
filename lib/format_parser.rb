@@ -1,7 +1,7 @@
-require 'ks'
+require 'ostruct'
 
 module FormatParser
-  FileInformation = Ks.strict(:width_px, :height_px)
+  FileInformation = OpenStruct.new
   require_relative 'io_utils'
   require_relative 'care'
   require_relative 'parsers/png_parser'
