@@ -27,8 +27,7 @@ class FormatParser::EXIFParser
 
   def scan
     scan_endianness
-    # cache = scan_and_skip_to_offset
-    value = scan_ifd
+    value = scan_file_data
     if valid_orientation?(value)
       @orientation = ORIENTATIONS[value - 1]
     end
@@ -45,13 +44,8 @@ class FormatParser::EXIFParser
     end
   end
 
-  def scan_and_skip_to_offset
-    offset = safe_read(@exif_data, 4).unpack(@long)
-    cache = Care::IOWrapper.new(@exif_data)
-    cache.seek(offset)
-  end
-
-  def scan_ifd
+  # Once we're at the right place figure out how many tags we need to parse
+  def scan_file_data
     check_place = @exif_data[2..3].unpack(@short)
     # Make sure we're at the right place in the EXIF metadata
     if check_place.first == 42
@@ -62,6 +56,7 @@ class FormatParser::EXIFParser
     end
   end
 
+  # Make sure we're looking at the right tag
   def exif_tag_parser
     tag = @exif_data[10..11].unpack(@short).first
     if tag == ORIENTATION_TAG
@@ -69,6 +64,7 @@ class FormatParser::EXIFParser
     end
   end
 
+  # Depending on type, find the orientation number
   def orientation_type_parser
     type = @exif_data[12..18].unpack(@short).first
     if type == 3
@@ -78,6 +74,7 @@ class FormatParser::EXIFParser
     end
   end
 
+  # Make sure the orientation we found is valid
   def valid_orientation?(value)
     (1..ORIENTATIONS.length).include?(value)
   end
