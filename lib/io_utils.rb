@@ -1,5 +1,8 @@
 module FormatParser::IOUtils
   def safe_read(io, n)
+    if n.nil?
+      raise ArgumentError, "Unbounded reads are not supported"
+    end
     buf = io.read(n)
     
     if !buf
