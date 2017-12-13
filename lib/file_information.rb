@@ -5,7 +5,7 @@ module FormatParser
   class FileInformation
     VALID_FILE_NATURES = [:image]
     SUPPORTED_FILE_TYPES = [
-      :jpg, :gif, :png, :psd, :dpx, :tiff
+      :jpg, :gif, :png, :psd, :dpx, :tif
     ]
     # Will only allow the attributes we specify, but since not all filetypes
     # will use all attributes, we can set them to a default value and it will
