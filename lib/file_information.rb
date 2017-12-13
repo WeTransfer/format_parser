@@ -21,6 +21,12 @@ module FormatParser
     # (affects display width and height)
     attr_accessor :exif_orientation_angle
 
+    # Whether the image has transparency (or an alpha channel)
+    attr_accessor :has_transparency
+
+    # Basic information about the color mode
+    attr_accessor :color_mode
+
     # Only permits assignments via defined accessors
     def initialize(**kwargs)
       kwargs.map { |(k, v)| public_send("#{k}=", v) }

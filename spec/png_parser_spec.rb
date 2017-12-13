@@ -6,6 +6,9 @@ describe FormatParser::PNGParser do
       it "is able to parse #{File.basename(png_path)}" do
         parsed = subject.information_from_io(File.open(png_path, 'rb'))
         expect(parsed).not_to be_nil
+        expect(parsed.file_nature).to eq(:image)
+        expect(parsed.file_type).to eq(:png)
+        expect(parsed.color_mode).to eq(:indexed)
 
         expect(parsed.width_px).to be_kind_of(Integer)
         expect(parsed.width_px).to be > 0
@@ -25,7 +28,7 @@ describe FormatParser::PNGParser do
     bad_png << [8+5].pack('N')
     bad_png << "IHDR"
     bad_png << [120, 130].pack('N2')
-    bad_png << Random.new.bytes(5)
+    bad_png << [0,0,0,0,0].pack('C*')
 
     result = subject.information_from_io(bad_png)
 
