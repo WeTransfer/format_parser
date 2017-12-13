@@ -18,22 +18,4 @@ describe FormatParser::PNGParser do
       end
     end
   end
-  
-  it 'is able to parse the PNG even if the IHDR chunk is not the first in the file' do
-    bad_png = StringIO.new
-    bad_png << [137, 80, 78, 71, 13, 10, 26, 10].pack("C*")
-    bad_png << [48].pack("N")
-    bad_png << "FOO1"
-    bad_png << Random.new.bytes(48)
-    bad_png << [8+5].pack('N')
-    bad_png << "IHDR"
-    bad_png << [120, 130].pack('N2')
-    bad_png << [0,0,0,0,0].pack('C*')
-
-    result = subject.information_from_io(bad_png)
-
-    expect(result).not_to be_nil
-    expect(result.width_px).to eq(120)
-    expect(result.height_px).to eq(130)
-  end
 end
