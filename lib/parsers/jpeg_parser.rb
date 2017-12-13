@@ -10,9 +10,9 @@ class FormatParser::JPEGParser
   def information_from_io(io)
     @buf = io
     @buf.seek(0)
-    @width  = nil
-    @height = nil
-    @angle  = 0
+    @width             = nil
+    @height            = nil
+    @orientation       = 1
     scan
   end
 
@@ -88,16 +88,12 @@ class FormatParser::JPEGParser
     frame = @buf.read(8)
     if frame.include?("Exif")
       scanner = FormatParser::EXIFParser.new(@buf)
-      scanner.scan
-      if scanner.scan
-        case scanner.orientation
-        when :bottom_right
-          @angle = 180
-        when :left_top, :right_top
-          @angle = 90
-        when :right_bottom, :left_bottom
-          @angle = 270
-        end
+      exif_data = scanner.scan_jpeg
+      if exif_data
+        orientation_raw = exif_data.exif.orientation
+        @orientation       = exif_data.exif.orientation.to_i unless orientation_raw.nil?
+        @width = exif_data.exif.pixel_x_dimension
+        @height = exif_data.exif.pixel_y_dimension
       end
     end
   end

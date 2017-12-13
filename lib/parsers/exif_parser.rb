@@ -1,3 +1,5 @@
+require 'exifr/jpeg'
+
 class FormatParser::EXIFParser
 
   WIDTH_TAG = 0x0100
@@ -27,13 +29,9 @@ class FormatParser::EXIFParser
     @long = nil
   end
 
-  def scan
-    value = scan_file_data
-    if valid_orientation?(value)
-      @orientation = ORIENTATIONS[value - 1]
-    end
-
-    @orientation
+  def scan_jpeg
+    @exif_data.rewind
+    EXIFR::JPEG.new(@exif_data)
   end
 
   def scan_endianness
