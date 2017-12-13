@@ -27,6 +27,14 @@ module FormatParser
     # Basic information about the color mode
     attr_accessor :color_mode
 
+    # If the file has animation or is video, this might
+    # indicate the number of frames. Some formats do not
+    # allow retrieving this value without parsing the entire
+    # file, so for GIF this might be nil even though it is
+    # animated. For a boolean check, `has_multiple_frames`
+    # might offer a better clue.
+    attr_accessor :num_animation_or_video_frames
+
     # Only permits assignments via defined accessors
     def initialize(**kwargs)
       kwargs.map { |(k, v)| public_send("#{k}=", v) }

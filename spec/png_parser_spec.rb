@@ -18,4 +18,16 @@ describe FormatParser::PNGParser do
       end
     end
   end
+  
+  it 'is able to parse an animated PNG' do
+    gif_path = __dir__ + "/fixtures/PNG/anim.png"
+
+    parsed = subject.information_from_io(File.open(gif_path, 'rb'))
+    expect(parsed).not_to be_nil
+
+    expect(parsed.width_px).to eq(320)
+    expect(parsed.height_px).to eq(180)
+    expect(parsed.has_multiple_frames).to eq(true)
+    expect(parsed.num_animation_or_video_frames).to eq(17)
+  end
 end
