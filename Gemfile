@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'dry-types'
+# Used for validating the info we put into FileInformation
 gem 'dry-validation'
 
 group :development do
