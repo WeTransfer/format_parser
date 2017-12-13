@@ -91,9 +91,10 @@ class FormatParser::JPEGParser
       exif_data = scanner.scan_jpeg
       if exif_data
         orientation_raw = exif_data.exif.orientation
-        @orientation       = exif_data.exif.orientation.to_i unless orientation_raw.nil?
-        @width = exif_data.exif.pixel_x_dimension
-        @height = exif_data.exif.pixel_y_dimension
+        @exif_output = exif_data
+        @orientation = exif_data.exif.orientation.to_i unless orientation_raw.nil?
+        @width = exif_data.exif.pixel_x_dimension || @exif_output.height
+        @height = exif_data.exif.pixel_y_dimension || @exif_output.width
       end
     end
   end
