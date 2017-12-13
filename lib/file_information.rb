@@ -2,6 +2,8 @@ require 'dry-validation'
 
 module FormatParser
 
+  class ParsingError < StandardError; end
+
   class FileInformation
     VALID_FILE_NATURES = [:image]
     SUPPORTED_FILE_TYPES = [
@@ -34,6 +36,8 @@ module FormatParser
       result = schema.call(**attributes)
       if result.success?
         result.to_h
+      else
+        raise ParsingError, "Parsing failed with error: #{result.errors}"
       end
     end
 
