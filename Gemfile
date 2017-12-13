@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'dry-types'
-gem 'dry-struct'
+gem 'dry-validation'
 
 group :development do
   gem 'rspec'
