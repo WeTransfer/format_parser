@@ -6,14 +6,15 @@ describe FormatParser::JPEGParser do
       it "is able to parse #{File.basename(jpeg_path)}" do
         parsed = subject.information_from_io(File.open(jpeg_path, 'rb'))
         expect(parsed).not_to be_nil
-        expect(parsed.file_nature).to eq(:image)
-        expect(parsed.file_type).to eq(:jpg)
 
-        expect(parsed.width_px).to be_kind_of(Integer)
-        expect(parsed.width_px).to be > 0
+        expect(parsed[:file_nature]).to eq(:image)
+        expect(parsed[:file_type]).to eq(:jpg)
 
-        expect(parsed.height_px).to be_kind_of(Integer)
-        expect(parsed.height_px).to be > 0
+        expect(parsed[:width_px]).to be_kind_of(Integer)
+        expect(parsed[:width_px]).to be > 0
+
+        expect(parsed[:height_px]).to be_kind_of(Integer)
+        expect(parsed[:height_px]).to be > 0
       end
     end
   end
