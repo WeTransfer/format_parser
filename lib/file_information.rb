@@ -1,5 +1,18 @@
+require 'dry-validation'
+
 module FormatParser
   class FileInformation
+
+    VALID_FILE_NATURES = [:image]
+    SUPPORTED_FILE_TYPES = [:jpg, :gif, :png, :psd, :dpx, :tif]
+    SCHEMA = Dry::Validation.Schema do
+      required(:file_nature).filled(included_in?: VALID_FILE_NATURES)
+      required(:file_type).filled(included_in?: SUPPORTED_FILE_TYPES)
+      optional(:width_px).filled(:int?)
+      optional(:height_px).filled(:int?)
+      optional(:has_multiple_frames).filled(:bool?)
+    end
+
     # What kind of file is it?
     attr_accessor :file_nature
 
@@ -44,16 +57,8 @@ module FormatParser
       new_with_validation(file_nature: :image, **kwargs)
     end
 
-    SCHEMA = Dry::Validation.Schema do
-      required(:file_nature).filled(included_in?: VALID_FILE_NATURES)
-      required(:file_type).filled(included_in?: SUPPORTED_FILE_TYPES)
-      optional(:width_px).filled(:int?)
-      optional(:height_px).filled(:int?)
-      optional(:has_multiple_frames).filled(:bool?)
-    end
-
     def self.new_with_validation(**attributes)
-      result = schema.call(**attributes)
+      result = SCHEMA.call(**attributes)
       if result.success?
         new(**result)
       else
