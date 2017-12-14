@@ -139,4 +139,6 @@ class FormatParser::DPXParser
       height_px: num_lines,
     )
   end
+
+  FormatParser.register_parser_constructor self
 end

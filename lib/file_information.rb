@@ -50,7 +50,10 @@ module FormatParser
     # might offer a better clue.
     attr_accessor :num_animation_or_video_frames
 
-    # EXIF orientation (semantics?)
+    # Orientation from EXIF data. Will come through as an integer.
+    # To be perfectly honest EXIF orientation handling is a bit of a mess,
+    # here's a reasonable blog post about it:
+    # http://magnushoff.com/jpeg-orientation.html
     attr_accessor :image_orientation
 
     # Only permits assignments via defined accessors

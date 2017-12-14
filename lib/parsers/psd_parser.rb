@@ -17,4 +17,6 @@ class FormatParser::PSDParser
       height_px: h,
     )
   end
+
+  FormatParser.register_parser_constructor self
 end
