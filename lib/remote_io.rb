@@ -1,8 +1,8 @@
 class FormatParser::RemoteIO
-  # @param fetcher[#request_object_size, #request_range] an object that perform fetches
+  # @param uri[URI, String] the remote URL to obtain
   def initialize(uri)
     require 'net/http'
-    
+
     @uri = URI(uri)
     @pos = 0
     @remote_size = false
@@ -71,7 +71,7 @@ class FormatParser::RemoteIO
     http = Net::HTTP.start(@uri.hostname, @uri.port)
     http.request(request).body
   end
-  
+
   # Only used internally when reading the remote ZIP.
   #
   # @return [Fixnum] the byte size of the ranged request
