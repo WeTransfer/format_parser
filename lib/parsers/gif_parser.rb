@@ -42,6 +42,7 @@ class FormatParser::GIFParser
       width_px: w,
       height_px: h,
       has_multiple_frames: is_animated,
+      color_mode: :indexed,
     )
   end
 end
