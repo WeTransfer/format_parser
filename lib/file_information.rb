@@ -53,8 +53,6 @@ module FormatParser
 
     def self.image(**attributes)
       validate_and_return(file_nature: :image, **attributes)
-      require "pry"
-      binding.pry
     end
 
   end
