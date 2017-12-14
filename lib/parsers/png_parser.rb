@@ -77,4 +77,6 @@ class FormatParser::PNGParser
       num_animation_or_video_frames: num_frames,
     )
   end
+
+  FormatParser.register_parser_constructor self
 end

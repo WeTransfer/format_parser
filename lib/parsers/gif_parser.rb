@@ -45,4 +45,6 @@ class FormatParser::GIFParser
       color_mode: :indexed,
     )
   end
+
+  FormatParser.register_parser_constructor self
 end

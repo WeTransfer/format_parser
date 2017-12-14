@@ -1,19 +1,22 @@
-require 'ostruct'
+require 'thread'
 
 module FormatParser
   require_relative 'file_information'
   require_relative 'io_utils'
   require_relative 'care'
-  require_relative 'parsers/png_parser'
-  require_relative 'parsers/jpeg_parser'
-  require_relative 'parsers/psd_parser'
-  require_relative 'parsers/tiff_parser'
-  require_relative 'parsers/dpx_parser'
-  require_relative 'parsers/gif_parser'
+
+  PARSER_MUX = Mutex.new
+
+  def self.register_parser_constructor(object_responding_to_new)
+    PARSER_MUX.synchronize do
+      @parsers ||= []
+      @parsers << object_responding_to_new
+    end
+  end
 
   def self.parse(io)
     io = Care::IOWrapper.new(io) unless io.is_a?(Care::IOWrapper)
-    parsers = [PNGParser.new, JPEGParser.new, TIFFParser.new, PSDParser.new, DPXParser.new, GIFParser.new]
+    parsers = @parsers.map(&:new)
     parsers.each do |parser|
       if info = parser.information_from_io(io)
         return info
@@ -21,5 +24,9 @@ module FormatParser
     end
 
     raise "No parser could parse #{io.inspect}"
+  end
+
+  Dir.glob(__dir__ + '/parsers/*.rb').sort.each do |parser_file|
+    require parser_file
   end
 end
