@@ -48,7 +48,7 @@ class FormatParser::RemoteIO
 
   protected
 
-  # Only used internally when reading the remote ZIP.
+  # Only used internally when reading the remote file
   #
   # @param range[Range] the HTTP range of data to fetch from remote
   # @return [String] the response body of the ranged request
