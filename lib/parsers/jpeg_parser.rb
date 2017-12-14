@@ -54,8 +54,8 @@ class FormatParser::JPEGParser
           width_px: @width,
           height_px: @height,
         )
-        file_info.exif_orientation_angle = @angle # will be nil otherwise, so no harm
         return file_info
+
       end
     end
     nil # We could not parse anything
