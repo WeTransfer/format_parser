@@ -12,8 +12,7 @@ module FormatParser
   require_relative 'parsers/dpx_parser'
   require_relative 'parsers/gif_parser'
 
-  def self.parse_http(url, headers: {})
-    headers.delete('Range')
+  def self.parse_http(url)
     parse(RemoteIO.new(url))
   end
 
