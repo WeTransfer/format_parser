@@ -52,8 +52,9 @@ class FormatParser::TIFFParser
 
   def read_tiff_by_endianness(io, endianness)
     offset = safe_read(io, 4).unpack(endianness.upcase)[0]
-    io.seek(offset)
-    scan_ifd(io, offset, endianness)
+    cache = Care::IOWrapper.new(io)
+    cache.seek(offset)
+    scan_ifd(cache, offset, endianness)
     [@width, @height]
   end
 
