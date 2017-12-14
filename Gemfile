@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 # Used for validating the info we put into FileInformation
-gem 'dry-validation'
+gem 'exifr'
 
 group :development do
   gem 'rspec'
