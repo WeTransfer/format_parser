@@ -12,11 +12,21 @@ class FormatParser::TIFFParser
     endianness = scan_tiff_endianness(magic_bytes)
     return unless endianness
     w, h = read_tiff_by_endianness(io, endianness)
-    FormatParser::FileInformation.image(
-      file_type: :tif,
-      width_px: w,
-      height_px: h,
-    )
+    exif_data = FormatParser::EXIFParser.new(io).scan_tiff
+    if exif_data.orientation
+      FormatParser::FileInformation.image(
+        file_type: :tif,
+        width_px: w,
+        height_px: h,
+        orientation: exif_data.orientation.to_i
+      )
+    else
+      FormatParser::FileInformation.image(
+        file_type: :tif,
+        width_px: w,
+        height_px: h
+      )
+    end
   end
 
   # TIFFs can be either big or little endian, so we check here
