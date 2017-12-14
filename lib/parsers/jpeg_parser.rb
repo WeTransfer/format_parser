@@ -111,4 +111,6 @@ class FormatParser::JPEGParser
     length = read_short - 2
     advance(length)
   end
+
+  FormatParser.register_parser_constructor self
 end
