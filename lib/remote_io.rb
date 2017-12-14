@@ -1,4 +1,15 @@
 class FormatParser::RemoteIO
+
+  # Represents a failure that might be retried
+  # (like a 5xx response or a timeout)
+  class IntermittentFailure < StandardError
+  end
+
+  # Represents a failure that should not be retried
+  # (like a 4xx response or a DNS resolution error)
+  class InvalidRequest < StandardError
+  end
+
   # @param uri[URI, String] the remote URL to obtain
   def initialize(uri)
     require 'net/http'
@@ -31,9 +42,8 @@ class FormatParser::RemoteIO
   # @return [String] the read bytes
   def read(n_bytes)
     http_range = (@pos..(@pos + n_bytes - 1))
-    available_size, body = request_range(http_range)
-    @remote_size ||= available_size
-    body
+    @remote_size, body = request_range(http_range)
+    body.force_encoding(Encoding::BINARY)
   end
 
   protected
@@ -48,24 +58,19 @@ class FormatParser::RemoteIO
     http = Net::HTTP.start(@uri.hostname, @uri.port)
     response = http.request(request)
 
-    range_header = response['Content-Range']
-    raise "No range support at #{@url}" unless range_header
+    if response.code[0] == '4'
+      raise InvalidRequest, "Server at #{@url} replied with a #{response.code} and did not want to satisfy our request"
+    end
 
-    # "Content-Range"=>"bytes 0-0/307404381"
+    if response.code[0] == '5'
+      raise IntermittentFailure, "Server at #{@url} replied with a #{response.code} and we might want to retry"
+    end
+
+    range_header = response['Content-Range']
+    raise InvalidRequest, "No range support at #{@url}" unless range_header
+
+    # "Content-Range: bytes 0-0/307404381" is how the response header is structured
     size = range_header[/\/(\d+)$/, 1].to_i
     [size, response.body]
-  end
-
-  # Reads the Content-Length and caches it
-  def remote_size
-    @remote_size ||= request_object_size
-  end
-
-  private
-
-  def clamp(a, b, c)
-    return a if b < a
-    return c if b > c
-    b
   end
 end
