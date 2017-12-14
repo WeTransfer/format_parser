@@ -4,10 +4,9 @@ module FormatParser
   class FileInformation
 
     VALID_FILE_NATURES = [:image]
-    SUPPORTED_FILE_TYPES = [:jpg, :gif, :png, :psd, :dpx, :tif]
     SCHEMA = Dry::Validation.Schema do
       required(:file_nature).filled(included_in?: VALID_FILE_NATURES)
-      required(:file_type).filled(included_in?: SUPPORTED_FILE_TYPES)
+      required(:file_type).filled
       optional(:width_px).filled(:int?)
       optional(:height_px).filled(:int?)
       optional(:has_multiple_frames).filled(:bool?)
@@ -49,21 +48,18 @@ module FormatParser
     attr_accessor :num_animation_or_video_frames
 
     # Only permits assignments via defined accessors
-    def initialize(**kwargs)
-      kwargs.map { |(k, v)| public_send("#{k}=", v) }
-    end
-
-    def self.image(**kwargs)
-      new_with_validation(file_nature: :image, **kwargs)
-    end
-
-    def self.new_with_validation(**attributes)
+    def initialize(**attributes)
       result = SCHEMA.call(**attributes)
       if result.success?
-        new(**result)
+        attributes = result.to_h
+        attributes.map { |(k, v)| public_send("#{k}=", v) }
       else
         raise ParsingError, "Parsing failed with error: #{result.errors}"
       end
+    end
+
+    def self.image(**kwargs)
+      new(file_nature: :image, **kwargs)
     end
   end
 end
