@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-# Used for validating the info we put into FileInformation
+# Used for reading the exif of TIFF and JPEG files
 gem 'exifr'
 
 group :development do
