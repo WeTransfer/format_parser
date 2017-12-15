@@ -57,7 +57,7 @@ class FormatParser::RemoteIO
     # We use a GET and not a HEAD request followed by a GET because
     # S3 does not allow HEAD requests if you only presigned your URL for GETs
     response = Faraday.get(@uri, nil, range: "bytes=%d-%d" % [range.begin, range.end])
-
+    $stderr.puts response.inspect
     # Figure out of the server supports content ranges, if it doesn't we have no
     # business working with that server
     range_header = response['Content-Range']
@@ -69,7 +69,10 @@ class FormatParser::RemoteIO
     case response.status
     when 200, 206
       # S3 returns 200 when you request a Range that is fully satisfied by the entire object,
-      # we take that into account here. For other servers, 206 is the expected response code
+      # we take that into account here. For other servers, 206 is the expected response code.
+      # Also, if we request a _larger_ range than what can be satisfied by the server,
+      # the response is going to only contain what _can_ be sent and the status is also going
+      # to be 206
       return [size, response.body]
     when 416
       # We return `nil` as the body if we tried to read past the end of the IO,
