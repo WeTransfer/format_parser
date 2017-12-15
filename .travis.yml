@@ -1,0 +1,11 @@
+rvm:
+- 2.3.0
+- 2.4.1
+- jruby-9.0
+sudo: false
+cache: bundler
+matrix:
+  allow_failures:
+    - rvm: jruby-9.0
+script:
+  - bundle exec rspec
