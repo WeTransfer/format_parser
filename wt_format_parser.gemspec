@@ -24,8 +24,9 @@ Gem::Specification.new do |spec|
     raise "RubyGems 2.0 or newer is required to protect against public gem pushes."
   end
 
-  spec.files         = `git ls-files -z`.split("\x0").reject do |f|
-    f.match(%r{^(fixtures)/})
+  files = `git ls-files -z`.split("\x0").reject do |f|
+    # Make sure large fixture files are not packaged with the gem every time
+    f.match(%r{^spec/fixtures/})
   end
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
