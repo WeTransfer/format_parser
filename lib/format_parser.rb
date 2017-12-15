@@ -3,6 +3,7 @@ require 'thread'
 module FormatParser
   require_relative 'file_information'
   require_relative 'io_utils'
+  require_relative 'remote_io'
   require_relative 'care'
 
   PARSER_MUX = Mutex.new
@@ -12,6 +13,10 @@ module FormatParser
       @parsers ||= []
       @parsers << object_responding_to_new
     end
+  end
+
+  def self.parse_http(url)
+    parse(RemoteIO.new(url))
   end
 
   def self.parse(io)
