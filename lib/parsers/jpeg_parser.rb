@@ -10,9 +10,9 @@ class FormatParser::JPEGParser
   def information_from_io(io)
     @buf = io
     @buf.seek(0)
-    @width  = nil
-    @height = nil
-    @angle  = nil
+    @width             = nil
+    @height            = nil
+    @orientation       = 1
     scan
   end
 
@@ -41,21 +41,28 @@ class FormatParser::JPEGParser
         scan_start_of_frame
       when EOI_MARKER, SOS_MARKER
         break
-#     when APP1_MARKER
-#       scan_app1_frame
+      when APP1_MARKER
+        scan_app1_frame
       else
         skip_frame
       end
 
       # Return at the earliest possible opportunity
-      if @width && @height
+      if @width && @height && @orientation
         file_info = FormatParser::FileInformation.image(
           file_type: :jpg,
           width_px: @width,
           height_px: @height,
+          orientation: @orientation
         )
         return file_info
-
+      elsif @width && @height
+        file_info = FormatParser::FileInformation.image(
+          file_type: :jpg,
+          width_px: @width,
+          height_px: @height
+        )
+        return file_info
       end
     end
     nil # We could not parse anything
@@ -85,26 +92,23 @@ class FormatParser::JPEGParser
   end
 
   def scan_app1_frame
-    frame = read_frame
-    if frame[0..5] == "Exif\000\000"
-      scanner = ExifScanner.new(frame[6..-1])
-      if scanner.scan
-        case scanner.orientation
-        when :bottom_right
-          @angle = 180
-        when :left_top, :right_top
-          @angle = 90
-        when :right_bottom, :left_bottom
-          @angle = 270
-        end
+    frame = @buf.read(8)
+    if frame.include?("Exif")
+      scanner = FormatParser::EXIFParser.new(@buf)
+      exif_data = scanner.scan_jpeg
+      if exif_data
+        orientation_raw = exif_data.exif.orientation
+        @exif_output = exif_data
+        @orientation = exif_data.exif.orientation.to_i unless orientation_raw.nil?
+        @width = exif_data.exif.pixel_x_dimension || @exif_output.height
+        @height = exif_data.exif.pixel_y_dimension || @exif_output.width
       end
     end
-  rescue ExifScanner::ScanError
   end
 
   def read_frame
     length = read_short - 2
-    read_data(length)
+    safe_read(@buf, length)
   end
 
   def skip_frame

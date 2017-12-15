@@ -34,7 +34,7 @@ module FormatParser
 
     # The angle by which the camera was rotated when taking the picture
     # (affects display width and height)
-    attr_accessor :exif_orientation_angle
+    attr_accessor :orientation
 
     # Whether the image has transparency (or an alpha channel)
     attr_accessor :has_transparency

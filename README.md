@@ -1,7 +1,7 @@
 # format_parser
 
-is a Ruby library for prying open files you can convert to a previewable format, such as video, image and audio files. It includes
-a number of parser modules that try to recover metadata useful for post-processing and layout while reading the absolute
+is a Ruby library for prying open video, image, document, and audio files.
+It includes a number of parser modules that try to recover metadata useful for post-processing and layout while reading the absolute
 minimum amount of data possible.
 
 `format_parser` is inspired by [imagesize,](https://rubygems.org/gem/imagesize) [fastimage](https://github.com/sdsykes/fastimage)
@@ -13,14 +13,14 @@ Pass an IO object that responds to `read` and `seek` to `FormatParser`.
 
 ```ruby
 file_info = FormatParser.parse(File.open("myimage.jpg", "rb"))
-file_info.file_nature           #=> :image
-file_info.file_format           #=> :JPG
-file_info.width_px              #=> 320
-file_info.height_px             #=> 240
-file_info.exif_rotation_degrees #=> 90
-file_info.display_aspect_ratio  #=> [3, 4]
-file_info.image_channel_names   #=> ["R", "G", "B"]
-file_info.bits_per_channel      #=> 8
+-file_info.file_nature           #=> :image
+-file_info.file_format           #=> :JPG
+-file_info.width_px              #=> 320
+-file_info.height_px             #=> 240
+-file_info.exif_rotation_degrees #=> 90
+-file_info.display_aspect_ratio  #=> [3, 4]
+-file_info.image_channel_names   #=> ["R", "G", "B"]
+-file_info.bits_per_channel      #=> 8
 ```
 If nothing is detected, the result will be `nil`.
 
