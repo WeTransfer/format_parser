@@ -6,8 +6,8 @@ require 'format_parser/version'
 Gem::Specification.new do |spec|
   spec.name          = "wt_format_parser"
   spec.version       = FormatParser::VERSION
-  spec.authors       = ["Julik Tarkhanov, Noah Berman"]
-  spec.email         = ["me@julik.nl, noah@wetransfer.com"]
+  spec.authors       = ["Noah Berman, Julik Tarkhanov"]
+  spec.email         = ["noah@wetransfer.com, me@julik.nl"]
 
   spec.summary       = "A library for efficient parsing of file metadata"
   spec.description   = "A Ruby library for prying open files you can convert to a previewable format, such as video, image and audio files. It includes
