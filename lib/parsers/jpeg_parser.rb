@@ -63,7 +63,6 @@ class FormatParser::JPEGParser
           height_px: @height
         )
         return file_info
-
       end
     end
     nil # We could not parse anything
@@ -116,4 +115,6 @@ class FormatParser::JPEGParser
     length = read_short - 2
     advance(length)
   end
+
+  FormatParser.register_parser_constructor self
 end

@@ -10,6 +10,7 @@ describe FormatParser::GIFParser do
 
         expect(parsed.file_nature).to eq(:image)
         expect(parsed.file_type).to eq(:gif)
+        expect(parsed.color_mode).to eq(:indexed)
 
         expect(parsed.width_px).to be_kind_of(Integer)
         expect(parsed.width_px).to be > 0

@@ -67,4 +67,5 @@ class FormatParser::TIFFParser
     [@width, @height]
   end
 
+  FormatParser.register_parser_constructor self
 end
