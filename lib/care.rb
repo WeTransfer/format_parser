@@ -47,7 +47,12 @@ class Care
     # recovered from the given `io` at the given offset.
     # If the IO has been exhausted, `nil` will be returned
     # instead. Will use the cached pages where available,
+    # or fetch pages where necessary
     def byteslice(io, at, n_bytes)
+      if n_bytes < 1
+        raise ArgumentError, "The number of bytes to fetch must be a positive Integer" 
+      end
+
       first_page = at / @page_size
       last_page = (at + n_bytes) / @page_size
 
@@ -57,22 +62,24 @@ class Care
       # us - it is much easier to address that string instead of piecing
       # the output together page by page, and joining arrays of strings
       # is supposed to be optimized.
-      slab = if relevant_pages.length == 1
+      slab = if relevant_pages.length > 1
+        # If our read overlaps multiple pages, we do have to join them, this is
+        # the general case
+        relevant_pages.join
+      else # We only have one page
         # Optimize a little. If we only have one page that we need to read from
         # - which is likely going to be the case *often* we can avoid allocating
         # a new string for the joined pages and juse use the only page
         # directly as the slab. Since it might contain a `nil` and we do
         # not join (which casts nils to strings) we take care of that too
         relevant_pages.first || ''
-      else
-        # If our read overlaps multiple pages, we do have to join them, this is
-        # the general case
-        relevant_pages.join
       end
 
       offset_in_slab = at % @page_size
       slice = slab.byteslice(offset_in_slab, n_bytes)
 
+      # Returning an empty string from read() is very confusing for the caller,
+      # and no builtins do this - if we are at EOF we should return nil
       if slice && !slice.empty?
         slice
       else
@@ -91,18 +98,26 @@ class Care
         return nil
       end
 
-      @pages[page_i] ||= begin
-        io.seek(page_i * @page_size)
-        read_result = io.read(@page_size)
+      @pages[page_i] ||= read_page(io, page_i)
+    end
 
-        if read_result.nil?
-          if @lowest_known_empty_page.nil? || @lowest_known_empty_page > page_i
-            @lowest_known_empty_page = page_i
-          end
+    def read_page(io, page_i)
+      io.seek(page_i * @page_size)
+      read_result = io.read(@page_size)
+
+      if read_result.nil?
+        # If the read went past the end of the IO the read result will be nil,
+        # so we know our IO is exhausted here
+        if @lowest_known_empty_page.nil? || @lowest_known_empty_page > page_i
+          @lowest_known_empty_page = page_i
         end
-
-        read_result
+      elsif read_result.bytesize < @page_size
+        # If we read less than we initially wanted we know there are no pages
+        # to read following this one, so we can also optimize
+        @lowest_known_empty_page = page_i + 1
       end
+        
+      read_result
     end
   end
 end
