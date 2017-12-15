@@ -59,16 +59,16 @@ class FormatParser::RemoteIO
     # combine the first GET of a segment and retrieving the size of the resource
     response = Faraday.get(@uri, nil, range: "bytes=%d-%d" % [range.begin, range.end])
 
-    # Figure out of the server supports content ranges, if it doesn't we have no
-    # business working with that server
-    range_header = response['Content-Range']
-    raise InvalidRequest, "No range support at #{@url}" unless range_header
-
-    # "Content-Range: bytes 0-0/307404381" is how the response header is structured
-    size = range_header[/\/(\d+)$/, 1].to_i
-
     case response.status
     when 200, 206
+      # Figure out of the server supports content ranges, if it doesn't we have no
+      # business working with that server
+      range_header = response.headers['Content-Range']
+      raise InvalidRequest, "No range support at #{@url}" unless range_header
+
+      # "Content-Range: bytes 0-0/307404381" is how the response header is structured
+      size = range_header[/\/(\d+)$/, 1].to_i
+
       # S3 returns 200 when you request a Range that is fully satisfied by the entire object,
       # we take that into account here. For other servers, 206 is the expected response code.
       # Also, if we request a _larger_ range than what can be satisfied by the server,
@@ -78,7 +78,8 @@ class FormatParser::RemoteIO
     when 416
       # We return `nil` as the body if we tried to read past the end of the IO,
       # which satisfies the Ruby IO convention. The caller should deal with `nil` being the result of a read() 
-      return [size, nil]
+      # S3 will also handily _not_ supply us with the Content-Range of the actual resource
+      return [nil, nil]
     when 500..599
       raise IntermittentFailure, "Server at #{@url} replied with a #{response.status} and we might want to retry"
     else
