@@ -77,7 +77,7 @@ class FormatParser::RemoteIO
       return [size, response.body]
     when 416
       # We return `nil` as the body if we tried to read past the end of the IO,
-      # which satisfies the Ruby IO convention. The caller should deal with `nil` being the result of a read() 
+      # which satisfies the Ruby IO convention. The caller should deal with `nil` being the result of a read()
       # S3 will also handily _not_ supply us with the Content-Range of the actual resource
       return [nil, nil]
     when 500..599
