@@ -4,8 +4,7 @@ class FormatParser::EXIFParser
   include FormatParser::IOUtils
 
   # Squash exifr's invalid date warning since we do not use that data.
-  logger = Logger.new(STDERR)
-  logger.level = Logger::FATAL
+  logger = Logger.new(nil)
   EXIFR.logger = logger
 
 
@@ -23,7 +22,7 @@ class FormatParser::EXIFParser
     @exif_data.rewind
     EXIFR::JPEG.new(@exif_data)
   end
-  
+
   def scan_tiff
     @exif_data.rewind
     EXIFR::TIFF.new(@exif_data)
