@@ -55,9 +55,10 @@ class FormatParser::RemoteIO
   # @return [String] the response body of the ranged request
   def request_range(range)
     # We use a GET and not a HEAD request followed by a GET because
-    # S3 does not allow HEAD requests if you only presigned your URL for GETs
+    # S3 does not allow HEAD requests if you only presigned your URL for GETs, so we
+    # combine the first GET of a segment and retrieving the size of the resource
     response = Faraday.get(@uri, nil, range: "bytes=%d-%d" % [range.begin, range.end])
-    $stderr.puts response.inspect
+
     # Figure out of the server supports content ranges, if it doesn't we have no
     # business working with that server
     range_header = response['Content-Range']
