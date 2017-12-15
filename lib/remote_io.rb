@@ -64,7 +64,7 @@ class FormatParser::RemoteIO
       # Figure out of the server supports content ranges, if it doesn't we have no
       # business working with that server
       range_header = response.headers['Content-Range']
-      raise InvalidRequest, "No range support at #{@url}" unless range_header
+      raise InvalidRequest, "No range support at #{@uri}" unless range_header
 
       # "Content-Range: bytes 0-0/307404381" is how the response header is structured
       size = range_header[/\/(\d+)$/, 1].to_i
@@ -81,9 +81,9 @@ class FormatParser::RemoteIO
       # S3 will also handily _not_ supply us with the Content-Range of the actual resource
       return [nil, nil]
     when 500..599
-      raise IntermittentFailure, "Server at #{@url} replied with a #{response.status} and we might want to retry"
+      raise IntermittentFailure, "Server at #{@uri} replied with a #{response.status} and we might want to retry"
     else
-      raise InvalidRequest, "Server at #{@url} replied with a #{response.status} and refused our request"
+      raise InvalidRequest, "Server at #{@uri} replied with a #{response.status} and refused our request"
     end
   end
 end
