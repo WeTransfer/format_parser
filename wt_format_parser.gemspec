@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'format_parser/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "format_parser"
+  spec.name          = "wt_format_parser"
   spec.version       = FormatParser::VERSION
   spec.authors       = ["Julik Tarkhanov, Noah Berman"]
   spec.email         = ["me@julik.nl, noah@wetransfer.com"]
