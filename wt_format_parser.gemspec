@@ -34,8 +34,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'exifr', '~> 1.0'
   spec.add_dependency 'faraday', '~> 0.13'
-  spec.add_dependency 'dry-validation', '~> 0.11'
-
+  
   spec.add_development_dependency 'rspec', '~> 3.0'
   spec.add_development_dependency 'rake', '~> 12'
   spec.add_development_dependency 'simplecov', '~> 0.15'

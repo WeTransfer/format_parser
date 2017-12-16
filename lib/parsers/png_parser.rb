@@ -57,7 +57,7 @@ class FormatParser::PNGParser
 
     # dry-validation won't let booleans be filled with nil so we have to set
     # has_animation to false by default
-    has_animation = false
+    has_animation = nil
     num_frames = nil
     loop_n_times = nil
 
