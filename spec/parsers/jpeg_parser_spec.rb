@@ -1,14 +1,13 @@
 require 'spec_helper'
 
-describe FormatParser::TIFFParser do
+describe FormatParser::JPEGParser do
   describe 'is able to parse all the examples from FastImage' do
-    Dir.glob(__dir__ + '/fixtures/TIFF/*.tif').each do |tiff_path|
-      it "is able to parse #{File.basename(tiff_path)}" do
-        parsed = subject.information_from_io(File.open(tiff_path, 'rb'))
-
+    Dir.glob(fixtures_dir + '/*.jpg').each do |jpeg_path|
+      it "is able to parse #{File.basename(jpeg_path)}" do
+        parsed = subject.information_from_io(File.open(jpeg_path, 'rb'))
         expect(parsed).not_to be_nil
         expect(parsed.file_nature).to eq(:image)
-        expect(parsed.file_type).to eq(:tif)
+        expect(parsed.file_type).to eq(:jpg)
 
         expect(parsed.width_px).to be_kind_of(Integer)
         expect(parsed.width_px).to be > 0
@@ -19,10 +18,10 @@ describe FormatParser::TIFFParser do
     end
   end
 
-  describe 'is able to parse all the TIFF exif examples from FastImage' do
-    Dir.glob(__dir__ + '/fixtures/exif-orientation-testimages/tiff-*/*.tif').each do |tiff_path|
-      it "is able to parse #{File.basename(tiff_path)}" do
-        parsed = subject.information_from_io(File.open(tiff_path, 'rb'))
+  describe 'is able to parse all the JPEG exif examples from FastImage' do
+    Dir.glob(fixtures_dir + '/exif-orientation-testimages/jpg/*.jpg').each do |jpeg_path|
+      it "is able to parse #{File.basename(jpeg_path)}" do
+        parsed = subject.information_from_io(File.open(jpeg_path, 'rb'))
         expect(parsed).not_to be_nil
 
         expect(parsed.orientation).to be_kind_of(Integer)

@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe FormatParser::PSDParser do
   describe 'is able to parse all the examples from FastImage' do
-    Dir.glob(__dir__ + '/fixtures/*.psd').each do |psd_path|
+    Dir.glob(fixtures_dir + '/*.psd').each do |psd_path|
       it "is able to parse #{File.basename(psd_path)}" do
         parsed = subject.information_from_io(File.open(psd_path, 'rb'))
 

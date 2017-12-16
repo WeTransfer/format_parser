@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe FormatParser::DPXParser do
   describe 'with Depix example files' do
-    Dir.glob(__dir__ + '/fixtures/dpx/*.*').each do |dpx_path|
+    Dir.glob(fixtures_dir + '/dpx/*.*').each do |dpx_path|
       it "is able to parse #{File.basename(dpx_path)}" do
         parsed = subject.information_from_io(File.open(dpx_path, 'rb'))
 
@@ -20,7 +20,7 @@ describe FormatParser::DPXParser do
     end
 
     it 'correctly reads pixel dimensions' do
-      fi = File.open(__dir__ + '/fixtures/dpx/026_FROM_HERO_TAPE_5-3-1_MOV.0029.dpx', 'rb')
+      fi = File.open(fixtures_dir + '/dpx/026_FROM_HERO_TAPE_5-3-1_MOV.0029.dpx', 'rb')
       parsed = subject.information_from_io(fi)
       expect(parsed.width_px).to eq(1920)
       expect(parsed.height_px).to eq(1080)

@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe FormatParser::GIFParser do
   describe 'is able to parse all the examples from FastImage' do
-    Dir.glob(__dir__ + '/fixtures/*.gif').each do |gif_path|
+    Dir.glob(fixtures_dir + '/*.gif').each do |gif_path|
       it "is able to parse #{File.basename(gif_path)}" do
         parsed = subject.information_from_io(File.open(gif_path, 'rb'))
 
@@ -23,7 +23,7 @@ describe FormatParser::GIFParser do
 
   describe 'is able to correctly parse our own examples' do
     it 'is able to parse the animated GIF' do
-      gif_path = __dir__ + "/fixtures/GIF/anim.gif"
+      gif_path = fixtures_dir + "GIF/anim.gif"
 
       parsed = subject.information_from_io(File.open(gif_path, 'rb'))
       expect(parsed).not_to be_nil

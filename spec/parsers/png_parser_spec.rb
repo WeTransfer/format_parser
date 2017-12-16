@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe FormatParser::PNGParser do
   describe 'is able to parse all the examples from FastImage' do
-    Dir.glob(__dir__ + '/fixtures/*.png').each do |png_path|
+    Dir.glob(fixtures_dir + '/*.png').each do |png_path|
       it "is able to parse #{File.basename(png_path)}" do
         parsed = subject.information_from_io(File.open(png_path, 'rb'))
         expect(parsed).not_to be_nil
@@ -20,7 +20,7 @@ describe FormatParser::PNGParser do
   end
 
   it 'is able to parse an animated PNG' do
-    gif_path = __dir__ + "/fixtures/PNG/anim.png"
+    gif_path = fixtures_dir + "PNG/anim.png"
 
     parsed = subject.information_from_io(File.open(gif_path, 'rb'))
     expect(parsed).not_to be_nil
