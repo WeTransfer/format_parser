@@ -1,4 +1,7 @@
 module FormatParser::IOUtils
+  class InvalidRead < ArgumentError
+  end
+
   def safe_read(io, n)
     if n.nil?
       raise ArgumentError, "Unbounded reads are not supported"
@@ -6,10 +9,10 @@ module FormatParser::IOUtils
     buf = io.read(n)
 
     if !buf
-      raise "We wanted to read #{n} bytes from the IO, but the IO is at EOF"
+      raise InvalidRead, "We wanted to read #{n} bytes from the IO, but the IO is at EOF"
     end
     if buf.bytesize != n
-      raise "We wanted to read #{n} bytes from the IO, but we got #{buf.bytesize} instead"
+      raise InvalidRead, "We wanted to read #{n} bytes from the IO, but we got #{buf.bytesize} instead"
     end
 
     buf
@@ -23,7 +26,7 @@ module FormatParser::IOUtils
     return if n == 0
 
     if n < 0
-      raise ArgumentError, "Negative skips are not supported"
+      raise InvalidRead, "Negative skips are not supported"
     end
 
     if io.respond_to?(:pos)
