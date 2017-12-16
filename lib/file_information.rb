@@ -1,18 +1,6 @@
-require 'dry-validation'
-
 module FormatParser
   class FileInformation
     class ParsingError < RuntimeError
-    end
-
-    VALID_FILE_NATURES = [:image]
-    SCHEMA = Dry::Validation.Schema do
-      required(:file_nature).filled(included_in?: VALID_FILE_NATURES)
-      required(:file_type).filled
-      optional(:width_px).filled(:int?) # and > 0
-      optional(:height_px).filled(:int?) # and > 0
-      optional(:has_multiple_frames).filled(:bool?)
-      optional(:image_orientation).filled(:int?)
     end
 
     # What kind of file is it?
@@ -58,13 +46,7 @@ module FormatParser
 
     # Only permits assignments via defined accessors
     def initialize(**attributes)
-      result = SCHEMA.call(**attributes)
-      if result.success?
-        attributes = result.to_h
-        attributes.map { |(k, v)| public_send("#{k}=", v) }
-      else
-        raise ParsingError, "Parsing failed with error: #{result.errors}"
-      end
+      attributes.map { |(k, v)| public_send("#{k}=", v) }
     end
 
     def self.image(**kwargs)
