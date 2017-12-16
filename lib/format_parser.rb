@@ -21,14 +21,24 @@ module FormatParser
 
   def self.parse(io)
     io = Care::IOWrapper.new(io) unless io.is_a?(Care::IOWrapper)
+
+    # Always instantiate parsers fresh for each input, since they might
+    # contain instance variables which otherwise would have to be reset
+    # between invocations, and would complicate threading situations
     parsers = @parsers.map(&:new)
+
     parsers.each do |parser|
-      if info = parser.information_from_io(io)
-        return info
+      io.seek(0) # We need to rewind for each parser, anew
+      begin
+        if info = parser.information_from_io(io)
+          return info
+        end
+      rescue FormatParser::IOUtils::InvalidRead
+        # There was not enough data for this parser to work on,
+        # and it triggered an error
       end
     end
-
-    raise "No parser could parse #{io.inspect}"
+    nil # Nothing matched
   end
 
   Dir.glob(__dir__ + '/parsers/*.rb').sort.each do |parser_file|
