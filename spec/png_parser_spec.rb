@@ -18,7 +18,7 @@ describe FormatParser::PNGParser do
       end
     end
   end
-  
+
   it 'is able to parse an animated PNG' do
     gif_path = __dir__ + "/fixtures/PNG/anim.png"
 

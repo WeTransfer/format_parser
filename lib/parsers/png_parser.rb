@@ -12,7 +12,7 @@ class FormatParser::PNGParser
     4 => true, # Grayscale with alpha
     6 => true,
   }
-  
+
   include FormatParser::IOUtils
 
   def chunk_length_and_type(io)
@@ -22,7 +22,7 @@ class FormatParser::PNGParser
     ]
   end
 
-    
+
   def information_from_io(io)
     io.seek(0)
     magic_bytes = safe_read(io, PNG_HEADER_BYTES.bytesize)
@@ -55,7 +55,9 @@ class FormatParser::PNGParser
     # we are dealing with an APNG.
     safe_skip(io, 4)
 
-    has_animation = nil
+    # dry-validation won't let booleans be filled with nil so we have to set
+    # has_animation to false by default
+    has_animation = false
     num_frames = nil
     loop_n_times = nil
 
