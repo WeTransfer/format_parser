@@ -13,14 +13,14 @@ Pass an IO object that responds to `read` and `seek` to `FormatParser`.
 
 ```ruby
 file_info = FormatParser.parse(File.open("myimage.jpg", "rb"))
--file_info.file_nature           #=> :image
--file_info.file_format           #=> :JPG
--file_info.width_px              #=> 320
--file_info.height_px             #=> 240
--file_info.exif_rotation_degrees #=> 90
--file_info.display_aspect_ratio  #=> [3, 4]
--file_info.image_channel_names   #=> ["R", "G", "B"]
--file_info.bits_per_channel      #=> 8
+file_info.file_nature           #=> :image
+file_info.file_format           #=> :JPG
+file_info.width_px              #=> 320
+file_info.height_px             #=> 240
+file_info.exif_rotation_degrees #=> 90
+file_info.display_aspect_ratio  #=> [3, 4]
+file_info.image_channel_names   #=> ["R", "G", "B"]
+file_info.bits_per_channel      #=> 8
 ```
 If nothing is detected, the result will be `nil`.
 
