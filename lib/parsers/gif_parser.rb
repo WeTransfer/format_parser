@@ -5,7 +5,6 @@ class FormatParser::GIFParser
   include FormatParser::IOUtils
 
   def information_from_io(io)
-    io.seek(0)
     header = safe_read(io, 6)
     return unless HEADERS.include?(header)
 

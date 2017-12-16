@@ -9,7 +9,6 @@ class FormatParser::JPEGParser
 
   def information_from_io(io)
     @buf = io
-    @buf.seek(0)
     @width             = nil
     @height            = nil
     @orientation       = 1

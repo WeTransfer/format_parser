@@ -24,7 +24,6 @@ class FormatParser::PNGParser
 
 
   def information_from_io(io)
-    io.seek(0)
     magic_bytes = safe_read(io, PNG_HEADER_BYTES.bytesize)
     return unless magic_bytes == PNG_HEADER_BYTES
 
