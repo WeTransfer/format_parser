@@ -49,3 +49,7 @@ Therefore we adapt the following approaches:
 * Minimal dependencies, and if dependencies are to be used they should be very stable and low-level
 * Where possible, use small subsets of full-feature format parsers since we only care about a small subset of the data
 * Avoid using C libraries which are likely to contain buffer overflows/underflows - we stay memory safe
+
+## Fixture Sources
+
+- fixture.aiff was created by one of the project maintainers and is MIT licensed
