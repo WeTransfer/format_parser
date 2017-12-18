@@ -33,7 +33,7 @@ class FormatParser::AIFFParser
     FormatParser::FileInformation.new(
       file_nature: :audio,
       num_audio_channels: channels,
-      audio_sample_rate_hz: sample_rate.to_i
+      audio_sample_rate_hz: sample_rate.to_i,
       media_duration_frames: sample_frames,
       media_duration_seconds: duration_in_seconds,
     )
