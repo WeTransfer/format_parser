@@ -97,8 +97,8 @@ class FormatParser::JPEGParser
       if scanner.scan_image_exif
         @exif_output = scanner.exif_data
         @orientation = scanner.orientation unless scanner.orientation.nil?
-        @width = exif_data.pixel_x_dimension || @exif_output.height
-        @height = exif_data.pixel_y_dimension || @exif_output.width
+        @width = @exif_output.pixel_x_dimension if @exif_output
+        @height = @exif_output.pixel_y_dimension if @exif_output
       end
     end
   end
