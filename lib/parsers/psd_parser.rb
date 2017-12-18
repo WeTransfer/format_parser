@@ -3,7 +3,6 @@ class FormatParser::PSDParser
   include FormatParser::IOUtils
 
   def information_from_io(io)
-    io.seek(0)
     magic_bytes = safe_read(io, 4).unpack("C4")
 
     return unless magic_bytes == PSD_HEADER

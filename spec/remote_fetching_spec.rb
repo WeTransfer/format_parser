@@ -14,7 +14,7 @@ describe 'Fetching data from HTTP remotes' do
        ]
     }
     @server = WEBrick::HTTPServer.new(options)
-    @server.mount '/', WEBrick::HTTPServlet::FileHandler, __dir__ + '/fixtures'
+    @server.mount '/', WEBrick::HTTPServlet::FileHandler, fixtures_dir
     trap("INT") { @server.stop }
     @server_thread = Thread.new { @server.start }
   end
