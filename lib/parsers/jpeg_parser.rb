@@ -93,14 +93,12 @@ class FormatParser::JPEGParser
   def scan_app1_frame
     frame = @buf.read(8)
     if frame.include?("Exif")
-      scanner = FormatParser::EXIFParser.new(@buf)
-      exif_data = scanner.scan_jpeg
-      if exif_data
-        orientation_raw = exif_data.exif.orientation
-        @exif_output = exif_data
-        @orientation = exif_data.exif.orientation.to_i unless orientation_raw.nil?
-        @width = exif_data.exif.pixel_x_dimension || @exif_output.height
-        @height = exif_data.exif.pixel_y_dimension || @exif_output.width
+      scanner = FormatParser::EXIFParser.new(:jpeg, @buf)
+      if scanner.scan_image_exif
+        @exif_output = scanner.exif_data
+        @orientation = scanner.orientation unless scanner.orientation.nil?
+        @width = exif_data.pixel_x_dimension || @exif_output.height
+        @height = exif_data.pixel_y_dimension || @exif_output.width
       end
     end
   end
