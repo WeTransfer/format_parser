@@ -11,7 +11,7 @@ class FormatParser::JPEGParser
     @buf = io
     @width             = nil
     @height            = nil
-    @orientation       = 1
+    @orientation       = nil
     scan
   end
 

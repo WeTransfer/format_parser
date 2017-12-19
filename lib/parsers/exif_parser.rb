@@ -1,4 +1,5 @@
 require 'exifr/jpeg'
+require 'exifr/tiff'
 
 class FormatParser::EXIFParser
   include FormatParser::IOUtils
