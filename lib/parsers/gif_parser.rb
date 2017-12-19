@@ -45,5 +45,5 @@ class FormatParser::GIFParser
     )
   end
 
-  FormatParser.register_parser_constructor self
+  FormatParser.register_parser_constructor self, :gif
 end
