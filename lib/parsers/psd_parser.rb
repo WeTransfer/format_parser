@@ -17,5 +17,5 @@ class FormatParser::PSDParser
     )
   end
 
-  FormatParser.register_parser_constructor self
+  FormatParser.register_parser_constructor self, :psd
 end

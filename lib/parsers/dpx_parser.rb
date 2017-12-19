@@ -139,5 +139,5 @@ class FormatParser::DPXParser
     )
   end
 
-  FormatParser.register_parser_constructor self
+  FormatParser.register_parser_constructor self, :dpx
 end

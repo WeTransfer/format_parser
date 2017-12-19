@@ -115,5 +115,5 @@ class FormatParser::JPEGParser
     advance(length)
   end
 
-  FormatParser.register_parser_constructor self
+  FormatParser.register_parser_constructor self, :jpeg
 end

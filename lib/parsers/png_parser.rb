@@ -79,5 +79,5 @@ class FormatParser::PNGParser
     )
   end
 
-  FormatParser.register_parser_constructor self
+  FormatParser.register_parser_constructor self, :png
 end
