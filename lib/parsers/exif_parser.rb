@@ -8,7 +8,7 @@ class FormatParser::EXIFParser
   logger = Logger.new(nil)
   EXIFR.logger = logger
 
-  attr_accessor :exif_data, :orientation
+  attr_accessor :exif_data, :orientation, :width, :height
 
   ORIENTATIONS = [
     :top_left,
@@ -26,9 +26,12 @@ class FormatParser::EXIFParser
     @file_data = file_data
     @exif_data = nil
     @orientation = nil
+    @height = nil
+    @width = nil
   end
 
   def scan_image_exif
+
     # Without the magic bytes EXIFR throws an error
     @file_data.rewind
     raw_exif_data = EXIFR::JPEG.new(@file_data) if @filetype == :jpeg
@@ -37,6 +40,8 @@ class FormatParser::EXIFParser
     # we make the raw exif result available
     @exif_data = raw_exif_data
     @orientation = orientation_parser(raw_exif_data)
+    @width = @exif_data.width
+    @height = @exif_data.height
   end
 
   def orientation_parser(raw_exif_data)
