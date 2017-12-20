@@ -1,24 +1,56 @@
 class FormatParser::AIFFParser
   include FormatParser::IOUtils
 
+  # Known chunk types we can omit when parsing,
+  # grossly lifted from http://www.muratnkonar.com/aiff/
+  KNOWN_CHUNKS = [
+    'COMT',
+    'INST',
+    'MARK',
+    'SKIP',
+    'SSND',
+    'MIDI',
+    'AESD',
+    'APPL',
+    'NAME',
+    'AUTH',
+    '(c) ', # yes it is a thing
+    'ANNO',
+  ]
+
   def information_from_io(io)
     io.seek(0)
     form_chunk_type, chunk_size = safe_read(io, 8).unpack('a4N')
-
     return unless form_chunk_type == "FORM" && chunk_size > 4
 
     fmt_chunk_type = safe_read(io, 4)
+    
     return unless fmt_chunk_type == "AIFF"
 
-    # The ID is always COMM. The chunkSize field is the number of bytes in the
-    # chunk. This does not include the 8 bytes used by ID and Size fields. For
-    # the Common Chunk, chunkSize should always 18 since there are no fields of
-    # variable length (but to maintain compatibility with possible future
-    # extensions, if the chunkSize is > 18, you should always treat those extra
-    # bytes as pad bytes).
-    comm_chunk_type, comm_chunk_size = safe_read(io, 8).unpack('a4N')
-    return unless comm_chunk_type == "COMM" && comm_chunk_size == 18
+    # There might be COMT chunks, for example in Logic exports
+    loop do
+      chunk_type, chunk_size = safe_read(io, 8).unpack('a4N')
+      case chunk_type
+      when 'COMM'
+        # The ID is always COMM. The chunkSize field is the number of bytes in the
+        # chunk. This does not include the 8 bytes used by ID and Size fields. For
+        # the Common Chunk, chunkSize should always 18 since there are no fields of
+        # variable length (but to maintain compatibility with possible future
+        # extensions, if the chunkSize is > 18, you should always treat those extra
+        # bytes as pad bytes).
+        return unpack_comm_chunk(io)
+      when *KNOWN_CHUNKS
+        # We continue looping only if we encountered something that looks like
+        # a valid AIFF chunk type - skip the size and continue
+        safe_skip(io, chunk_size)
+        next
+      else # This most likely not an AIFF
+        return nil
+      end
+    end
+  end
 
+  def unpack_comm_chunk(io)
     # Parse the COMM chunk
     channels, sample_frames, sample_size, sample_rate_extended = safe_read(io, 2 + 4 + 2 + 10).unpack('nNna10')
     sample_rate = unpack_extended_float(sample_rate_extended)
@@ -32,6 +64,7 @@ class FormatParser::AIFFParser
 
     FormatParser::FileInformation.new(
       file_nature: :audio,
+      file_type: :aiff,
       num_audio_channels: channels,
       audio_sample_rate_hz: sample_rate.to_i,
       media_duration_frames: sample_frames,
