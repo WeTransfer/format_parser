@@ -17,16 +17,13 @@ file_info.file_nature           #=> :image
 file_info.file_format           #=> :JPG
 file_info.width_px              #=> 320
 file_info.height_px             #=> 240
-file_info.exif_rotation_degrees #=> 90
-file_info.display_aspect_ratio  #=> [3, 4]
-file_info.image_channel_names   #=> ["R", "G", "B"]
-file_info.bits_per_channel      #=> 8
+file_info.orientation_raw       #=> 1
 ```
 If nothing is detected, the result will be `nil`.
 
 ## Design rationale
 
-We need to recover medatata from various file types, and we need to do so satisfying the following constraints:
+We need to recover metadata from various file types, and we need to do so satisfying the following constraints:
 
 * The data in those files can be malicious and/or incomplete, so we need to be failsafe
 * The data will be fetched from a remote location, so we want to acquire it with as few HTTP requests as possible
@@ -49,3 +46,8 @@ Therefore we adapt the following approaches:
 * Minimal dependencies, and if dependencies are to be used they should be very stable and low-level
 * Where possible, use small subsets of full-feature format parsers since we only care about a small subset of the data
 * Avoid using C libraries which are likely to contain buffer overflows/underflows - we stay memory safe
+
+## Fixture Sources
+
+- MIT licensed fixture files from the FastImage and Dimensions projects
+- fixture.aiff was created by one of the project maintainers and is MIT licensed
