@@ -13,8 +13,9 @@ describe FormatParser do
 
   describe 'with fuzzing' do
     it 'returns nil for all fuzzed results' do
+      r = Random.new
       1024.times do
-        random_blob = StringIO.new(Random.new.bytes(512 * 1024))
+        random_blob = StringIO.new(r.bytes(512 * 1024))
         expect(FormatParser.parse(random_blob)).to be_nil
       end
     end
