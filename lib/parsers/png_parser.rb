@@ -16,10 +16,7 @@ class FormatParser::PNGParser
   include FormatParser::IOUtils
 
   def chunk_length_and_type(io)
-    [
-      safe_read(io, 4).unpack("N").first,
-      safe_read(io, 4),
-    ]
+    safe_read(io, 8).unpack("Na4")
   end
 
 
