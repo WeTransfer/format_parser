@@ -78,7 +78,7 @@ provide as much detail and context as possible.
 
 ## So, you want to contribute a new parser
 
-It is awesome! Please do take care to add example files that fit your parser use case.
+That's awesome! Please do take care to add example files that fit your parser use case.
 Make sure that the file you are adding is licensed for use within an MIT-licensed piece
 of software. Ideally, this file is going to be something you have produced yourself
 and you are permitted to share under the MIT license provisions.
