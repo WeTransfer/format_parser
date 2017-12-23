@@ -69,7 +69,6 @@ Example:
 > causing the bug, and potential solutions (and your opinions on their
 > merits).
 
-
 ## Feature requests
 
 Feature requests are welcome. But take a moment to find out whether your idea
@@ -77,6 +76,17 @@ fits with the scope and aims of the project. It's up to *you* to make a strong
 case to convince the project's developers of the merits of this feature. Please
 provide as much detail and context as possible.
 
+## So, you want to contribute a new parser
+
+It is awesome! Please do take care to add example files that fit your parser use case.
+Make sure that the file you are adding is licensed for use within an MIT-licensed piece
+of software. Ideally, this file is going to be something you have produced yourself
+and you are permitted to share under the MIT license provisions.
+
+When writing a parser, please try to ensure it returns a usable result as soon as possible,
+or no result as soon as possible (once you know the file is not fit for your specific parser).
+Bear in mind that we enforce read budgets per-parser, so you will not be allowed to perform
+too many reads, or perform reads which are too large.
 
 ## Pull requests
 
@@ -144,4 +154,5 @@ project:
 
 **IMPORTANT**: By submitting a patch, you agree to allow the project owner to
 license your work under the same license as that used by the project, which you
-can see by clicking [here](https://github.com/WeTransfer/format_parser/blob/master/LICENSE.txt). 
+can see by clicking [here](https://github.com/WeTransfer/format_parser/blob/master/LICENSE.txt).
+This provision also applies to the test files you include with the changed code as fixtures.
