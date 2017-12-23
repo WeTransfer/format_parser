@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'securerandom'
+
 describe "IOUtils" do
   let(:io) {File.open(fixtures_dir + '/test.jpg', 'rb')}
   include FormatParser::IOUtils 

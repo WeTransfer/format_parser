@@ -3,6 +3,7 @@ require 'thread'
 module FormatParser
   require_relative 'file_information'
   require_relative 'io_utils'
+  require_relative 'read_limiter'
   require_relative 'remote_io'
   require_relative 'care'
 
@@ -28,14 +29,21 @@ module FormatParser
     parsers = @parsers.map(&:new)
 
     parsers.each do |parser|
-      io.seek(0) # We need to rewind for each parser, anew
+      # We need to rewind for each parser, anew
+      io.seek(0)
+      # Limit how many operations the parser can perform
+      limited_io = ReadLimiter.new(io, max_bytes: 512*1024, max_reads: 64*1024, max_seeks: 64*1024)
       begin
-        if info = parser.information_from_io(io)
+        if info = parser.information_from_io(limited_io)
           return info
         end
-      rescue FormatParser::IOUtils::InvalidRead
+      rescue IOUtils::InvalidRead
         # There was not enough data for this parser to work on,
         # and it triggered an error
+      rescue ReadLimiter::BudgetExceeded
+        # The parser tried to read too much - most likely the file structure
+        # caused the parser to go off-track. Strictly speaking we should log this
+        # and examine the file more closely.
       end
     end
     nil # Nothing matched
