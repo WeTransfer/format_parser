@@ -37,4 +37,3 @@ class FormatParser::ReadLimiter
     @io.read(n)
   end
 end
-
