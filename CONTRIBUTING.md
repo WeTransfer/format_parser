@@ -36,13 +36,13 @@ Good bug reports are extremely helpful-thank you!
 
 Guidelines for bug reports:
 
-1. **Use the GitHub issue search** &mdash; check if the issue has already been
+1. **Use the GitHub issue search** – check if the issue has already been
    reported.
 
-2. **Check if the issue has been fixed** &mdash; try to reproduce it using the
+2. **Check if the issue has been fixed** – try to reproduce it using the
    latest `master` branch in the repository.
 
-3. **Isolate the problem** &mdash; create a [reduced test
+3. **Isolate the problem** – create a [reduced test
    case](http://css-tricks.com/reduced-test-cases/) and a live example.
 
 A good bug report shouldn't leave others needing to chase you up for more
