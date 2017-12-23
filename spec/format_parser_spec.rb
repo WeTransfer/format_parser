@@ -16,7 +16,7 @@ describe FormatParser do
       r = Random.new(RSpec.configuration.seed)
       1024.times do
         random_blob = StringIO.new(r.bytes(512 * 1024))
-        expect(FormatParser.parse(random_blob)).to be_nil
+        FormatParser.parse(random_blob) # If there is an error in one of the parsers the example will raise too
       end
     end
   end
