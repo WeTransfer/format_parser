@@ -12,11 +12,11 @@ patches and features.
 
 If you are already familiar with the [Ruby Programming Language](https://www.ruby-lang.org/) you can start contributing code right away, otherwise look for issues labeled with *documentation* or *good first issue* to get started.
 
-If you are interested in contributing code and would like to learn more about the technologies that we use, check out the (non-exhaustive) list below. You can also get in touch with us via an issue or email to get additional information.
+If you are interested in contributing code and would like to learn more about the technologies that we use, check out the (non-exhaustive) list below. You can also get in touch with us via an issue or email to `noah at wetransfer com` or
+`julik at wetransfer com ` to get additional information.
 
  - [ruby](https://ruby-doc.org)
  - [rspec](http://rspec.info/) (for testing)
- - TODO: list what else should go here 
  
 # How do I make a contribution?
 
