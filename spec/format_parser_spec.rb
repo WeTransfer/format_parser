@@ -10,4 +10,14 @@ describe FormatParser do
     d = StringIO.new(Random.new.bytes(1))
     expect(FormatParser.parse(d)).to be_nil
   end
+
+  describe 'with fuzzing' do
+    it "returns either a valid result or a nil for all fuzzed inputs at seed #{RSpec.configuration.seed}" do
+      r = Random.new(RSpec.configuration.seed)
+      1024.times do
+        random_blob = StringIO.new(r.bytes(512 * 1024))
+        FormatParser.parse(random_blob) # If there is an error in one of the parsers the example will raise too
+      end
+    end
+  end
 end

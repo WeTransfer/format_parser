@@ -1,6 +1,9 @@
 class FormatParser::JPEGParser
   include FormatParser::IOUtils
 
+  class InvalidStructure < StandardError
+  end
+
   SOI_MARKER = 0xD8 # start of image
   SOF_MARKERS = [0xC0..0xC3, 0xC5..0xC7, 0xC9..0xCB, 0xCD..0xCF]
   EOI_MARKER  = 0xD9  # end of image
@@ -65,6 +68,8 @@ class FormatParser::JPEGParser
       end
     end
     nil # We could not parse anything
+  rescue InvalidStructure
+    nil # Due to the way JPEG is structured it is possible that some invalid inputs will get caught
   end
 
 
@@ -86,7 +91,7 @@ class FormatParser::JPEGParser
     if length == (size * 3) + 8
       @width, @height = width, height
     else
-      raise_scan_error
+      raise InvalidStructure
     end
   end
 
