@@ -3,6 +3,7 @@ require 'thread'
 module FormatParser
   require_relative 'file_information'
   require_relative 'io_utils'
+  require_relative 'io_stats'
   require_relative 'read_limiter'
   require_relative 'remote_io'
   require_relative 'io_constraint'
@@ -45,8 +46,9 @@ module FormatParser
       io.seek(0)
       # Limit how many operations the parser can perform
       limited_io = ReadLimiter.new(io, max_bytes: 512*1024, max_reads: 64*1024, max_seeks: 64*1024)
+      stats_io = IOStats.new(limited_io)
       begin
-        if info = parser.information_from_io(limited_io)
+        if info = parser.information_from_io(stats_io)
           return info
         end
       rescue IOUtils::InvalidRead
