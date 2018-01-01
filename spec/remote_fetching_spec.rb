@@ -22,7 +22,7 @@ describe 'Fetching data from HTTP remotes' do
   it 'parses the animated PNG over HTTP' do
     file_information = FormatParser.parse_http('http://localhost:9399/PNG/anim.png')
     expect(file_information).not_to be_nil
-    expect(file_information.file_nature).to eq(:image)
+    expect(file_information.natures).to include(:image)
   end
 
   after(:all) do

@@ -13,8 +13,8 @@ Pass an IO object that responds to `read` and `seek` to `FormatParser`.
 
 ```ruby
 file_info = FormatParser.parse(File.open("myimage.jpg", "rb"))
-file_info.file_nature           #=> :image
-file_info.file_format           #=> :JPG
+file_info.natures               #=> [:image]
+file_info.format                #=> :JPG
 file_info.width_px              #=> 320
 file_info.height_px             #=> 240
 file_info.orientation           #=> :top_left
