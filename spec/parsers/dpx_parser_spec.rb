@@ -1,14 +1,14 @@
 require 'spec_helper'
 
-describe FormatParser::DPXParser do
+describe FormatParser::Parsers::Image::DPXParser do
   describe 'with Depix example files' do
     Dir.glob(fixtures_dir + '/dpx/*.*').each do |dpx_path|
       it "is able to parse #{File.basename(dpx_path)}" do
-        parsed = subject.information_from_io(File.open(dpx_path, 'rb'))
+        parsed = subject.call(File.open(dpx_path, 'rb'))
 
         expect(parsed).not_to be_nil
-        expect(parsed.file_nature).to eq(:image)
-        expect(parsed.file_type).to eq(:dpx)
+        expect(parsed.nature).to eq(:image)
+        expect(parsed.format).to eq(:dpx)
 
         # If we have an error in the struct offsets these values are likely to become
         # the maximum value of a 4-byte uint, which is way higher
@@ -21,7 +21,7 @@ describe FormatParser::DPXParser do
 
     it 'correctly reads pixel dimensions' do
       fi = File.open(fixtures_dir + '/dpx/026_FROM_HERO_TAPE_5-3-1_MOV.0029.dpx', 'rb')
-      parsed = subject.information_from_io(fi)
+      parsed = subject.call(fi)
       expect(parsed.width_px).to eq(1920)
       expect(parsed.height_px).to eq(1080)
     end

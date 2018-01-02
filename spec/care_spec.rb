@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Care do
   describe Care::Cache do
-    let(:source) { StringIO.new("Hello there, this is our little caching reader") }
+    let(:source) { StringIO.new('Hello there, this is our little caching reader') }
 
     it 'performs correct reads at various offsets' do
       cache = Care::Cache.new(3)
