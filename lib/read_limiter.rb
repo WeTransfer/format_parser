@@ -1,5 +1,6 @@
 class FormatParser::ReadLimiter
   NO_LIMIT = nil
+
   class BudgetExceeded < StandardError
   end
 
@@ -28,6 +29,10 @@ class FormatParser::ReadLimiter
       raise BudgetExceeded, "Seek budget exceeded (%d seeks performed)" % @max_seeks
     end
     @io.seek(to_offset)
+  end
+
+  def size
+    @io.size
   end
 
   def read(n)
