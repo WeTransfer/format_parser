@@ -33,7 +33,7 @@ class FormatParser::EXIFParser
   def scan_image_exif
 
     # Without the magic bytes EXIFR throws an error
-    @file_data.rewind
+    @file_data.seek(0)
     raw_exif_data = EXIFR::JPEG.new(@file_data) if @filetype == :jpeg
     raw_exif_data = EXIFR::TIFF.new(@file_data) if @filetype == :tiff
     # For things that we don't yet have a parser for
