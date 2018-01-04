@@ -42,11 +42,10 @@ class FormatParser::ReadLimiter
   # use it somewhere else we can. (EXIFR expects just plain ol' readbyte so
   # we have to include the defaults)
   def readbyte(num_bytes_to_read: 1, unpack_code: "C")
-    @io.read(num_bytes_to_read).unpack(unpack_code).first
+    read(num_bytes_to_read).unpack(unpack_code).first
   end
   
   # EXIFR requires a getbyte method that does exactly the same thing as readbyte
-
   def getbyte
     readbyte
   end

@@ -32,4 +32,20 @@ describe "ReadLimiter" do
       reader.read(1)
     }.to raise_error(/bytes budget \(512\) exceeded/)
   end
+
+  it 'enforces the number of bytes read with readbyte' do
+    reader = FormatParser::ReadLimiter.new(io, max_bytes: 512)
+    reader.readbyte(num_bytes_to_read: 512)
+    expect {
+      reader.readbyte(num_bytes_to_read: 1)
+    }.to raise_error(/bytes budget \(512\) exceeded/)
+  end
+
+  it 'enforces the number of reads with readbyte' do
+    reader = FormatParser::ReadLimiter.new(io, max_reads: 4)
+    4.times { reader.readbyte(num_bytes_to_read: 1) }
+    expect {
+      reader.readbyte(num_bytes_to_read: 1)
+    }.to raise_error(/calls exceeded \(4 max\)/)
+  end
 end
