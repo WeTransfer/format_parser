@@ -36,4 +36,18 @@ class FormatParser::ReadLimiter
 
     @io.read(n)
   end
+  
+  # A particular implementation of read meant to make reading JPEG EXIF data
+  # easier on remote reads, but if we want to override the defaults and 
+  # use it somewhere else we can. (EXIFR expects just plain ol' readbyte so
+  # we have to include the defaults)
+  def readbyte(num_bytes_to_read: 1, unpack_code: "C")
+    read(num_bytes_to_read).unpack(unpack_code).first
+  end
+  
+  # EXIFR requires a getbyte method that does exactly the same thing as readbyte
+  def getbyte
+    readbyte
+  end
+  
 end
