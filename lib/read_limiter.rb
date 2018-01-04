@@ -38,6 +38,6 @@ class FormatParser::ReadLimiter
   end
 
   def getbyte
-    @io.read(1)
+    @io.read(1).unpack("C").first
   end
 end
