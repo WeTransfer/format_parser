@@ -45,7 +45,7 @@ describe 'Fetching data from HTTP remotes' do
     Dir.glob(fixtures_dir + '/exif-orientation-testimages/jpg/*.jpg').each do |jpeg_path|
       filename = File.basename(jpeg_path)
       it "is able to parse #{filename}" do
-        remote_jpeg_path = jpeg_path.gsub("/Users/noah/Projects/format_parser/spec/fixtures/", "http://localhost:9399")
+        remote_jpeg_path = jpeg_path.gsub(fixtures_dir, "http://localhost:9399")
         file_information = FormatParser.parse_http(remote_jpeg_path)
         expect(file_information).not_to be_nil
 
