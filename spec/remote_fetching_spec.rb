@@ -41,6 +41,21 @@ describe 'Fetching data from HTTP remotes' do
     expect(file_information.orientation).to eq(:top_left)
   end
 
+  describe 'is able to correctly parse orientation for all remote JPEG EXIF examples from FastImage' do
+    Dir.glob(fixtures_dir + '/exif-orientation-testimages/jpg/*.jpg').each do |jpeg_path|
+      filename = File.basename(jpeg_path)
+      it "is able to parse #{filename}" do
+        remote_jpeg_path = jpeg_path.gsub("/Users/noah/Projects/format_parser/spec/fixtures/", "http://localhost:9399")
+        file_information = FormatParser.parse_http(remote_jpeg_path)
+        expect(file_information).not_to be_nil
+
+        expect(file_information.orientation).to be_kind_of(Symbol)
+        # Filenames in this dir correspond with the orientation of the file
+        expect(filename.include?(file_information.orientation.to_s)).to be true 
+      end
+    end
+  end
+  
   after(:all) do
     @server.stop
     @server_thread.join(0.5)
