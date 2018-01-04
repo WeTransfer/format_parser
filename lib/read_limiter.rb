@@ -38,6 +38,6 @@ class FormatParser::ReadLimiter
   end
 
   def getbyte
-    @io.read(1).gsub('\\', '0')
+    @io.read(1)
   end
 end

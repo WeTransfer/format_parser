@@ -19,6 +19,7 @@ file_info.width_px              #=> 320
 file_info.height_px             #=> 240
 file_info.orientation           #=> :top_left
 ```
+
 If nothing is detected, the result will be `nil`.
 
 ## Design rationale

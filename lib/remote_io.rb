@@ -43,7 +43,7 @@ class FormatParser::RemoteIO
   def read(n_bytes)
     http_range = (@pos..(@pos + n_bytes - 1))
     @remote_size, body = request_range(http_range)
-    body.force_encoding(Encoding::BINARY) if body
+    body.force_encoding(Encoding::ASCII_8BIT) if body
     body
   end
 
