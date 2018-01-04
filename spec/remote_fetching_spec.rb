@@ -29,6 +29,16 @@ describe 'Fetching data from HTTP remotes' do
     file_information = FormatParser.parse_http('http://localhost:9399/exif-orientation-testimages/jpg/top_left.jpg')
     expect(file_information).not_to be_nil
     expect(file_information.file_nature).to eq(:image)
+    expect(file_information.file_type).to eq(:jpg)
+    expect(file_information.orientation).to eq(:top_left)
+  end
+
+  it 'parses the TIFFs exif data' do
+    file_information = FormatParser.parse_http('http://localhost:9399/TIFF/test.tif')
+    expect(file_information).not_to be_nil
+    expect(file_information.file_nature).to eq(:image)
+    expect(file_information.file_type).to eq(:tif)
+    expect(file_information.orientation).to eq(:top_left)
   end
 
   after(:all) do
