@@ -73,5 +73,13 @@ describe Care do
       expect(second).to eq([io_double, 2, 3])
       expect(third).to eq([io_double,  11, 5])
     end
+
+    it 'forwards calls to size() to the underlying IO' do
+      io_double = double('IO')
+      expect(io_double).to receive(:size).and_return(123)
+
+      subject = Care::IOWrapper.new(io_double)
+      expect(subject.size).to eq(123)
+    end
   end
 end
