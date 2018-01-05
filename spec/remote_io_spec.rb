@@ -2,6 +2,8 @@ require 'spec_helper'
 
 describe FormatParser::RemoteIO do
 
+  it_behaves_like 'an IO object compatible with IOConstraint'
+
   it 'returns the partial content when the server supplies a 206 status' do
     rio = described_class.new("https://images.invalid/img.jpg")
     

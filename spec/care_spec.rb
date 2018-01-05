@@ -46,6 +46,8 @@ describe Care do
   end
 
   describe Care::IOWrapper do
+    it_behaves_like 'an IO object compatible with IOConstraint'
+
     it 'forwards calls to read() to the Care and adjusts internal offsets' do
       fake_cache_class = Class.new do
         attr_reader :recorded_calls
@@ -74,6 +76,11 @@ describe Care do
       expect(third).to eq([io_double,  11, 5])
     end
 
+    it 'implements the complete subset of IOConstraint' do
+      methods_not_covered = Set.new(FormatParser::IOConstraint.public_instance_methods) - Set.new(Care::IOWrapper.public_instance_methods)
+      expect(methods_not_covered).to be_empty
+    end
+    
     it 'forwards calls to size() to the underlying IO' do
       io_double = double('IO')
       expect(io_double).to receive(:size).and_return(123)

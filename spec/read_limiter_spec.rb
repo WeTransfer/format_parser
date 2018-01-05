@@ -1,13 +1,9 @@
 require 'spec_helper'
 
-describe "ReadLimiter" do
+describe FormatParser::ReadLimiter do
   let(:io) { StringIO.new(Random.new.bytes(1024)) }
 
-  it 'implements the complete subset of IOConstraint' do
-    reader = FormatParser::ReadLimiter.new(io)
-    methods_not_covered = Set.new(FormatParser::IOConstraint.public_instance_methods) - Set.new(reader.public_methods)
-    expect(methods_not_covered).to be_empty
-  end
+  it_behaves_like 'an IO object compatible with IOConstraint'
 
   it 'does not enforce any limits with default arguments' do
     reader = FormatParser::ReadLimiter.new(io)
