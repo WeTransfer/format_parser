@@ -8,6 +8,12 @@
 # nothing more. Consequently, if the parser uses a gem that
 # for some reason needs additional IO methods to be available
 # this parser has to provide it's own extensions to that end.
+#
+# The rationale for including a method in this subset is as follows:
+# we include a method if other methods can be implemented on top of it.
+# For example, should some parser desire `IO#readbyte`, it can be
+# implemented in terms of a `read()`. Idem for things like `IO#eof?`,
+# `IO#rewind` and friends.
 class FormatParser::IOConstraint
   def initialize(io)
     @io = io
