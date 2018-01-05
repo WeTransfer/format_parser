@@ -21,9 +21,9 @@ class FormatParser::EXIFParser
     :left_bottom
   ]
 
-  def initialize(filetype, file_data)
+  def initialize(filetype, file_io)
     @filetype = filetype
-    @file_data = file_data
+    @file_io = file_io
     @exif_data = nil
     @orientation = nil
     @height = nil
@@ -31,11 +31,10 @@ class FormatParser::EXIFParser
   end
 
   def scan_image_exif
-
     # Without the magic bytes EXIFR throws an error
-    @file_data.seek(0)
-    raw_exif_data = EXIFR::JPEG.new(@file_data) if @filetype == :jpeg
-    raw_exif_data = EXIFR::TIFF.new(@file_data) if @filetype == :tiff
+    @file_io.seek(0)
+    raw_exif_data = EXIFR::JPEG.new(@file_io) if @filetype == :jpeg
+    raw_exif_data = EXIFR::TIFF.new(@file_io) if @filetype == :tiff
     # For things that we don't yet have a parser for
     # we make the raw exif result available
     @exif_data = raw_exif_data
