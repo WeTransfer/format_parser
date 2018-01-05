@@ -18,6 +18,10 @@ class FormatParser::ReadLimiter
     @io.size
   end
 
+  def pos
+    @io.pos
+  end
+
   def seek(to_offset)
     @seeks += 1
     if @max_seeks && @seeks > @max_seeks

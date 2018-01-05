@@ -24,6 +24,11 @@ class FormatParser::RemoteIO
     0 # always return 0
   end
 
+  # Emulates IO#pos
+  def pos
+    @pos
+  end
+
   # Emulates IO#size.
   #
   # @return [Integer] the size of the remote resource
@@ -45,6 +50,7 @@ class FormatParser::RemoteIO
     maybe_size, maybe_body = request_range(http_range)
     if maybe_size && maybe_body
       @remote_size = maybe_size
+      @pos += maybe_body.bytesize
       maybe_body.force_encoding(Encoding::ASCII_8BIT)
     else
       nil

@@ -20,6 +20,10 @@ class Care
       @pos = to
     end
 
+    def pos
+      @pos
+    end
+
     def read(n_bytes)
       read = @cache.byteslice(@io, @pos, n_bytes)
       return nil unless read && !read.empty?

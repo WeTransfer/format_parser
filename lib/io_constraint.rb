@@ -30,4 +30,8 @@ class FormatParser::IOConstraint
   def size
     @io.size
   end
+
+  def pos
+    @io.pos
+  end
 end

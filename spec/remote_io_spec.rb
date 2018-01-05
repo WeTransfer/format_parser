@@ -73,4 +73,16 @@ describe FormatParser::RemoteIO do
     rio.seek(100)
     expect { rio.read(100) }.to raise_error(/replied with a 502 and we might want to retry/)
   end
+
+  it 'maintains and exposes #pos' do
+    rio = described_class.new("https://images.invalid/img.jpg")
+
+    expect(rio.pos).to eq(0)
+
+    fake_resp = double(headers: {'Content-Range' => 'bytes 0-0/13'}, status: 206, body: 'a')
+    expect(Faraday).to receive(:get).with("https://images.invalid/img.jpg", nil, range: "bytes=0-0").and_return(fake_resp)
+    rio.read(1)
+
+    expect(rio.pos).to eq(1)
+  end
 end

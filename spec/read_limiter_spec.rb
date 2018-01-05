@@ -11,6 +11,13 @@ describe FormatParser::ReadLimiter do
     2048.times { reader.read(4) }
   end
 
+  it 'passes #pos to the delegate' do
+    reader = FormatParser::ReadLimiter.new(io)
+    expect(reader.pos).to eq(0)
+    io.read(2)
+    expect(reader.pos).to eq(2)
+  end
+
   it 'enforces the number of seeks' do
     reader = FormatParser::ReadLimiter.new(io, max_seeks: 4)
     4.times { reader.seek(1) }
