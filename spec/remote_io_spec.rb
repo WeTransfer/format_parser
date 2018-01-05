@@ -44,6 +44,24 @@ describe FormatParser::RemoteIO do
     expect(rio.read(100)).to be_nil
   end
 
+  it 'does not overwrite size when the range cannot be satisfied and the response is 416' do
+    rio = described_class.new("https://images.invalid/img.jpg")
+
+    fake_resp = double(headers: {'Content-Range' => 'bytes 0-0/13'}, status: 206, body: 'a')
+    expect(Faraday).to receive(:get).with("https://images.invalid/img.jpg", nil, range: "bytes=0-0").and_return(fake_resp)
+    rio.read(1)
+
+    expect(rio.size).to eq(13)
+
+    fake_resp = double(headers: {}, status: 416, body: 'You jumped off the end of the file maam')
+    expect(Faraday).to receive(:get).with("https://images.invalid/img.jpg", nil, range: "bytes=100-199").and_return(fake_resp)
+
+    rio.seek(100)
+    expect(rio.read(100)).to be_nil
+
+    expect(rio.size).to eq(13)
+  end
+
   it 'raises a specific error for all 5xx responses' do
     rio = described_class.new("https://images.invalid/img.jpg")
     

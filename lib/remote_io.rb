@@ -26,9 +26,9 @@ class FormatParser::RemoteIO
 
   # Emulates IO#size.
   #
-  # @return [Fixnum] the size of the remote resource
+  # @return [Integer] the size of the remote resource
   def size
-    raise "Remote size not yet obtained, need to perform at least one read() to get it" unless @remote_size
+    raise "Remote size not yet obtained, need to perform at least one read() to retrieve it" unless @remote_size
     @remote_size
   end
 
@@ -42,9 +42,13 @@ class FormatParser::RemoteIO
   # @return [String] the read bytes
   def read(n_bytes)
     http_range = (@pos..(@pos + n_bytes - 1))
-    @remote_size, body = request_range(http_range)
-    body.force_encoding(Encoding::ASCII_8BIT) if body
-    body
+    maybe_size, maybe_body = request_range(http_range)
+    if maybe_size && maybe_body
+      @remote_size = maybe_size
+      maybe_body.force_encoding(Encoding::ASCII_8BIT)
+    else
+      nil
+    end
   end
 
   protected
@@ -76,10 +80,11 @@ class FormatParser::RemoteIO
       # to be 206
       return [size, response.body]
     when 416
-      # We return `nil` as the body if we tried to read past the end of the IO,
+      # We return `nil` if we tried to read past the end of the IO,
       # which satisfies the Ruby IO convention. The caller should deal with `nil` being the result of a read()
-      # S3 will also handily _not_ supply us with the Content-Range of the actual resource
-      return [nil, nil]
+      # S3 will also handily _not_ supply us with the Content-Range of the actual resource, so we
+      # cannot hint size with this response - at lease not when working with S3
+      return nil
     when 500..599
       raise IntermittentFailure, "Server at #{@uri} replied with a #{response.status} and we might want to retry"
     else
