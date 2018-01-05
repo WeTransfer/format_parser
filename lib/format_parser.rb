@@ -5,6 +5,7 @@ module FormatParser
   require_relative 'io_utils'
   require_relative 'read_limiter'
   require_relative 'remote_io'
+  require_relative 'io_constraint'
   require_relative 'care'
 
   PARSER_MUX = Mutex.new
