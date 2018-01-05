@@ -11,7 +11,7 @@ class FormatParser::JPEGParser
   APP1_MARKER = 0xE1  # maybe EXIF
 
   def information_from_io(io)
-    @buf = io
+    @buf = FormatParser::IOConstraint.new(io)
     @width             = nil
     @height            = nil
     @orientation       = nil

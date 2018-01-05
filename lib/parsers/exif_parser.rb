@@ -1,8 +1,23 @@
 require 'exifr/jpeg'
 require 'exifr/tiff'
+require 'delegate'
 
 class FormatParser::EXIFParser
   include FormatParser::IOUtils
+
+  # EXIFR kindly requests the presence of getbyte and readbyte
+  # IO methods, which our constrained IO subset does not provide natively
+  class IOExt < SimpleDelegator
+    def readbyte
+      if byte = read(1)
+        byte.unpack('C').first
+      else
+        nil
+      end
+    end
+
+    alias_method :getbyte, :readbyte
+  end
 
   # Squash exifr's invalid date warning since we do not use that data.
   logger = Logger.new(nil)
@@ -23,7 +38,7 @@ class FormatParser::EXIFParser
 
   def initialize(filetype, file_io)
     @filetype = filetype
-    @file_io = file_io
+    @file_io = IOExt.new(file_io)
     @exif_data = nil
     @orientation = nil
     @height = nil
