@@ -18,17 +18,22 @@ module FormatParser
   end
 
   def self.parse_http(url)
-    parse(RemoteIO.new(url))
-  end
-
-  def self.parse(io)
-    io = Care::IOWrapper.new(io) unless io.is_a?(Care::IOWrapper)
+    remote_io = RemoteIO.new(url)
+    cached_io = Care::IOWrapper.new(remote_io)
 
     # Prefetch the first page, since it is very likely to be touched
     # by all parsers anyway. Additionally, when using RemoteIO we need
-    # to obtain the size of the resource, which is only available
-    # after having performed the first GET - at least on S3
-    io.read(1); io.seek(0)
+    # to explicitly obtain the size of the resource, which is only available
+    # after having performed at least one successful GET - at least on S3
+    cached_io.read(1); cached_io.seek(0)
+
+    parse(cached_io)
+  end
+
+  def self.parse(io)
+    # If the cache is preconfigured do not apply an extra layer. It is going
+    # to be preconfigured when using parse_http.
+    io = Care::IOWrapper.new(io) unless io.is_a?(Care::IOWrapper)
 
     # Always instantiate parsers fresh for each input, since they might
     # contain instance variables which otherwise would have to be reset
