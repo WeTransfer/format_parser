@@ -19,8 +19,9 @@ class FormatParser::PNGParser
     safe_read(io, 8).unpack("Na4")
   end
 
-
   def information_from_io(io)
+    io = FormatParser::IOConstraint.new(io)
+
     magic_bytes = safe_read(io, PNG_HEADER_BYTES.bytesize)
     return unless magic_bytes == PNG_HEADER_BYTES
 

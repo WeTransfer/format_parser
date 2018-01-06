@@ -19,7 +19,7 @@ class FormatParser::AIFFParser
   ]
 
   def information_from_io(io)
-    io.seek(0)
+    io = FormatParser::IOConstraint.new(io)
     form_chunk_type, chunk_size = safe_read(io, 8).unpack('a4N')
     return unless form_chunk_type == "FORM" && chunk_size > 4
 

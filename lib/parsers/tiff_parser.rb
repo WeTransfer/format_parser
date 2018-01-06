@@ -7,6 +7,8 @@ class FormatParser::TIFFParser
   include FormatParser::IOUtils
 
   def information_from_io(io)
+    io = FormatParser::IOConstraint.new(io)
+
     magic_bytes = safe_read(io, 4).unpack("C4")
     endianness = scan_tiff_endianness(magic_bytes)
     return unless endianness

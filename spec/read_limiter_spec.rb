@@ -1,12 +1,21 @@
 require 'spec_helper'
 
-describe "ReadLimiter" do
+describe FormatParser::ReadLimiter do
   let(:io) { StringIO.new(Random.new.bytes(1024)) }
+
+  it_behaves_like 'an IO object compatible with IOConstraint'
 
   it 'does not enforce any limits with default arguments' do
     reader = FormatParser::ReadLimiter.new(io)
     2048.times { reader.seek(1) }
     2048.times { reader.read(4) }
+  end
+
+  it 'passes #pos to the delegate' do
+    reader = FormatParser::ReadLimiter.new(io)
+    expect(reader.pos).to eq(0)
+    io.read(2)
+    expect(reader.pos).to eq(2)
   end
 
   it 'enforces the number of seeks' do
@@ -32,4 +41,5 @@ describe "ReadLimiter" do
       reader.read(1)
     }.to raise_error(/bytes budget \(512\) exceeded/)
   end
+
 end

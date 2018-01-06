@@ -20,3 +20,12 @@ RSpec.configure do |c|
   c.include SpecHelpers
   c.extend SpecHelpers # makes fixtures_dir available for example groups too
 end
+
+RSpec.shared_examples "an IO object compatible with IOConstraint" do
+  it 'responds to the same subset of public instance methods' do
+    requisite_methods = FormatParser::IOConstraint.public_instance_methods - Object.public_instance_methods
+    requisite_methods.each do |requisite|
+      expect(described_class.public_instance_methods).to include(requisite), "#{described_class} must respond to #{requisite}"
+    end
+  end
+end

@@ -125,6 +125,7 @@ class FormatParser::DPXParser
   HEADER_SIZE = SIZEOF[DPX_INFO] # Does not include the initial 4 bytes
 
   def information_from_io(io)
+    io = FormatParser::IOConstraint.new(io)
     magic = io.read(4)
 
     return nil unless [BE_MAGIC, LE_MAGIC].include?(magic)

@@ -12,8 +12,16 @@ class Care
       @pos = 0
     end
 
+    def size
+      @io.size
+    end
+
     def seek(to)
       @pos = to
+    end
+
+    def pos
+      @pos
     end
 
     def read(n_bytes)
