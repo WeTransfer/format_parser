@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe FormatParser::WAVParser do
+  # Fixtures prefixed with c_ are considered canonical
+  # while fixtures prefixed with d_ deviate from the standard.
   Dir.glob(fixtures_dir + '/WAV/c_*.*').each do |wav_path|
     it "is able to parse #{File.basename(wav_path)}" do
       parse_result = subject.information_from_io(File.open(wav_path, 'rb'))
