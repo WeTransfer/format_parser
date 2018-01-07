@@ -34,6 +34,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'exifr', '~> 1.0'
   spec.add_dependency 'faraday', '~> 0.13'
+  spec.add_dependency 'mp3file', '~> 1.2'
   
   spec.add_development_dependency 'rspec', '~> 3.0'
   spec.add_development_dependency 'rake', '~> 12'

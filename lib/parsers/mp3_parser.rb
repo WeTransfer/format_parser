@@ -1,21 +1,45 @@
-class FormatParser::MP3Parser
-  require_relative 'mp3_parser/id3_v1'
-  require_relative 'mp3_parser/id3_v2'
+require 'mp3file'
 
-  include FormatParser::IOUtils
+class FormatParser::MP3Parser
+  
+  class FakePathname
+    def initialize(with_remote_io)
+      @io = with_remote_io
+    end
+
+    def seek(to, mode=IO::SEEK_SET)
+      case mode
+      when IO::SEEK_SET
+        @io.seek(to)
+      when IO::SEEK_END
+        @io.seek(@io.size + to)
+      when IO::SEEK_CUR
+        @io.seek(@io.pos + to)
+      end
+    end
+
+    def close
+      # Do nothing
+    end
+
+    def tell
+      @io.pos
+    end
+
+    def read(n)
+      @io.read(n)
+    end
+
+    def open(mode)
+      self
+    end
+  end
 
   def information_from_io(io)
-    # Read the last 128 bytes which might contain ID3v1
-    id3_v1 = ID3V1.attempt_id3_v1_extraction(io)
-    io.seek(0)
-    id3_v2 = ID3V2.attempt_id3_v2_extraction(io)
-
-    raise id3_v2.inspect
+    adapter = FakePathname.new(io)
+    file_info = Mp3file::MP3File.new(adapter)
+    raise file_info.inspect
   end
-
-  def parse_mpeg_frame(io)
-  end
-
 
   FormatParser.register_parser_constructor self
 end
