@@ -17,16 +17,36 @@ class FormatParser::WAVParser
     # The specification does not require the Format chunk to be the first chunk
     # after the RIFF header.
     # http://soundfile.sapp.org/doc/WaveFormat/
+    # For WAVE files containing PCM audio format we parse the 'fmt ' and
+    # 'data' chunks while for non PCM audio formats the 'fmt ' and 'fact'
+    # chunks. In the latter case the order fo appearence of the chunks is
+    # arbitrary.
+    fmt_processed = false
+    fact_processed = false
+    fmt_data = {}
+    total_sample_frames = 0
     loop do
       chunk_type, chunk_size = safe_read(io, 8).unpack('a4l')
       case chunk_type
       when 'fmt '
-        return unpack_fmt_chunk(io, chunk_size)
-      when 'data' # the 'data' chunk cannot preceed the 'fmt ' chunk
-        return
-      else # Skip processing the chunk until an 'fmt ' chunk is encountered
+        fmt_data = unpack_fmt_chunk(io, chunk_size)
+        if fmt_data[:audio_format] != 1 and fact_processed
+          return process_non_pcm(fmt_data, total_sample_frames)
+        end
+        fmt_processed = true
+      when 'data'
+        return unless fmt_processed # the 'data' chunk cannot preceed the 'fmt ' chunk
+        return process_pcm(fmt_data, chunk_size) if fmt_data[:audio_format] == 1
         safe_skip(io, chunk_size)
-        next
+      when 'fact'
+        total_sample_frames = safe_read(io, 4).unpack('l').first
+        safe_skip(io, chunk_size - 4)
+        if fmt_processed and fmt_data[:audio_format] != 1
+          return process_non_pcm(fmt_data, total_sample_frames)
+        end
+        fact_processed = true
+      else # Skip this chunk until a known chunk is encountered
+        safe_skip(io, chunk_size)
       end
     end
   end
@@ -42,41 +62,40 @@ class FormatParser::WAVParser
     # * unsigned short     block align
     # * unsigned short     bits per sample
 
-    audio_format, channels, sample_rate, byte_rate, block_align,
-    bits_per_sample = safe_read(io, 16).unpack('S_2I2S_2')
+    fmt_info = safe_read(io, 16).unpack('S_2I2S_2')
+    safe_skip(io, chunk_size - 16) # skip the extra fields
 
-    # channels, sample_rate and bits_per_sample should all be > 0 in order
-    # to calculate media_duration_frames and media_duration_seconds
-    return unless channels > 0 and sample_rate > 0 and bits_per_sample > 0
-    
-    safe_skip(io, chunk_size - 16) # skip the extra fields if any
-    data_bytes = data_size(io)
+    {
+      audio_format:    fmt_info[0],
+      channels:        fmt_info[1],
+      sample_rate:     fmt_info[2],
+      byte_rate:       fmt_info[3],
+      block_align:     fmt_info[4],
+      bits_per_sample: fmt_info[5],
+    }
+  end
 
-    return if data_bytes.nil?
+  def process_pcm(fmt_data, data_size)
+    return unless fmt_data[:channels] > 0 and fmt_data[:bits_per_sample] > 0
+    sample_frames = data_size / (fmt_data[:channels] * fmt_data[:bits_per_sample] / 8)
+    file_info(fmt_data, sample_frames)
+  end
 
-    sample_frames = data_bytes / (channels * bits_per_sample / 8)
-    duration_in_seconds = sample_frames / sample_rate.to_f
+  def process_non_pcm(fmt_data, total_sample_frames)
+    file_info(fmt_data, total_sample_frames)
+  end
 
+  def file_info(fmt_data, sample_frames)
+    return unless fmt_data[:sample_rate] > 0
+    duration_in_seconds = sample_frames / fmt_data[:sample_rate].to_f
     FormatParser::FileInformation.new(
       file_nature: :audio,
       file_type: :wav,
-      num_audio_channels: channels,
-      audio_sample_rate_hz: sample_rate,
+      num_audio_channels: fmt_data[:channels],
+      audio_sample_rate_hz: fmt_data[:sample_rate],
       media_duration_frames: sample_frames,
       media_duration_seconds: duration_in_seconds,
     )
-  end
-
-  def data_size(io)
-    # Read the size of the 'data' chunk
-    loop do
-      chunk_type, chunk_size = safe_read(io, 8).unpack('a4l')
-      if chunk_type == 'data'
-        return chunk_size
-      else
-        safe_skip(io, chunk_size)
-      end
-    end
   end
 
   FormatParser.register_parser_constructor self
