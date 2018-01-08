@@ -58,6 +58,10 @@ module FormatParser
     # as an Integer
     attr_accessor :media_duration_frames
 
+    # If a parser wants to provide any extra information to the caller
+    # it can be placed here
+    attr_accessor :intrinsics
+
     # Only permits assignments via defined accessors
     def initialize(**attributes)
       attributes.map { |(k, v)| public_send("#{k}=", v) }

@@ -14,6 +14,13 @@ describe Care do
       expect(cache.byteslice(source, 120, 12)).to be_nil
     end
 
+    it 'raises on a negative read offset' do
+      cache = Care::Cache.new(3)
+      expect {
+        cache.byteslice(source, -2, 3)
+      }.to raise_error(/negative/i)
+    end
+
     it 'can be cleared' do
       cache = Care::Cache.new(3)
       expect(cache.byteslice(source, 0, 3)).to eq("Hel")
@@ -80,7 +87,7 @@ describe Care do
       methods_not_covered = Set.new(FormatParser::IOConstraint.public_instance_methods) - Set.new(Care::IOWrapper.public_instance_methods)
       expect(methods_not_covered).to be_empty
     end
-    
+
     it 'forwards calls to size() to the underlying IO' do
       io_double = double('IO')
       expect(io_double).to receive(:size).and_return(123)
