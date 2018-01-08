@@ -28,7 +28,7 @@ class FormatParser::WAVParser
     loop do
       chunk_type, chunk_size = safe_read(io, 8).unpack('a4l')
       case chunk_type
-      when 'fmt '
+      when 'fmt ' # watch out: the chunk ID of the format chunk ends with a space
         fmt_data = unpack_fmt_chunk(io, chunk_size)
         if fmt_data[:audio_format] != 1 and fact_processed
           return process_non_pcm(fmt_data, total_sample_frames)
