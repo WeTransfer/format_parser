@@ -30,15 +30,30 @@ class FormatParser::MP3Parser
       @io.read(n)
     end
 
+    def eof?
+      @io.pos >= @io.size
+    end
+
+    # Internally Mp3file calls "open" thinking this is a Pathname object.
+    # We just return self, because such are the ways of evil.
     def open(mode)
       self
     end
   end
 
   def information_from_io(io)
-    adapter = FakePathname.new(io)
+    cio = FormatParser::IOConstraint.new(io)
+    
+    # we have to reuse our ReadLimiter once more. The parser
+    # in Mp3file is not written by us, and fuzzing shows it can
+    # be derailed into an endless loop of seek+read, which we have to
+    # prevent here explicitly
+    lim = FormatParser::ReadLimiter.new(cio, max_reads: 512, max_seeks: 512)
+    adapter = FakePathname.new(lim)
+
     file_info = Mp3file::MP3File.new(adapter)
-    raise file_info.inspect
+  rescue Mp3file::InvalidMP3FileError
+    nil
   end
 
   FormatParser.register_parser_constructor self

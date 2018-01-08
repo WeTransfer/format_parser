@@ -10,12 +10,4 @@ describe FormatParser::MP3Parser do
       end
     end
   end
-  
-  it 'decodes syncsafe integers' do
-    encoded = subject.encode_syncsafe_int(255)
-    expect(encoded).to eq(383)
-
-    decoded = subject.decode_syncsafe_int(encoded)
-    expect(decoded).to eq(255)
-  end
 end
