@@ -13,6 +13,9 @@ class FormatParser::MP3Parser
   class MP3Info < Ks.strict(:duration_seconds, :num_channels, :sampling_rate)
   end
 
+  class InvalidDeepFetch < KeyError
+  end
+
   # We limit the number of MPEG frames we scan
   # to obtain our duration estimation
   MAX_FRAMES_TO_SCAN = 128
@@ -39,19 +42,26 @@ class FormatParser::MP3Parser
 
     first_frame = initial_frames.first
 
+    file_info = FormatParser::FileInformation.new(
+      file_nature: :audio,
+      file_type: :mp3,
+      num_audio_channels: first_frame.channels,
+      audio_sample_rate_hz: first_frame.sample_rate,
+      # media_duration_frames is omitted because the frames
+      # in MPEG are not the same thing as in a movie file - they
+      # do not tell anything of substance
+      intrinsics: {
+        id3_v1: id3_v1 ? id3_v1.to_h : nil,
+        id3_v2: id3_v2 ? id3_v2.map(&:to_h) : nil,
+        xing_header: maybe_xing_header.to_h,
+        initial_frames: initial_frames.map(&:to_h)
+      }
+    )
+
     if maybe_xing_header
       duration = maybe_xing_header.frames * SAMPLES_PER_FRAME / first_frame.sample_rate.to_f
       bit_rate = maybe_xing_header.byte_count * 8 / duration / 1000
-      file_info = FormatParser::FileInformation.new(
-        file_nature: :audio,
-        file_type: :mp3,
-        num_audio_channels: first_frame.channels,
-        audio_sample_rate_hz: first_frame.sample_rate,
-        # media_duration_frames is omitted because the frames
-        # in MPEG are not the same thing as in a movie file - they
-        # do not tell anything of substance
-        media_duration_seconds: duration,
-      )
+      file_info.media_duration_seconds = duration
       return file_info
     end
 
@@ -65,16 +75,8 @@ class FormatParser::MP3Parser
     est_samples = est_frame_count * SAMPLES_PER_FRAME
     est_duration_seconds = est_samples / avg_sample_rate
 
-    file_info = FormatParser::FileInformation.new(
-      file_nature: :audio,
-      file_type: :mp3,
-      num_audio_channels: first_frame.channels,
-      audio_sample_rate_hz: first_frame.sample_rate,
-      # media_duration_frames is omitted because the frames
-      # in MPEG are not the same thing as in a movie file - they
-      # do not tell anything of substance
-      media_duration_seconds: est_duration_seconds,
-    )
+    file_info.media_duration_seconds = est_duration_seconds
+    return file_info
   end
 
   private
@@ -89,12 +91,13 @@ class FormatParser::MP3Parser
       # Read through until we can latch onto the 11 sync bits. Read in 4-byte
       # increments to save on read() calls
       data = io.read(4)
-      
+
+      # If we are at EOF - stop iterating
       break unless data && data.bytesize == 4
-      four_bytes = data.unpack('C4')
 
       # Look for the sync pattern. It can be either the last byte being 0xFF,
       # or any of the 2 bytes in sequence being 0xFF and > 0xF0.
+      four_bytes = data.unpack('C4')
       seek_jmp = sync_bytes_offset_in_4_byte_seq(four_bytes)
       if seek_jmp > 0
         io.seek(io.pos + seek_jmp)
@@ -121,6 +124,8 @@ class FormatParser::MP3Parser
         io.seek(io.pos + frame_detail.frame_length - 4)
       end
     end
+    [nil, mpeg_frames]
+  rescue InvalidDeepFetch # A frame was invalid - bail out since it's unlikely we can recover
     [nil, mpeg_frames]
   end
 
@@ -234,7 +239,7 @@ class FormatParser::MP3Parser
   def deep_fetch(from, *keys)
     keys.inject(from) { |receiver, key_or_idx| receiver.fetch(key_or_idx) }
   rescue KeyError, IndexError, NoMethodError
-    raise KeyError, "Could not retrieve #{keys.inspect} from #{from.inspect}"
+    raise InvalidDeepFetch, "Could not retrieve #{keys.inspect} from #{from.inspect}"
   end
 
   FormatParser.register_parser_constructor self

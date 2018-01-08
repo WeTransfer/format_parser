@@ -3,6 +3,8 @@ module FormatParser::MP3Parser::ID3V2
     io.seek(0) # Only support header ID3v2
     header_bytes = io.read(10)
 
+    return nil unless header_bytes
+
     header = parse_id3_v2_header(header_bytes)
     return nil unless header[:tag] == 'ID3'
     return nil unless header[:size] > 0
