@@ -62,7 +62,10 @@ class Care
     # or fetch pages where necessary
     def byteslice(io, at, n_bytes)
       if n_bytes < 1
-        raise ArgumentError, "The number of bytes to fetch must be a positive Integer" 
+        raise ArgumentError, "The number of bytes to fetch must be a positive Integer"
+      end
+      if at < 0
+        raise ArgumentError, "Negative offsets are not supported (got #{at})"
       end
 
       first_page = at / @page_size
@@ -128,7 +131,7 @@ class Care
         # to read following this one, so we can also optimize
         @lowest_known_empty_page = page_i + 1
       end
-        
+
       read_result
     end
   end
