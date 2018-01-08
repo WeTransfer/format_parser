@@ -15,6 +15,8 @@ class FormatParser::MP3Parser
         @io.seek(@io.size + to)
       when IO::SEEK_CUR
         @io.seek(@io.pos + to)
+      else
+        raise "Unsupported seek mode #{mode}"
       end
     end
 
