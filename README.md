@@ -9,7 +9,7 @@ and [dimensions,](https://github.com/sstephenson/dimensions) borrowing from them
 
 ## Currently supported filetypes:
 
-`TIFF, PSD, PNG, MP3, JPEG, GIF, DPX, AIFF`
+`TIFF, PSD, PNG, MP3, JPEG, GIF, DPX, AIFF, WAV`
 
 ...with more on the way!
 
