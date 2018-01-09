@@ -7,6 +7,12 @@ minimum amount of data possible.
 `format_parser` is inspired by [imagesize,](https://rubygems.org/gem/imagesize) [fastimage](https://github.com/sdsykes/fastimage)
 and [dimensions,](https://github.com/sstephenson/dimensions) borrowing from them where appropriate.
 
+## Currently supported filetypes:
+
+`TIFF, PSD, PNG, MP3, JPEG, GIF, DPX, AIFF`
+
+...with more on the way!
+
 ## Basic usage
 
 Pass an IO object that responds to `read` and `seek` to `FormatParser`.
