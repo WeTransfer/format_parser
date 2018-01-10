@@ -15,15 +15,15 @@ and [dimensions,](https://github.com/sstephenson/dimensions) borrowing from them
 
 ## Basic usage
 
-Pass an IO object that responds to `read` and `seek` to `FormatParser`.
+Pass an IO object that responds to `read` and `seek` to `FormatParser` and an array of matches will be returned.
 
 ```ruby
-file_info = FormatParser.parse(File.open("myimage.jpg", "rb"))
-file_info.file_nature           #=> :image
-file_info.file_format           #=> :JPG
-file_info.width_px              #=> 320
-file_info.height_px             #=> 240
-file_info.orientation           #=> :top_left
+matches = FormatParser.parse(File.open("myimage.jpg", "rb"))
+matches.first.nature        #=> :image
+matches.first.format        #=> :jpg
+matches.first.width_px      #=> 320
+matches.first.height_px     #=> 240
+matches.first.orientation   #=> :top_left
 ```
 
 If nothing is detected, the result will be `nil`.

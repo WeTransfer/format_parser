@@ -9,11 +9,6 @@ class FormatParser::TIFFParser
   NATURES = [:image].freeze
   FORMATS = [:tif].freeze
 
-<<<<<<< HEAD
-  def information_from_io(io)
-    io = FormatParser::IOConstraint.new(io)
-
-=======
   def self.natures
     NATURES
   end
@@ -23,7 +18,7 @@ class FormatParser::TIFFParser
   end
 
   def call(io)
->>>>>>> Modified specs, added parsing configuration
+    io = FormatParser::IOConstraint.new(io)
     magic_bytes = safe_read(io, 4).unpack("C4")
     endianness = scan_tiff_endianness(magic_bytes)
     return unless endianness
