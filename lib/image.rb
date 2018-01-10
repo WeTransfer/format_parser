@@ -1,13 +1,14 @@
 module FormatParser
-  class FileInformation
+  class Image
+    NATURE = :image
 
     # What kind of file is it?
-    attr_accessor :file_nature
+    attr_accessor :nature
 
     # What filetype was recognized? Will contain a non-ambiguous symbol
     # referring to the file format. The symbol can be used as a filename
     # extension safely
-    attr_accessor :file_type
+    attr_accessor :format
 
     # Number of pixels horizontally in the pixel buffer
     attr_accessor :width_px
@@ -42,22 +43,6 @@ module FormatParser
     # http://magnushoff.com/jpeg-orientation.html
     attr_accessor :image_orientation
 
-    # The number of audio channels for sound files that are muxed
-    # and for video files with embedded sound
-    attr_accessor :num_audio_channels
-
-    # SampeThe number of audio channels for sound files that are muxed
-    # and for video files with embedded sound
-    attr_accessor :audio_sample_rate_hz
-
-    # Duration of the media object (be it audio or video) in seconds,
-    # as a Float
-    attr_accessor :media_duration_seconds
-
-    # Duration of the media object in addressable frames or samples,
-    # as an Integer
-    attr_accessor :media_duration_frames
-
     # If a parser wants to provide any extra information to the caller
     # it can be placed here
     attr_accessor :intrinsics
@@ -67,8 +52,8 @@ module FormatParser
       attributes.map { |(k, v)| public_send("#{k}=", v) }
     end
 
-    def self.image(**kwargs)
-      new(file_nature: :image, **kwargs)
+    def nature
+      NATURE
     end
   end
 end

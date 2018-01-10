@@ -4,10 +4,10 @@ describe FormatParser::PNGParser do
   describe 'is able to parse all the examples from FastImage' do
     Dir.glob(fixtures_dir + '/*.png').each do |png_path|
       it "is able to parse #{File.basename(png_path)}" do
-        parsed = subject.information_from_io(File.open(png_path, 'rb'))
+        parsed = subject.call(File.open(png_path, 'rb'))
         expect(parsed).not_to be_nil
-        expect(parsed.file_nature).to eq(:image)
-        expect(parsed.file_type).to eq(:png)
+        expect(parsed.nature).to eq(:image)
+        expect(parsed.format).to eq(:png)
         expect(parsed.color_mode).to eq(:indexed)
 
         expect(parsed.width_px).to be_kind_of(Integer)
@@ -22,7 +22,7 @@ describe FormatParser::PNGParser do
   it 'is able to parse an animated PNG' do
     gif_path = fixtures_dir + "PNG/anim.png"
 
-    parsed = subject.information_from_io(File.open(gif_path, 'rb'))
+    parsed = subject.call(File.open(gif_path, 'rb'))
     expect(parsed).not_to be_nil
 
     expect(parsed.width_px).to eq(320)

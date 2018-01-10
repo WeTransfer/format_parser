@@ -27,6 +27,11 @@ describe FormatParser do
     let(:image) { FormatParser::Image.new(format: :dpx, width_px: 1, height_px: 1) }
 
     context '#parse called without any indication' do
+      before do
+        expect_any_instance_of(FormatParser::AIFFParser).to receive(:call).and_return(audio)
+        expect_any_instance_of(FormatParser::DPXParser).to receive(:call).and_return(image)
+      end
+
       subject { FormatParser.parse(blob) }
 
       it { is_expected.to include(image) }
@@ -34,6 +39,10 @@ describe FormatParser do
     end
 
     context '#parse called with a conf block' do
+      before do
+        expect_any_instance_of(FormatParser::AIFFParser).to receive(:call).and_return(audio)
+      end
+
       subject do
         FormatParser.parse(blob) do |config|
           config.natures = [:audio]
@@ -45,7 +54,11 @@ describe FormatParser do
     end
 
     context '#parse called with hash options' do
-      subject { FormatParser.parse(blob, natures: [:image], limit: 1) }
+      before do
+        expect_any_instance_of(FormatParser::DPXParser).to receive(:call).and_return(image)
+      end
+
+      subject { FormatParser.parse(blob, formats: [:dpx], limit: 1) }
 
       it { is_expected.to include(image) }
     end

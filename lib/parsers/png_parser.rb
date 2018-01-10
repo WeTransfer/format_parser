@@ -15,13 +15,23 @@ class FormatParser::PNGParser
 
   include FormatParser::IOUtils
 
+  NATURES = [:image].freeze
+  FORMATS = [:png].freeze
+
+  def self.natures
+    NATURES
+  end
+
+  def self.formats
+    FORMATS
+  end
+
   def chunk_length_and_type(io)
     safe_read(io, 8).unpack("Na4")
   end
 
-  def information_from_io(io)
+  def call(io)
     io = FormatParser::IOConstraint.new(io)
-
     magic_bytes = safe_read(io, PNG_HEADER_BYTES.bytesize)
     return unless magic_bytes == PNG_HEADER_BYTES
 
@@ -66,8 +76,8 @@ class FormatParser::PNGParser
       num_frames, loop_n_times = safe_read(io, 8).unpack('NN')
     end
 
-    FormatParser::FileInformation.image(
-      file_type: :png,
+    FormatParser::Image.new(
+      format: :png,
       width_px: w,
       height_px: h,
       has_transparency: has_transparency,

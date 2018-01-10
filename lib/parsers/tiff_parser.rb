@@ -1,34 +1,41 @@
 class FormatParser::TIFFParser
+  include FormatParser::IOUtils
+
   LITTLE_ENDIAN_TIFF_HEADER_BYTES = [0x49, 0x49, 0x2A, 0x0]
   BIG_ENDIAN_TIFF_HEADER_BYTES = [0x4D, 0x4D, 0x0, 0x2A]
   WIDTH_TAG  = 0x100
   HEIGHT_TAG = 0x101
 
-  include FormatParser::IOUtils
+  NATURES = [:image].freeze
+  FORMATS = [:tif].freeze
 
+<<<<<<< HEAD
   def information_from_io(io)
     io = FormatParser::IOConstraint.new(io)
 
+=======
+  def self.natures
+    NATURES
+  end
+
+  def self.formats
+    FORMATS
+  end
+
+  def call(io)
+>>>>>>> Modified specs, added parsing configuration
     magic_bytes = safe_read(io, 4).unpack("C4")
     endianness = scan_tiff_endianness(magic_bytes)
     return unless endianness
     w, h = read_tiff_by_endianness(io, endianness)
     scanner = FormatParser::EXIFParser.new(:tiff, io)
     scanner.scan_image_exif
-    if scanner.orientation
-      FormatParser::FileInformation.image(
-        file_type: :tif,
+    return FormatParser::Image.new(
+        format: :tif,
         width_px: w,
         height_px: h,
         orientation: scanner.orientation
       )
-    else
-      FormatParser::FileInformation.image(
-        file_type: :tif,
-        width_px: w,
-        height_px: h
-      )
-    end
   end
 
   # TIFFs can be either big or little endian, so we check here

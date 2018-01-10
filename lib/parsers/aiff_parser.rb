@@ -18,8 +18,20 @@ class FormatParser::AIFFParser
     'ANNO',
   ]
 
-  def information_from_io(io)
+  NATURES = [:audio].freeze
+  FORMATS = [:aiff].freeze
+
+  def self.natures
+    NATURES
+  end
+
+  def self.formats
+    FORMATS
+  end
+
+  def call(io)
     io = FormatParser::IOConstraint.new(io)
+    io.seek(0)
     form_chunk_type, chunk_size = safe_read(io, 8).unpack('a4N')
     return unless form_chunk_type == "FORM" && chunk_size > 4
 
@@ -62,9 +74,8 @@ class FormatParser::AIFFParser
     duration_in_seconds = sample_frames / sample_rate
     return unless duration_in_seconds > 0
 
-    FormatParser::FileInformation.new(
-      file_nature: :audio,
-      file_type: :aiff,
+    FormatParser::Audio.new(
+      format: :aiff,
       num_audio_channels: channels,
       audio_sample_rate_hz: sample_rate.to_i,
       media_duration_frames: sample_frames,
