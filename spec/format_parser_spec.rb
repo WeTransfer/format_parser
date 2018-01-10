@@ -20,4 +20,34 @@ describe FormatParser do
       end
     end
   end
+
+  describe 'multiple values return' do
+    let(:blob) { StringIO.new(Random.new.bytes(512 * 1024)) }
+    let(:audio) { FormatParser::Audio.new(format: :aiff, num_audio_channels: 1) }
+    let(:image) { FormatParser::Image.new(format: :dpx, width_px: 1, height_px: 1) }
+
+    context '#parse called without any indication' do
+      subject { FormatParser.parse(blob) }
+
+      it { is_expected.to include(image) }
+      it { is_expected.to include(audio) }
+    end
+
+    context '#parse called with a conf block' do
+      subject do
+        FormatParser.parse(blob) do |config|
+          config.natures = [:audio]
+          config.limit = 1
+        end
+      end
+
+      it { is_expected.to include(audio) }
+    end
+
+    context '#parse called with hash options' do
+      subject { FormatParser.parse(blob, natures: [:image], limit: 1) }
+
+      it { is_expected.to include(image) }
+    end
+  end
 end
