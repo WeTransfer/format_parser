@@ -106,7 +106,10 @@ class FormatParser::MP3Parser
       four_bytes = data.unpack('C4')
       seek_jmp = sync_bytes_offset_in_4_byte_seq(four_bytes)
       if seek_jmp > 0
-        io.seek(io.pos + seek_jmp)
+        # At this stage we are past the first frame header,
+        # we need to jump back to the start of that header and
+        # then walk `seek_jmp` bytes forward
+        io.seek(io.pos - 4 + seek_jmp)
         next
       end
 
