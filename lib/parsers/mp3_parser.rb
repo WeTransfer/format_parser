@@ -58,13 +58,24 @@ class FormatParser::MP3Parser
       }
     )
 
-    if maybe_xing_header
-      duration = maybe_xing_header.frames * SAMPLES_PER_FRAME / first_frame.sample_rate.to_f
-      bit_rate = maybe_xing_header.byte_count * 8 / duration / 1000
-      file_info.media_duration_seconds = duration
-      return file_info
+    duration = if maybe_xing_header
+      duration_based_on_xing_header(maybe_xing_header, first_frame)
+    else
+      duration_based_on_cbr_averaging(initial_frames, bytes_used_by_frames)
     end
 
+    file_info.media_duration_seconds = duration
+
+    file_info
+  end
+
+  private
+
+  def duration_based_on_xing_header(xing_header, first_frame)
+    duration = xing_header.frames * SAMPLES_PER_FRAME / first_frame.sample_rate.to_f
+  end
+
+  def duration_based_on_cbr_averaging(initial_frames, bytes_used_by_frames)
     # Estimate duration using the frames we did parse - to have an exact one
     # we would need to have all the frames and thus read most of the file
     avg_bitrate = float_average_over(initial_frames, :frame_bitrate)
@@ -74,12 +85,7 @@ class FormatParser::MP3Parser
     est_frame_count = bytes_used_by_frames / avg_frame_size
     est_samples = est_frame_count * SAMPLES_PER_FRAME
     est_duration_seconds = est_samples / avg_sample_rate
-
-    file_info.media_duration_seconds = est_duration_seconds
-    return file_info
   end
-
-  private
   
   # The implementation of the MPEG frames parsing is mostly based on tinytag,
   # a sweet little Python library for parsing audio metadata - do check it out
