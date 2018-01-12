@@ -1,5 +1,7 @@
 class FormatParser::DPXParser
   include FormatParser::IOUtils
+  extend  FormatParser::ParserHelpers
+
   FILE_INFO = [
 #    :x4,   # magic bytes SDPX, we read them anyway so not in the pattern
     :x4,   # u32  :image_offset,   :desc => 'Offset to image data in bytes', :req => true

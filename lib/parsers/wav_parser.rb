@@ -1,5 +1,6 @@
 class FormatParser::WAVParser
   include FormatParser::IOUtils
+  extend  FormatParser::ParserHelpers
 
   NATURES = [:audio]
   FORMATS = [:wav]

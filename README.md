@@ -26,8 +26,6 @@ matches.first.height_px     #=> 240
 matches.first.orientation   #=> :top_left
 ```
 
-If nothing is detected, the result will be `nil`.
-
 ## Design rationale
 
 We need to recover metadata from various file types, and we need to do so satisfying the following constraints:

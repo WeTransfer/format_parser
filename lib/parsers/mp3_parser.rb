@@ -25,6 +25,8 @@ class FormatParser::MP3Parser
   NATURES = [:audio].freeze
   FORMATS = [:mp3].freeze
 
+  extend  FormatParser::ParserHelpers
+
   def self.natures
     NATURES
   end

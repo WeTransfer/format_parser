@@ -1,5 +1,6 @@
 class FormatParser::GIFParser
   include FormatParser::IOUtils
+  extend  FormatParser::ParserHelpers
 
   HEADERS = ['GIF87a', 'GIF89a'].map(&:b)
   NETSCAPE_AND_AUTHENTICATION_CODE = 'NETSCAPE2.0'

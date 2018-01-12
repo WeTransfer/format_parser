@@ -1,5 +1,6 @@
 class FormatParser::AIFFParser
   include FormatParser::IOUtils
+  extend  FormatParser::ParserHelpers
 
   # Known chunk types we can omit when parsing,
   # grossly lifted from http://www.muratnkonar.com/aiff/
@@ -31,7 +32,6 @@ class FormatParser::AIFFParser
 
   def call(io)
     io = FormatParser::IOConstraint.new(io)
-    io.seek(0)
     form_chunk_type, chunk_size = safe_read(io, 8).unpack('a4N')
     return unless form_chunk_type == "FORM" && chunk_size > 4
 

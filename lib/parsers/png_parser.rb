@@ -14,6 +14,7 @@ class FormatParser::PNGParser
   }
 
   include FormatParser::IOUtils
+  extend  FormatParser::ParserHelpers
 
   NATURES = [:image].freeze
   FORMATS = [:png].freeze

@@ -1,7 +1,4 @@
 require 'thread'
-require 'dry-struct'
-require_relative 'parse_config'
-require 'ostruct'
 
 module FormatParser
   require_relative 'image'
@@ -11,6 +8,7 @@ module FormatParser
   require_relative 'remote_io'
   require_relative 'io_constraint'
   require_relative 'care'
+  require_relative 'parser_helpers'
 
   PARSER_MUX = Mutex.new
 
@@ -39,8 +37,7 @@ module FormatParser
     parse(cached_io)
   end
 
-  def self.parse(io, **opts, &proc)
-    config = parse_config(**opts, &proc)
+  def self.parse(io, natures: @natures.to_a, formats: @formats.to_a, limit: @parsers.length)
     # If the cache is preconfigured do not apply an extra layer. It is going
     # to be preconfigured when using parse_http.
     io = Care::IOWrapper.new(io) unless io.is_a?(Care::IOWrapper)
@@ -49,9 +46,7 @@ module FormatParser
     # Always instantiate parsers fresh for each input, since they might
     # contain instance variables which otherwise would have to be reset
     # between invocations, and would complicate threading situations
-    parsers = @parsers.select do |p|
-      !(p.natures & config.natures).empty? && !(p.formats & config.formats).empty?
-    end.map(&:new)
+    parsers = @parsers.select { |p| p.any_format?(formats) && p.any_nature?(natures) }.map(&:new)
 
     parsers.each do |parser|
       # We need to rewind for each parser, anew
@@ -62,7 +57,7 @@ module FormatParser
         if info = parser.call(limited_io)
           results << info
           # Return early if the limit was hit.
-          return results if config.limit == results.length
+          return results if results.length == limit
         end
       rescue IOUtils::InvalidRead
         # There was not enough data for this parser to work on,
@@ -73,22 +68,8 @@ module FormatParser
         # and examine the file more closely.
       end
     end
-    # Return the array of results if something matched or nil otherwise.
-    results.empty? ? nil : results
-  end
-
-  def self.parse_config(**opts, &proc)
-    defaults = { formats: @formats.to_a, natures: @natures.to_a, limit: @parsers.count }
-    case
-    when !opts.empty?
-      return ParseConfig.new(defaults.merge(opts))
-    when !proc.nil?
-      config = OpenStruct.new
-      proc.call(config)
-      return ParseConfig.new(defaults.merge(config.to_h))
-    else
-      return ParseConfig.new(defaults)
-    end
+    # Return the array of results.
+    results
   end
 
   Dir.glob(__dir__ + '/parsers/*.rb').sort.each do |parser_file|

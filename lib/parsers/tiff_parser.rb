@@ -1,5 +1,6 @@
 class FormatParser::TIFFParser
   include FormatParser::IOUtils
+  extend  FormatParser::ParserHelpers
 
   LITTLE_ENDIAN_TIFF_HEADER_BYTES = [0x49, 0x49, 0x2A, 0x0]
   BIG_ENDIAN_TIFF_HEADER_BYTES = [0x4D, 0x4D, 0x0, 0x2A]
@@ -29,6 +30,7 @@ class FormatParser::TIFFParser
         format: :tif,
         width_px: w,
         height_px: h,
+        # might be nil if EXIF metadata wasn't found
         orientation: scanner.orientation
       )
   end

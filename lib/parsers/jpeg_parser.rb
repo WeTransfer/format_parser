@@ -1,5 +1,6 @@
 class FormatParser::JPEGParser
   include FormatParser::IOUtils
+  extend  FormatParser::ParserHelpers
 
   class InvalidStructure < StandardError
   end

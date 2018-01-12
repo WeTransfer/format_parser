@@ -1,5 +1,7 @@
 class FormatParser::PSDParser
   include FormatParser::IOUtils
+  extend  FormatParser::ParserHelpers
+
   PSD_HEADER = [0x38, 0x42, 0x50, 0x53]
   NATURES = [:image].freeze
   FORMATS = [:psd].freeze
