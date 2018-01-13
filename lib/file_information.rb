@@ -58,6 +58,9 @@ module FormatParser
     # as an Integer
     attr_accessor :media_duration_frames
 
+    # XML Document Type
+    attr_accessor :document_type
+
     # If a parser wants to provide any extra information to the caller
     # it can be placed here
     attr_accessor :intrinsics

@@ -4,14 +4,15 @@ class FormatParser::FDXParser
   def information_from_io(io)
     if xml_check(io)
       file_and_document_type = safe_read(io, 100)
-      is_it_final_draft?(file_and_document_type)
+      file_type, document_type = check_for_document_type(file_and_document_type)
     else
       return # Bail if it's not even XML
     end
 
     file_info = FormatParser::FileInformation.new(
       file_nature: :document,
-      file_type: :fdx
+      file_type: file_type,
+      document_type: document_type
     )
   end
 
@@ -20,9 +21,10 @@ class FormatParser::FDXParser
     xml_check == "<?xml" ? true : false
   end
 
-  def is_it_final_draft?(file_and_document_type)
-    if file_and_document_type.include?("FinalDraft")
-      true
+  def check_for_document_type(file_and_document_type)
+    sanitized_data = file_and_document_type.downcase
+    if sanitized_data.include?("finaldraft") && sanitized_data.include?("script") 
+      return :fdx, :script
     else
       return
     end

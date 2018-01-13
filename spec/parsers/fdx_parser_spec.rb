@@ -8,6 +8,7 @@ describe FormatParser::FDXParser do
         expect(parsed).not_to be_nil
         expect(parsed.file_nature).to eq(:document)
         expect(parsed.file_type).to eq(:fdx)
+        expect(parsed.document_type).to eq(:script)
       end
     end
   end
