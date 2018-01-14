@@ -9,7 +9,7 @@ and [dimensions,](https://github.com/sstephenson/dimensions) borrowing from them
 
 ## Currently supported filetypes:
 
-`TIFF, PSD, PNG, MP3, JPEG, GIF, DPX, AIFF, WAV`
+`TIFF, PSD, PNG, MP3, JPEG, GIF, DPX, AIFF, WAV, FDX`
 
 ...with more on the way!
 
@@ -66,5 +66,5 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 - c_39064__alienbomb__atmo-truck.wav is from [freesound](https://freesound.org/people/alienbomb/sounds/39064/) and is CC0 licensed
 - c_M1F1-Alaw-AFsp.wav and d_6_Channel_ID.wav are from a [McGill Engineering site](http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Samples.html)
 
-# FDX
+### FDX
 - fixture.fdx was created by one of the project maintainers and is MIT licensed
