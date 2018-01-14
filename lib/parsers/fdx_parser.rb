@@ -26,6 +26,5 @@ class FormatParser::FDXParser
       return
     end
   end
-
   FormatParser.register_parser_constructor self
 end
