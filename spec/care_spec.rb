@@ -71,9 +71,12 @@ describe Care do
 
       subject = Care::IOWrapper.new(io_double, cache_double)
 
+      expect(subject.pos).to eq(0)
       subject.read(2)
       subject.read(3)
+      expect(subject.pos).to eq(5)
       subject.seek(11)
+      expect(subject.pos).to eq(11)
       subject.read(5)
 
       expect(cache_double.recorded_calls).to be_kind_of(Array)
