@@ -10,9 +10,6 @@ matrix:
 branches:
   - master
   - rubocop-integration
-jobs:
-  include:
-    - stage: Linters
-      script: bundle exec rubocop
-    - stage: Tests
-      script: bundle exec rspec
+script:
+  - bundle exec rubocop
+  - bundle exec rspec
