@@ -66,6 +66,9 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 - c_39064__alienbomb__atmo-truck.wav is from [freesound](https://freesound.org/people/alienbomb/sounds/39064/) and is CC0 licensed
 - c_M1F1-Alaw-AFsp.wav and d_6_Channel_ID.wav are from a [McGill Engineering site](http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Samples.html)
 
+### MP3
+- Cassy.mp3 has been produced by WeTransfer and may be used with the library for the purposes of testing
+
 ### FDX
 - fixture.fdx was created by one of the project maintainers and is MIT licensed
 
