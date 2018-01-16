@@ -62,7 +62,7 @@ class Care
     # or fetch pages where necessary
     def byteslice(io, at, n_bytes)
       if n_bytes < 1
-        raise ArgumentError, "The number of bytes to fetch must be a positive Integer"
+        raise ArgumentError, "The number of bytes to fetch must be a positive Integer, but was #{n_bytes}"
       end
       if at < 0
         raise ArgumentError, "Negative offsets are not supported (got #{at})"
