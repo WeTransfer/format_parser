@@ -55,6 +55,11 @@ describe Care do
   describe Care::IOWrapper do
     it_behaves_like 'an IO object compatible with IOConstraint'
 
+    it 'always returns an empty string for a read() of 0' do
+      c = described_class.new(StringIO.new)
+      expect(c.read(0)).to eq('')
+    end
+
     it 'forwards calls to read() to the Care and adjusts internal offsets' do
       fake_cache_class = Class.new do
         attr_reader :recorded_calls
