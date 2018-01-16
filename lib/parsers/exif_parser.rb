@@ -49,6 +49,8 @@ class FormatParser::EXIFParser
     # Without the magic bytes EXIFR throws an error
     @file_io.seek(0)
     raw_exif_data = EXIFR::JPEG.new(@file_io) if @filetype == :jpeg
+    # Return if it's a CR2, which we don't parse yet
+    return if cr2_check(@file_io)
     raw_exif_data = EXIFR::TIFF.new(@file_io) if @filetype == :tiff
     # For things that we don't yet have a parser for
     # we make the raw exif result available
@@ -67,6 +69,12 @@ class FormatParser::EXIFParser
 
   def valid_orientation?(value)
     (1..ORIENTATIONS.length).include?(value)
+  end
+
+  def cr2_check(file_io)
+    @file_io.seek(8)
+    cr2_check_bytes = @file_io.read(2)
+    cr2_check_bytes == "CR" ? true : false
   end
 
 end
