@@ -25,6 +25,7 @@ class Care
     end
 
     def read(n_bytes)
+      return '' if n_bytes == 0 # As hardcoded for all Ruby IO objects
       read = @cache.byteslice(@io, @pos, n_bytes)
       return nil unless read && !read.empty?
       @pos += read.bytesize
