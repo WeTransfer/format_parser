@@ -7,6 +7,9 @@ cache: bundler
 matrix:
   allow_failures:
     - rvm: jruby-9.0
+branches:
+  - master
+  - rubocop-integration
 script:
   - bundle exec rubocop
   - bundle exec rspec
