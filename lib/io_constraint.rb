@@ -1,3 +1,4 @@
+
 # We deliberately want to document and restrict the
 # number of methods an IO-ish object has to implement
 # to be usable with all our parsers. This subset is fairly
