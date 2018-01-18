@@ -1,2 +1,2 @@
-inherit_from:
-  - https://raw.githubusercontent.com/WeTransfer/our-style/master/ruby/default.yml
+inherit_gem:
+  wetransfer_style: ruby/default.yml
