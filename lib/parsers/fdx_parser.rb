@@ -18,12 +18,12 @@ class FormatParser::FDXParser
 
   def xml_check(io)
     xml_check = safe_read(io, 5)
-    xml_check == "<?xml"
+    xml_check == '<?xml'
   end
 
   def check_for_document_type(file_and_document_type)
     sanitized_data = file_and_document_type.downcase
-    if sanitized_data.include?("finaldraft") && sanitized_data.include?("script")
+    if sanitized_data.include?('finaldraft') && sanitized_data.include?('script')
       return :fdx, :script
     else
       return

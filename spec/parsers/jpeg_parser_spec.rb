@@ -32,5 +32,4 @@ describe FormatParser::JPEGParser do
       end
     end
   end
-
 end

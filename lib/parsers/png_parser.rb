@@ -21,7 +21,7 @@ class FormatParser::PNGParser
 
 
   def chunk_length_and_type(io)
-    safe_read(io, 8).unpack("Na4")
+    safe_read(io, 8).unpack('Na4')
   end
 
   def call(io)
@@ -36,7 +36,7 @@ class FormatParser::PNGParser
     # correct length as well.
     # IHDR _must_ come first, no exceptions. If it doesn't
     # we should not consider this a valid PNG.
-    return unless chunk_type == "IHDR" && chunk_length == 13
+    return unless chunk_type == 'IHDR' && chunk_length == 13
 
     chunk_data = safe_read(io, chunk_length)
     # Width:              4 bytes
@@ -47,7 +47,7 @@ class FormatParser::PNGParser
     # Filter method:      1 byte
     # Interlace method:   1 byte
     w, h, bit_depth, color_type,
-      compression_method, filter_method, interlace_method = chunk_data.unpack("N2C5")
+      compression_method, filter_method, interlace_method = chunk_data.unpack('N2C5')
 
     color_mode = COLOR_TYPES.fetch(color_type)
     has_transparency = TRANSPARENCY_PER_COLOR_TYPE[color_type]

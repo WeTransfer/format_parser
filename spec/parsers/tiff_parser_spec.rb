@@ -33,5 +33,4 @@ describe FormatParser::TIFFParser do
       end
     end
   end
-
 end

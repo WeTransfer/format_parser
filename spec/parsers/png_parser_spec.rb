@@ -20,7 +20,7 @@ describe FormatParser::PNGParser do
   end
 
   it 'is able to parse an animated PNG' do
-    gif_path = fixtures_dir + "PNG/anim.png"
+    gif_path = fixtures_dir + 'PNG/anim.png'
 
     parsed = subject.call(File.open(gif_path, 'rb'))
     expect(parsed).not_to be_nil

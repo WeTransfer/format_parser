@@ -68,7 +68,6 @@ class FormatParser::JPEGParser
     nil # Due to the way JPEG is structured it is possible that some invalid inputs will get caught
   end
 
-
   # Read a byte, if it is 0xFF then skip bytes as long as they are also 0xFF (byte stuffing)
   # and return the first byte scanned that is not 0xFF
   def read_next_marker
@@ -85,7 +84,8 @@ class FormatParser::JPEGParser
     size   = read_char
 
     if length == (size * 3) + 8
-      @width, @height = width, height
+      @width = width
+      @height = height
     else
       raise InvalidStructure
     end
@@ -93,7 +93,7 @@ class FormatParser::JPEGParser
 
   def scan_app1_frame
     frame = @buf.read(8)
-    if frame.include?("Exif")
+    if frame.include?('Exif')
       scanner = FormatParser::EXIFParser.new(:jpeg, @buf)
       if scanner.scan_image_exif
         @exif_output = scanner.exif_data

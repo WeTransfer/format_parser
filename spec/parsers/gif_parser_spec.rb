@@ -23,7 +23,7 @@ describe FormatParser::GIFParser do
 
   describe 'is able to correctly parse our own examples' do
     it 'is able to parse the animated GIF' do
-      gif_path = fixtures_dir + "GIF/anim.gif"
+      gif_path = fixtures_dir + 'GIF/anim.gif'
 
       parsed = subject.call(File.open(gif_path, 'rb'))
       expect(parsed).not_to be_nil

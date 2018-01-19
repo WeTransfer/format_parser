@@ -2,7 +2,6 @@
 require 'spec_helper'
 
 describe FormatParser::MOOVParser do
-
   def deep_print_atoms(atoms, output, swimlanes = [])
     return unless atoms
 
@@ -12,7 +11,7 @@ describe FormatParser::MOOVParser do
     vert = '│'
     cdn = '┬'
     n_atoms = atoms.length
-  
+
     atoms.each_with_index do |atom, i|
       is_last_child = i == (n_atoms - 1)
       has_children = atom.children && atom.children.any?

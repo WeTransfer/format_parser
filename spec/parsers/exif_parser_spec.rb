@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe FormatParser::EXIFParser do
-  
   # ORIENTATIONS = [
   #   :top_left,
   #   :top_right,
@@ -23,7 +22,7 @@ describe FormatParser::EXIFParser do
 
         expect(parser.orientation).to be_kind_of(Symbol)
         # Filenames in this dir correspond with the orientation of the file
-        expect(filename.include?(parser.orientation.to_s)).to be true 
+        expect(filename.include?(parser.orientation.to_s)).to be true
       end
     end
   end
@@ -38,7 +37,7 @@ describe FormatParser::EXIFParser do
 
         expect(parser.orientation).to be_kind_of(Symbol)
         # Filenames in this dir correspond with the orientation of the file
-        expect(filename.include?(parser.orientation.to_s)).to be true 
+        expect(filename.include?(parser.orientation.to_s)).to be true
       end
     end
   end

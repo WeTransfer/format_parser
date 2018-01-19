@@ -19,15 +19,15 @@ class FormatParser::IOConstraint
   def initialize(io)
     @io = io
   end
-  
+
   def read(n_bytes)
     @io.read(n_bytes)
   end
-  
+
   def seek(absolute_offset)
     @io.seek(absolute_offset)
   end
-  
+
   def size
     @io.size
   end

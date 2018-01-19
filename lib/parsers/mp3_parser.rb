@@ -37,12 +37,12 @@ class FormatParser::MP3Parser
     ignore_bytes_at_tail = id3_v1 ? 128 : 0
     ignore_bytes_at_head = id3_v2 ? io.pos : 0
     bytes_used_by_frames = io.size - ignore_bytes_at_tail - ignore_bytes_at_tail
-    
+
     io.seek(ignore_bytes_at_head)
 
     maybe_xing_header, initial_frames = parse_mpeg_frames(io)
 
-    return nil if initial_frames.empty?
+    return if initial_frames.empty?
 
     first_frame = initial_frames.first
 
@@ -79,17 +79,17 @@ class FormatParser::MP3Parser
     est_duration_seconds = est_samples / avg_sample_rate
 
     file_info.media_duration_seconds = est_duration_seconds
-    return file_info
+    file_info
   end
 
   private
-  
+
   # The implementation of the MPEG frames parsing is mostly based on tinytag,
   # a sweet little Python library for parsing audio metadata - do check it out
   # if you have a minute. https://pypi.python.org/pypi/tinytag
   def parse_mpeg_frames(io)
     mpeg_frames = []
-    
+
     MAX_FRAMES_TO_SCAN.times do |frame_i|
       # Read through until we can latch onto the 11 sync bits. Read in 4-byte
       # increments to save on read() calls
@@ -123,7 +123,7 @@ class FormatParser::MP3Parser
           return [xing_header, mpeg_frames]
         end
       end
-      if frame_detail.frame_length > 1  # jump over current frame body
+      if frame_detail.frame_length > 1 # jump over current frame body
         io.seek(io.pos + frame_detail.frame_length - 4)
       end
     end
@@ -132,14 +132,14 @@ class FormatParser::MP3Parser
     [nil, mpeg_frames]
   end
 
-  def parse_mpeg_frame_header(offset_in_file, sync, conf, bitrate_freq, rest)
+  def parse_mpeg_frame_header(offset_in_file, _sync, conf, bitrate_freq, rest)
     # see this page for the magic values used in mp3:
     # http:/www.mpgedit.org/mpgedit/mpeg_format/mpeghdr.htm
     samplerates = [
-        [11025, 12000,  8000],  # MPEG 2.5
-        [],                     # reserved
-        [22050, 24000, 16000],  # MPEG 2
-        [44100, 48000, 32000],  # MPEG 1
+      [11025, 12000,  8000],  # MPEG 2.5
+      [],                     # reserved
+      [22050, 24000, 16000],  # MPEG 2
+      [44100, 48000, 32000],  # MPEG 1
     ]
     v1l1 = [0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 0]
     v1l2 = [0, 32, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 384, 0]
@@ -148,19 +148,19 @@ class FormatParser::MP3Parser
     v2l2 = [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160, 0]
     v2l3 = v2l2
     bitrate_by_version_by_layer = [
-        [nil, v2l3, v2l2, v2l1],  # MPEG Version 2.5  # note that the layers go
-        nil,                      # reserved          # from 3 to 1 by design.
-        [nil, v2l3, v2l2, v2l1],  # MPEG Version 2    # the first layer id is
-        [nil, v1l3, v1l2, v1l1],  # MPEG Version 1    # reserved
+      [nil, v2l3, v2l2, v2l1],  # MPEG Version 2.5  # note that the layers go
+      nil,                      # reserved          # from 3 to 1 by design.
+      [nil, v2l3, v2l2, v2l1],  # MPEG Version 2    # the first layer id is
+      [nil, v1l3, v1l2, v1l1],  # MPEG Version 1    # reserved
     ]
-    samples_per_frame = 1152  # the default frame size for mp3
+    samples_per_frame = 1152 # the default frame size for mp3
     channels_per_channel_mode = [
-        2,  # 00 Stereo
-        2,  # 01 Joint stereo (Stereo)
-        2,  # 10 Dual channel (2 mono channels)
-        1,  # 11 Single channel (Mono)
+      2,  # 00 Stereo
+      2,  # 01 Joint stereo (Stereo)
+      2,  # 10 Dual channel (2 mono channels)
+      1,  # 11 Single channel (Mono)
     ]
-    
+
     br_id = (bitrate_freq >> 4) & 0x0F  # biterate id
     sr_id = (bitrate_freq >> 2) & 0x03  # sample rate id
     padding = bitrate_freq & 0x02 > 0 ? 1 : 0
@@ -170,7 +170,7 @@ class FormatParser::MP3Parser
     channels = channels_per_channel_mode.fetch(channel_mode)
     sample_rate = deep_fetch(samplerates, mpeg_id, sr_id)
     frame_bitrate = deep_fetch(bitrate_by_version_by_layer, mpeg_id, layer_id, br_id)
-    frame_length = (144000 * frame_bitrate) / sample_rate + padding
+    frame_length = (144_000 * frame_bitrate) / sample_rate + padding
     MPEGFrame.new(
       offset_in_file: offset_in_file,
       mpeg_id: mpeg_id,
@@ -186,17 +186,15 @@ class FormatParser::MP3Parser
   # or whether there is the 0xFF byte at the end
   def sync_bytes_offset_in_4_byte_seq(four_bytes)
     four_bytes[0...3].each_with_index do |byte, i|
-      next_byte = four_bytes[i+1]
-      if byte == 0xFF && next_byte > 0xE0
-        return i
-      end
+      next_byte = four_bytes[i + 1]
+      return i if byte == 0xFF && next_byte > 0xE0
     end
     four_bytes[-1] == 0xFF ? 3 : 4
   end
 
   def attempt_xing_header(frame_body)
-    unless xing_offset = frame_body.index("Xing")
-      return nil # No Xing in this frame
+    unless xing_offset = frame_body.index('Xing')
+      return # No Xing in this frame
     end
 
     io = StringIO.new(frame_body)
@@ -205,32 +203,24 @@ class FormatParser::MP3Parser
     # https://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#XINGHeader
     header_flags, _ = io.read(4).unpack('s>s>')
     frames = byte_count = toc = vbr_scale = nil
-    
-    if header_flags & 1  # FRAMES FLAG
-      frames = io.read(4).unpack('N1').first
-    end
 
-    if header_flags & 2  # BYTES FLAG
-      byte_count = io.read(4).unpack('N1').first
-    end
+    frames = io.read(4).unpack('N1').first if header_flags & 1 # FRAMES FLAG
 
-    if header_flags & 4  # TOC FLAG
-      toc = io.read(100).unpack('C100')
-    end
+    byte_count = io.read(4).unpack('N1').first if header_flags & 2 # BYTES FLAG
 
-    if header_flags & 8  # VBR SCALE FLAG
-      vbr_scale = io.read(4).unpack('N1').first
-    end
+    toc = io.read(100).unpack('C100') if header_flags & 4 # TOC FLAG
+
+    vbr_scale = io.read(4).unpack('N1').first if header_flags & 8 # VBR SCALE FLAG
 
     VBRHeader.new(frames: frames, byte_count: byte_count, toc_entries: toc, vbr_scale: vbr_scale)
   end
 
-  def average_bytes_and_bitrate(mpeg_frames)
+  def average_bytes_and_bitrate(_mpeg_frames)
     avg_bytes_per_frame = initial_frames.map(&:frame_length).inject(&:+) / initial_frames.length.to_f
     avg_bitrate_per_frame = initial_frames.map(&:frame_bitrate).inject(&:+) / initial_frames.length.to_f
     [avg_bytes_per_frame, avg_bitrate_per_frame]
   end
-  
+
   def xing_header_usable_for_duration?(xing_header)
     xing_header && xing_header.frames && xing_header.byte_count && xing_header.vbr_scale
   end

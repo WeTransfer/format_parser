@@ -1,5 +1,3 @@
-require 'thread'
-
 module FormatParser
   require_relative 'image'
   require_relative 'audio'
@@ -64,7 +62,7 @@ module FormatParser
       # We need to rewind for each parser, anew
       io.seek(0)
       # Limit how many operations the parser can perform
-      limited_io = ReadLimiter.new(io, max_bytes: 512*1024, max_reads: 64*1024, max_seeks: 64*1024)
+      limited_io = ReadLimiter.new(io, max_bytes: 512 * 1024, max_reads: 64 * 1024, max_seeks: 64 * 1024)
       begin
         parser.call(limited_io)
       rescue IOUtils::InvalidRead

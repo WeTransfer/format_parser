@@ -12,7 +12,7 @@ class FormatParser::TIFFParser
 
   def call(io)
     io = FormatParser::IOConstraint.new(io)
-    magic_bytes = safe_read(io, 4).unpack("C4")
+    magic_bytes = safe_read(io, 4).unpack('C4')
     endianness = scan_tiff_endianness(magic_bytes)
     return unless endianness
     w, h = read_tiff_by_endianness(io, endianness)
@@ -31,11 +31,9 @@ class FormatParser::TIFFParser
   # and set our unpack method argument to suit.
   def scan_tiff_endianness(magic_bytes)
     if magic_bytes == LITTLE_ENDIAN_TIFF_HEADER_BYTES
-      "v"
+      'v'
     elsif magic_bytes == BIG_ENDIAN_TIFF_HEADER_BYTES
-      "n"
-    else
-      nil
+      'n'
     end
   end
 

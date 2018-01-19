@@ -24,12 +24,10 @@ class FormatParser::GIFParser
     bytes_per_color = gct_byte >> 6
     unpacked_radix = gct_byte & 0b00000111
     num_colors = 2**(unpacked_radix + 1)
-    gct_table_size = num_colors*bytes_per_color
+    gct_table_size = num_colors * bytes_per_color
 
     # If we have the global color table - skip over it
-    if has_gct
-      safe_read(io, gct_table_size)
-    end
+    safe_read(io, gct_table_size) if has_gct
 
     # Now it gets interesting - we are at the place where an
     # application extension for the NETSCAPE2.0 block will occur.

@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe "IOUtils" do
-  let(:io) {File.open(fixtures_dir + '/test.jpg', 'rb')}
-  include FormatParser::IOUtils 
+describe 'IOUtils' do
+  let(:io) { File.open(fixtures_dir + '/test.jpg', 'rb') }
+  include FormatParser::IOUtils
 
   describe '#safe_read' do
     it 'raises if the requested bytes are past the EOF' do
@@ -16,12 +16,12 @@ describe "IOUtils" do
       expect {
         safe_read(io, 1_000_000)
       }.to raise_error(FormatParser::IOUtils::InvalidRead)
-    end  
+    end
   end
 
   describe '#safe_skip' do
     it 'raises on a negative skip byte amount' do
-      fake_io = double()
+      fake_io = double
       expect {
         safe_skip(fake_io, -5)
       }.to raise_error(FormatParser::IOUtils::InvalidRead)
@@ -29,12 +29,12 @@ describe "IOUtils" do
 
     it 'uses #pos if available on the object' do
       fake_io = double(pos: 11)
-      expect(fake_io).to receive(:seek).with(11+5)
+      expect(fake_io).to receive(:seek).with(11 + 5)
       safe_skip(fake_io, 5)
     end
 
     it 'uses #read if no #pos is available on the object' do
-      fake_io = double()
+      fake_io = double
       expect(fake_io).to receive(:read).with(5).and_return('x' * 5)
       safe_skip(fake_io, 5)
     end
