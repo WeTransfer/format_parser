@@ -41,23 +41,23 @@ module FormatParser
     # If the cache is preconfigured do not apply an extra layer. It is going
     # to be preconfigured when using parse_http.
     io = Care::IOWrapper.new(io) unless io.is_a?(Care::IOWrapper)
-    results = []
 
     # Always instantiate parsers fresh for each input, since they might
     # contain instance variables which otherwise would have to be reset
     # between invocations, and would complicate threading situations
     parsers = @parsers.select { |p| p.any_format?(formats) && p.any_nature?(natures) }.map(&:new)
-
-    parsers.each do |parser|
+    counter = 0
+    parsers.map do |parser|
+      # Skip parsing if the limit was reached
+      next if counter == limit
       # We need to rewind for each parser, anew
       io.seek(0)
       # Limit how many operations the parser can perform
       limited_io = ReadLimiter.new(io, max_bytes: 512*1024, max_reads: 64*1024, max_seeks: 64*1024)
       begin
         if info = parser.call(limited_io)
-          results << info
-          # Return early if the limit was hit.
-          return results if results.length == limit
+          counter = counter + 1
+          info
         end
       rescue IOUtils::InvalidRead
         # There was not enough data for this parser to work on,
@@ -67,9 +67,7 @@ module FormatParser
         # caused the parser to go off-track. Strictly speaking we should log this
         # and examine the file more closely.
       end
-    end
-    # Return the array of results.
-    results
+    end.compact
   end
 
   Dir.glob(__dir__ + '/parsers/*.rb').sort.each do |parser_file|

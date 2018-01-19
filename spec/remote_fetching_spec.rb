@@ -55,6 +55,19 @@ describe 'Fetching data from HTTP remotes' do
       end
     end
   end
+
+  describe 'when parsing remote fixtures' do
+    Dir.glob(fixtures_dir + '/**/*.*').sort.each do |fixture_path|
+      filename = File.basename(fixture_path)
+      it "parses #{filename} without raising any errors" do
+        remote_fixture_path = fixture_path.gsub(fixtures_dir, "http://localhost:9399")
+        # Some of the fixtures are in dirs with spaces
+        cleaned_remote_fixture_path = remote_fixture_path.gsub(" ", "%20")
+        FormatParser.parse_http(cleaned_remote_fixture_path)
+      end
+    end
+  end
+
   
   after(:all) do
     @server.stop

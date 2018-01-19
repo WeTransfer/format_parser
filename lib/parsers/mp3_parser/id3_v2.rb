@@ -2,7 +2,6 @@ module FormatParser::MP3Parser::ID3V2
   def attempt_id3_v2_extraction(io)
     io.seek(0) # Only support header ID3v2
     header_bytes = io.read(10)
-
     return nil unless header_bytes
 
     header = parse_id3_v2_header(header_bytes)
@@ -50,12 +49,11 @@ module FormatParser::MP3Parser::ID3V2
   end
 
   def parse_id3_v2_frame(io)
-    id, size, flags = io.read(10).unpack('a4a4a2')
-    size = decode_syncsafe_int(size)
+    id, syncsafe_size, flags = io.read(10).unpack('a4a4a2')
+    size = decode_syncsafe_int(syncsafe_size)
     content = io.read(size)
-    if content.bytesize != size
-      raise "Expected to read #{size} bytes for ID3V2 frame #{id}, but got #{content.bytesize}"
-    end
+    # It might so happen in sutations of terrible invalidity that we end up
+    # with less data than advertised by the syncsafe size. We will just truck on.
     {id: id, size: size, flags: flags, content: content}
   end
 

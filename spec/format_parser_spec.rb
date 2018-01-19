@@ -48,4 +48,14 @@ describe FormatParser do
       it { is_expected.to include(image) }
     end
   end
+
+  describe 'when parsing fixtures' do
+    Dir.glob(fixtures_dir + '/**/*.*').sort.each do |fixture_path|
+      it "parses #{fixture_path} without raising any errors" do
+        File.open(fixture_path, 'rb') do |file|
+          FormatParser.parse(file)
+        end
+      end
+    end
+  end
 end

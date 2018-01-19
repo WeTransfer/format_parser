@@ -9,7 +9,7 @@ and [dimensions,](https://github.com/sstephenson/dimensions) borrowing from them
 
 ## Currently supported filetypes:
 
-`TIFF, PSD, PNG, MP3, JPEG, GIF, DPX, AIFF, WAV`
+`TIFF, PSD, PNG, MP3, JPEG, GIF, DPX, AIFF, WAV, FDX, MOV, MP4`
 
 ...with more on the way!
 
@@ -63,3 +63,13 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 - c_11k16bitpcm.wav and c_8kmp316.wav are from [Wikipedia WAV](https://en.wikipedia.org/wiki/WAV#Comparison_of_coding_schemes), retrieved January 7, 2018
 - c_39064__alienbomb__atmo-truck.wav is from [freesound](https://freesound.org/people/alienbomb/sounds/39064/) and is CC0 licensed
 - c_M1F1-Alaw-AFsp.wav and d_6_Channel_ID.wav are from a [McGill Engineering site](http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Samples.html)
+
+### MP3
+- Cassy.mp3 has been produced by WeTransfer and may be used with the library for the purposes of testing
+
+### FDX
+- fixture.fdx was created by one of the project maintainers and is MIT licensed
+
+### MOOV
+- bmff.mp4 is borrowed from the [bmff](https://github.com/zuku/bmff) project
+- Test_Circular MOV files were created by one of the project maintainers and are MIT licensed
