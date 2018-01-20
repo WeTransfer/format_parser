@@ -1,22 +1,14 @@
 class FormatParser::TIFFParser
   include FormatParser::IOUtils
-  extend  FormatParser::ParserHelpers
+  include FormatParser::DSL
 
   LITTLE_ENDIAN_TIFF_HEADER_BYTES = [0x49, 0x49, 0x2A, 0x0]
   BIG_ENDIAN_TIFF_HEADER_BYTES = [0x4D, 0x4D, 0x0, 0x2A]
   WIDTH_TAG  = 0x100
   HEIGHT_TAG = 0x101
 
-  NATURES = [:image].freeze
-  FORMATS = [:tif].freeze
-
-  def self.natures
-    NATURES
-  end
-
-  def self.formats
-    FORMATS
-  end
+  natures :image
+  formats :tif
 
   def call(io)
     io = FormatParser::IOConstraint.new(io)

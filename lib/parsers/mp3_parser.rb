@@ -22,18 +22,10 @@ class FormatParser::MP3Parser
 
   # Default frame size for mp3
   SAMPLES_PER_FRAME = 1152
-  NATURES = [:audio].freeze
-  FORMATS = [:mp3].freeze
 
-  extend  FormatParser::ParserHelpers
-
-  def self.natures
-    NATURES
-  end
-
-  def self.formats
-    FORMATS
-  end
+  include FormatParser::DSL
+  natures :audio
+  formats :mp3
 
   def call(io)
     # Read the last 128 bytes which might contain ID3v1

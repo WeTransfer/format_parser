@@ -1,6 +1,9 @@
 class FormatParser::DPXParser
   include FormatParser::IOUtils
-  extend  FormatParser::ParserHelpers
+  include FormatParser::DSL
+
+  natures :image
+  formats :dpx
 
   FILE_INFO = [
 #    :x4,   # magic bytes SDPX, we read them anyway so not in the pattern
@@ -125,17 +128,6 @@ class FormatParser::DPXParser
   BE_MAGIC = 'SDPX'
   LE_MAGIC = BE_MAGIC.reverse
   HEADER_SIZE = SIZEOF[DPX_INFO] # Does not include the initial 4 bytes
-
-  NATURES = [:image].freeze
-  FORMATS = [:dpx].freeze
-
-  def self.natures
-    NATURES
-  end
-
-  def self.formats
-    FORMATS
-  end
 
   def call(io)
     io = FormatParser::IOConstraint.new(io)

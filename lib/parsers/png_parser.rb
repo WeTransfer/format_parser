@@ -1,4 +1,10 @@
 class FormatParser::PNGParser
+  include FormatParser::IOUtils
+  include FormatParser::DSL
+
+  natures :image
+  formats :png
+
   PNG_HEADER_BYTES = [137, 80, 78, 71, 13, 10, 26, 10].pack('C*')
   COLOR_TYPES = {
     0 => :grayscale,
@@ -13,19 +19,6 @@ class FormatParser::PNGParser
     6 => true,
   }
 
-  include FormatParser::IOUtils
-  extend  FormatParser::ParserHelpers
-
-  NATURES = [:image].freeze
-  FORMATS = [:png].freeze
-
-  def self.natures
-    NATURES
-  end
-
-  def self.formats
-    FORMATS
-  end
 
   def chunk_length_and_type(io)
     safe_read(io, 8).unpack("Na4")

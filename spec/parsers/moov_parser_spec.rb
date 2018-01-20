@@ -1,3 +1,4 @@
+# coding: utf-8
 require 'spec_helper'
 
 describe FormatParser::MOOVParser do
@@ -31,10 +32,10 @@ describe FormatParser::MOOVParser do
 
   Dir.glob(fixtures_dir + '/MOOV/**/*.*').sort.each do |moov_path|
     it "is able to parse #{File.basename(moov_path)}" do
-      result = subject.information_from_io(File.open(moov_path, 'rb'))
+      result = subject.call(File.open(moov_path, 'rb'))
 
       expect(result).not_to be_nil
-      expect(result.file_nature).to eq(:video)
+      expect(result.nature).to eq(:video)
       expect(result.width_px).to be > 0
       expect(result.height_px).to be > 0
       expect(result.media_duration_seconds).to be_kind_of(Float)
@@ -49,11 +50,11 @@ describe FormatParser::MOOVParser do
   it 'parses a MOV file and provides the necessary metadata' do
     mov_path = fixtures_dir + '/MOOV/MOV/Test_Circular_ProRes422.mov'
 
-    result = subject.information_from_io(File.open(mov_path, 'rb'))
+    result = subject.call(File.open(mov_path, 'rb'))
 
     expect(result).not_to be_nil
-    expect(result.file_nature).to eq(:video)
-    expect(result.file_type).to eq(:mov)
+    expect(result.nature).to eq(:video)
+    expect(result.format).to eq(:mov)
     expect(result.width_px).to eq(1920)
     expect(result.height_px).to eq(1080)
   end
@@ -61,11 +62,11 @@ describe FormatParser::MOOVParser do
   it 'parses an MP4 video file and provides the necessary metadata' do
     mov_path = fixtures_dir + '/MOOV/MP4/bmff.mp4'
 
-    result = subject.information_from_io(File.open(mov_path, 'rb'))
+    result = subject.call(File.open(mov_path, 'rb'))
 
     expect(result).not_to be_nil
-    expect(result.file_nature).to eq(:video)
-    expect(result.file_type).to eq(:mov)
+    expect(result.nature).to eq(:video)
+    expect(result.format).to eq(:mov)
     expect(result.width_px).to eq(160)
     expect(result.height_px).to eq(90)
   end

@@ -43,9 +43,9 @@ describe FormatParser do
         expect_any_instance_of(FormatParser::DPXParser).to receive(:call).and_return(image)
       end
 
-      subject { FormatParser.parse(blob, formats: [:dpx], limit: 1) }
+      subject { FormatParser.parse(blob, formats: [:dpx], returns: :one) }
 
-      it { is_expected.to include(image) }
+      it { is_expected.to eq(image) }
     end
   end
 

@@ -2,9 +2,6 @@ module FormatParser
   class Image
     NATURE = :image
 
-    # What kind of file is it?
-    attr_accessor :nature
-
     # What filetype was recognized? Will contain a non-ambiguous symbol
     # referring to the file format. The symbol can be used as a filename
     # extension safely
