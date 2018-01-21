@@ -216,12 +216,17 @@ class FormatParser::MOOVParser::Decoder
         atom_size = read_64bit_uint(io)
       end
 
+      # We are allowed to read what comes after
+      # the atom size and atom type, but not any more than that
+      size_of_atom_type_and_size = io.pos - atom_pos
+      atom_size_sans_header = atom_size - size_of_atom_type_and_size
+
       children, fields = if KNOWN_BRANCH_AND_LEAF_ATOM_TYPES.include?(atom_type)
-        parse_atom_children_and_data_fields(io, atom_size, atom_type)
+        parse_atom_children_and_data_fields(io, atom_size_sans_header, atom_type)
       elsif KNOWN_BRANCH_ATOM_TYPES.include?(atom_type)
-        [extract_atom_stream(io, atom_size - 8, current_branch + [atom_type]), nil]
+        [extract_atom_stream(io, atom_size_sans_header, current_branch + [atom_type]), nil]
       else # Assume leaf atom
-        [nil, parse_atom_fields_per_type(io, atom_size, atom_type)]
+        [nil, parse_atom_fields_per_type(io, atom_size_sans_header, atom_type)]
       end
 
       atoms << Atom.new(atom_pos, atom_size, atom_type, current_branch + [atom_type], children, fields)
