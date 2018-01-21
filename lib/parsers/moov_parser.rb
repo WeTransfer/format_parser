@@ -1,6 +1,6 @@
 class FormatParser::MOOVParser
   include FormatParser::IOUtils
-
+  include FormatParser::DSL
   require_relative 'moov_parser/decoder'
 
   # Maps values of the "ftyp" atom to something
@@ -12,11 +12,14 @@ class FormatParser::MOOVParser
     "m4a " => :m4a,
   }
 
+  natures :video
+  formats *FTYP_MAP.values
+
   # It is currently not documented and not particularly well-tested,
   # so not considered a public API for now
-  private_constant :Decoder 
+  private_constant :Decoder
 
-  def information_from_io(io)
+  def call(io)
     return nil unless matches_moov_definition?(io)
 
     # Now we know we are in a MOOV, so go back and parse out the atom structure.
@@ -51,9 +54,8 @@ class FormatParser::MOOVParser
       media_duration_s = duration / timescale.to_f
     end
 
-    FormatParser::FileInformation.new(
-      file_nature: :video,
-      file_type: file_type_from_moov_type(file_type),
+    FormatParser::Video.new(
+      format: format_from_moov_type(file_type),
       width_px: width,
       height_px: height,
       media_duration_seconds: media_duration_s,
@@ -63,7 +65,7 @@ class FormatParser::MOOVParser
 
   private
 
-  def file_type_from_moov_type(file_type)
+  def format_from_moov_type(file_type)
     FTYP_MAP.fetch(file_type, :mov)
   end
 

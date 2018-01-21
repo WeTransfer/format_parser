@@ -1,9 +1,11 @@
 class FormatParser::WAVParser
   include FormatParser::IOUtils
+  include FormatParser::DSL
 
-  def information_from_io(io)
-    io.seek(0)
+  natures :audio
+  formats :wav
 
+  def call(io)
     # Read the RIFF header. Chunk descriptor should be RIFF, the size should 
     # contain the size of the entire file in bytes minus 8 bytes for the 
     # two fields not included in this count: chunk_id and size.
@@ -88,9 +90,8 @@ class FormatParser::WAVParser
   def file_info(fmt_data, sample_frames)
     return unless fmt_data[:sample_rate] > 0
     duration_in_seconds = sample_frames / fmt_data[:sample_rate].to_f
-    FormatParser::FileInformation.new(
-      file_nature: :audio,
-      file_type: :wav,
+    FormatParser::Audio.new(
+      format: :wav,
       num_audio_channels: fmt_data[:channels],
       audio_sample_rate_hz: fmt_data[:sample_rate],
       media_duration_frames: sample_frames,

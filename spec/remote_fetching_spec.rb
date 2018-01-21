@@ -22,23 +22,23 @@ describe 'Fetching data from HTTP remotes' do
   it 'parses the animated PNG over HTTP' do
     file_information = FormatParser.parse_http('http://localhost:9399/PNG/anim.png')
     expect(file_information).not_to be_nil
-    expect(file_information.file_nature).to eq(:image)
+    expect(file_information.first.nature).to eq(:image)
   end
 
   it 'parses the JPEGs exif data' do
     file_information = FormatParser.parse_http('http://localhost:9399/exif-orientation-testimages/jpg/top_left.jpg')
     expect(file_information).not_to be_nil
-    expect(file_information.file_nature).to eq(:image)
-    expect(file_information.file_type).to eq(:jpg)
-    expect(file_information.orientation).to eq(:top_left)
+    expect(file_information.first.nature).to eq(:image)
+    expect(file_information.first.format).to eq(:jpg)
+    expect(file_information.first.orientation).to eq(:top_left)
   end
 
   it 'parses the TIFFs exif data' do
     file_information = FormatParser.parse_http('http://localhost:9399/TIFF/test.tif')
     expect(file_information).not_to be_nil
-    expect(file_information.file_nature).to eq(:image)
-    expect(file_information.file_type).to eq(:tif)
-    expect(file_information.orientation).to eq(:top_left)
+    expect(file_information.first.nature).to eq(:image)
+    expect(file_information.first.format).to eq(:tif)
+    expect(file_information.first.orientation).to eq(:top_left)
   end
 
   describe 'is able to correctly parse orientation for all remote JPEG EXIF examples from FastImage' do
@@ -49,9 +49,9 @@ describe 'Fetching data from HTTP remotes' do
         file_information = FormatParser.parse_http(remote_jpeg_path)
         expect(file_information).not_to be_nil
 
-        expect(file_information.orientation).to be_kind_of(Symbol)
+        expect(file_information.first.orientation).to be_kind_of(Symbol)
         # Filenames in this dir correspond with the orientation of the file
-        expect(filename.include?(file_information.orientation.to_s)).to be true 
+        expect(filename.include?(file_information.first.orientation.to_s)).to be true 
       end
     end
   end

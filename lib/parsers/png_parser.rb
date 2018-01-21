@@ -1,4 +1,10 @@
 class FormatParser::PNGParser
+  include FormatParser::IOUtils
+  include FormatParser::DSL
+
+  natures :image
+  formats :png
+
   PNG_HEADER_BYTES = [137, 80, 78, 71, 13, 10, 26, 10].pack('C*')
   COLOR_TYPES = {
     0 => :grayscale,
@@ -13,15 +19,13 @@ class FormatParser::PNGParser
     6 => true,
   }
 
-  include FormatParser::IOUtils
 
   def chunk_length_and_type(io)
     safe_read(io, 8).unpack("Na4")
   end
 
-  def information_from_io(io)
+  def call(io)
     io = FormatParser::IOConstraint.new(io)
-
     magic_bytes = safe_read(io, PNG_HEADER_BYTES.bytesize)
     return unless magic_bytes == PNG_HEADER_BYTES
 
@@ -66,8 +70,8 @@ class FormatParser::PNGParser
       num_frames, loop_n_times = safe_read(io, 8).unpack('NN')
     end
 
-    FormatParser::FileInformation.image(
-      file_type: :png,
+    FormatParser::Image.new(
+      format: :png,
       width_px: w,
       height_px: h,
       has_transparency: has_transparency,

@@ -1,12 +1,15 @@
 class FormatParser::GIFParser
+  include FormatParser::IOUtils
+  include FormatParser::DSL
+
   HEADERS = ['GIF87a', 'GIF89a'].map(&:b)
   NETSCAPE_AND_AUTHENTICATION_CODE = 'NETSCAPE2.0'
 
-  include FormatParser::IOUtils
+  natures :image
+  formats :gif
 
-  def information_from_io(io)
+  def call(io)
     io = FormatParser::IOConstraint.new(io)
-
     header = safe_read(io, 6)
     return unless HEADERS.include?(header)
 
@@ -38,8 +41,8 @@ class FormatParser::GIFParser
     potentially_netscape_app_header = safe_read(io, 64)
     is_animated = potentially_netscape_app_header.include?(NETSCAPE_AND_AUTHENTICATION_CODE)
 
-    FormatParser::FileInformation.image(
-      file_type: :gif,
+    FormatParser::Image.new(
+      format: :gif,
       width_px: w,
       height_px: h,
       has_multiple_frames: is_animated,

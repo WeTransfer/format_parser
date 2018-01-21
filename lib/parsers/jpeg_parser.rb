@@ -1,5 +1,6 @@
 class FormatParser::JPEGParser
   include FormatParser::IOUtils
+  include FormatParser::DSL
 
   class InvalidStructure < StandardError
   end
@@ -10,7 +11,10 @@ class FormatParser::JPEGParser
   SOS_MARKER  = 0xDA  # start of stream
   APP1_MARKER = 0xE1  # maybe EXIF
 
-  def information_from_io(io)
+  natures :image
+  formats :jpg
+
+  def call(io)
     @buf = FormatParser::IOConstraint.new(io)
     @width             = nil
     @height            = nil
@@ -50,21 +54,13 @@ class FormatParser::JPEGParser
       end
 
       # Return at the earliest possible opportunity
-      if @width && @height && @orientation
-        file_info = FormatParser::FileInformation.image(
-          file_type: :jpg,
+      if @width && @height
+        return  FormatParser::Image.new(
+          format: :jpg,
           width_px: @width,
           height_px: @height,
           orientation: @orientation
         )
-        return file_info
-      elsif @width && @height
-        file_info = FormatParser::FileInformation.image(
-          file_type: :jpg,
-          width_px: @width,
-          height_px: @height
-        )
-        return file_info
       end
     end
     nil # We could not parse anything

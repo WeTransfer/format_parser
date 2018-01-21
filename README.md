@@ -15,18 +15,57 @@ and [dimensions,](https://github.com/sstephenson/dimensions) borrowing from them
 
 ## Basic usage
 
-Pass an IO object that responds to `read` and `seek` to `FormatParser`.
+Pass an IO object that responds to `read` and `seek` to `FormatParser` and an array of matches will be returned.
 
 ```ruby
-file_info = FormatParser.parse(File.open("myimage.jpg", "rb"))
-file_info.file_nature           #=> :image
-file_info.file_format           #=> :JPG
-file_info.width_px              #=> 320
-file_info.height_px             #=> 240
-file_info.orientation           #=> :top_left
+matches = FormatParser.parse(File.open("myimage.jpg", "rb"))
+matches.first.nature        #=> :image
+matches.first.format        #=> :jpg
+matches.first.width_px      #=> 320
+matches.first.height_px     #=> 240
+matches.first.orientation   #=> :top_left
 ```
 
-If nothing is detected, the result will be `nil`.
+If you rather receive only one result, then call the gem as follows:
+
+```ruby
+FormatParser.parse(File.open("myimage.jpg", "rb"), returns: :one)
+```
+
+Additionally, you can optimize even more the metadata extraction by providing hints to the gem:
+
+```ruby
+FormatParser.parse(File.open("myimage", "rb"), natures: [:video, :image], formats: [:jpg, :png, :mp4])
+```
+
+## Creating your own parsers
+
+In order to create new parsers, these have to meet two requirements:
+
+1) Instances of the new parser class needs to respond to a `call` method which takes one IO object as an argument and returns some metadata information about its corresponding file or nil otherwise.
+2) Instances of the new parser class needs to respond `natures` and `formats` accessor methods, both returning an array of symbols. A simple DSL is provided to avoid writing those accessors.
+3) The class needs to register itself as a parser.
+
+
+Down below you can find a basic parser implementation:
+
+```ruby
+class BasicParser
+  include FormatParser::DSL # Adds formats and natures methods to the class, which define
+                            # accessor for all the instances.
+  
+  formats :foo, :baz # Indicates which formats it can read.
+  natures :bar       # Indicates which type of file from a human perspective it can read:
+                     #      - :audio
+                     #      - :document
+                     #      - :image
+                     #      - :video
+  def call(file)
+    # Returns a DTO object with including some metadata.
+  end
+
+  FormatParser.register_parser_constructor self # Register this parser.
+```
 
 ## Design rationale
 
