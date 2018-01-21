@@ -14,7 +14,7 @@ and [dimensions,](https://github.com/sstephenson/dimensions) borrowing from them
 
 `TIFF, PSD, PNG, MP3, JPEG, GIF, DPX, AIFF, WAV, FDX, MOV, MP4`
 
-...with more on the way!
+...with [more](https://github.com/WeTransfer/format_parser/issues?q=is%3Aissue+is%3Aopen+label%3Aformats) on the way!
 
 ## Basic usage
 
