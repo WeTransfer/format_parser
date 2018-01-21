@@ -1,11 +1,14 @@
 # format_parser
 
+
 is a Ruby library for prying open video, image, document, and audio files.
 It includes a number of parser modules that try to recover metadata useful for post-processing and layout while reading the absolute
 minimum amount of data possible.
 
 `format_parser` is inspired by [imagesize,](https://rubygems.org/gem/imagesize) [fastimage](https://github.com/sdsykes/fastimage)
 and [dimensions,](https://github.com/sstephenson/dimensions) borrowing from them where appropriate.
+
+[![Gem Version](https://badge.fury.io/rb/format_parser.svg)](https://badge.fury.io/rb/format_parser) [![Build Status](https://travis-ci.org/WeTransfer/format_parser.svg?branch=master)](https://travis-ci.org/WeTransfer/format_parser)
 
 ## Currently supported filetypes:
 
