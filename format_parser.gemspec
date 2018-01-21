@@ -15,8 +15,14 @@ Gem::Specification.new do |spec|
   minimum amount of data possible."
   spec.homepage      = "https://github.com/WeTransfer/format_parser"
   spec.license       = "MIT"
-
-  # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
+  # Alert people to a change in the gem's interface, will remove in a subsequent version
+  spec.post_install_message = %q{
+    -----------------------------------------------------------------------------
+    | ATTENTION: format_parser v0.2.0 introduces changes to the gem's interface.|
+    | See https://github.com/WeTransfer/format_parser#basic-usage               |
+    | for up-to-date usage instructions. Thank you for using format_parser! :)  |
+    -----------------------------------------------------------------------------
+  }
   # to allow pushing to a single host or delete this section to allow pushing to any host.
   if spec.respond_to?(:metadata)
     spec.metadata['allowed_push_host'] = "https://rubygems.org"

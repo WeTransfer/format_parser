@@ -26,13 +26,13 @@ matches.first.height_px     #=> 240
 matches.first.orientation   #=> :top_left
 ```
 
-If you rather receive only one result, then call the gem as follows:
+If you would rather receive only one result, call the gem as follows:
 
 ```ruby
 FormatParser.parse(File.open("myimage.jpg", "rb"), returns: :one)
 ```
 
-Additionally, you can optimize even more the metadata extraction by providing hints to the gem:
+You can also optimize the metadata extraction by providing hints to the gem:
 
 ```ruby
 FormatParser.parse(File.open("myimage", "rb"), natures: [:video, :image], formats: [:jpg, :png, :mp4])
