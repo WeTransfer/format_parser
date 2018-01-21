@@ -265,7 +265,6 @@ class FormatParser::MOOVParser::Decoder
 
   def read_binary_coded_decimal(io)
     bcd_string = io.read(4)
-    bcd_string.insert(0, '0') if bcd_string.length.odd?
     [bcd_string].pack('H*').unpack('C*')
   end
 end
