@@ -54,7 +54,7 @@ module FormatParser
              when :one
                1
              else
-               throw ArgumentError.new(":returns does not match any supported mode (:all, :first)")
+               throw ArgumentError.new(":returns does not match any supported mode (:all, :one)")
              end
 
     # Always instantiate parsers fresh for each input, since they might

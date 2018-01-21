@@ -26,6 +26,47 @@ matches.first.height_px     #=> 240
 matches.first.orientation   #=> :top_left
 ```
 
+If you rather receive only one result, then call the gem as follows:
+
+```ruby
+FormatParser.parse(File.open("myimage.jpg", "rb"), returns: :one)
+```
+
+Additionally, you can optimize even more the metadata extraction by providing hints to the gem:
+
+```ruby
+FormatParser.parse(File.open("myimage", "rb"), natures: [:video, :image], formats: [:jpg, :png, :mp4])
+```
+
+## Creating your own parsers
+
+In order to create new parsers, these have to meet two requirements:
+
+1) Instances of the new parser class needs to respond to a `call` method which takes one IO object as an argument and returns some metadata information about its corresponding file or nil otherwise.
+2) Instances of the new parser class needs to respond `natures` and `formats` accessor methods, both returning an array of symbols. A simple DSL is provided to avoid writing those accessors.
+3) The class needs to register itself as a parser.
+
+
+Down below you can find a basic parser implementation:
+
+```ruby
+class BasicParser
+  include FormatParser::DSL # Adds formats and natures methods to the class, which define
+                            # accessor for all the instances.
+  
+  formats :foo, :baz # Indicates which formats it can read.
+  natures :bar       # Indicates which type of file from a human perspective it can read:
+                     #      - :audio
+                     #      - :document
+                     #      - :image
+                     #      - :video
+  def call(file)
+    # Returns a DTO object with including some metadata.
+  end
+
+  FormatParser.register_parser_constructor self # Register this parser.
+```
+
 ## Design rationale
 
 We need to recover metadata from various file types, and we need to do so satisfying the following constraints:
