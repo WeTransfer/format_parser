@@ -26,7 +26,7 @@ module FormatParser
     end
   end
 
-  def self.parse_http(url)
+  def self.parse_http(url, natures: @natures.to_a, formats: @formats.to_a, returns: :all)
     remote_io = RemoteIO.new(url)
     cached_io = Care::IOWrapper.new(remote_io)
 
@@ -37,7 +37,7 @@ module FormatParser
     cached_io.read(1)
     cached_io.seek(0)
 
-    parse(cached_io)
+    parse(cached_io, natures: natures, formats: formats, returns: returns)
   end
 
   def self.parse(io, natures: @natures.to_a, formats: @formats.to_a, returns: :all)

@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'webrick'
 
-describe 'Fetching data from HTTP remotes' do
+describe 'Fetching data from HTTP remotes' do  
   before(:all) do
     log_file ||= StringIO.new
     log = WEBrick::Log.new(log_file)
@@ -17,6 +17,22 @@ describe 'Fetching data from HTTP remotes' do
     @server.mount '/', WEBrick::HTTPServlet::FileHandler, fixtures_dir
     trap('INT') { @server.stop }
     @server_thread = Thread.new { @server.start }
+  end
+
+  it '#parse_http is called without any option' do
+    expect_any_instance_of(FormatParser::AIFFParser).to receive(:call).and_return(:audio)
+
+    result = FormatParser.parse_http("http://localhost:9399/PNG/anim.png")
+
+    expect(result.include?(:audio)).to be true
+    expect(result.count).to eq(2)
+  end
+
+  it '#parse_http is called with hash options' do
+    result = FormatParser.parse_http("http://localhost:9399/PNG/anim.png", formats: [:png], returns: :one)
+
+    expect(result.format).to eq(:png)
+    expect(result.height_px).to eq(180)
   end
 
   it 'parses the animated PNG over HTTP' do
