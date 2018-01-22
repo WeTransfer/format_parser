@@ -40,20 +40,21 @@ module FormatParser
     parse(cached_io, **kwargs)
   end
 
-  def self.parse(io, natures: @natures.to_a, formats: @formats.to_a, returns: :all)
+  # Return all by default
+  def self.parse(io, natures: @natures.to_a, formats: @formats.to_a, results: :first)
     # If the cache is preconfigured do not apply an extra layer. It is going
     # to be preconfigured when using parse_http.
     io = Care::IOWrapper.new(io) unless io.is_a?(Care::IOWrapper)
 
     # How many results has the user asked for? Used to determinate whether an array
     # is returned or not.
-    amount = case returns
+    amount = case results
              when :all
                @parsers.count
-             when :one
+             when :first
                1
              else
-               throw ArgumentError.new(':returns does not match any supported mode (:all, :one)')
+               throw ArgumentError.new(":results does not match any supported mode (:all, :first)")
              end
 
     # Always instantiate parsers fresh for each input, since they might

@@ -19,42 +19,41 @@ describe 'Fetching data from HTTP remotes' do
     @server_thread = Thread.new { @server.start }
   end
 
-  it '#parse_http is called without any option' do
-    expect_any_instance_of(FormatParser::AIFFParser).to receive(:call).and_return(:audio)
-
+  it '#parse_http is called without any option' do    
     result = FormatParser.parse_http("http://localhost:9399/PNG/anim.png")
+    
+    expect(result.format).to eq(:png)
+    expect(result.height_px).to eq(180)
+  end
+  
+  it '#parse_http is called with hash options' do
+    expect_any_instance_of(FormatParser::AIFFParser).to receive(:call).and_return(:audio)
+    result = FormatParser.parse_http("http://localhost:9399/PNG/anim.png", results: :all)
 
     expect(result.include?(:audio)).to be true
     expect(result.count).to eq(2)
   end
 
-  it '#parse_http is called with hash options' do
-    result = FormatParser.parse_http("http://localhost:9399/PNG/anim.png", formats: [:png], returns: :one)
-
-    expect(result.format).to eq(:png)
-    expect(result.height_px).to eq(180)
-  end
-
   it 'parses the animated PNG over HTTP' do
     file_information = FormatParser.parse_http('http://localhost:9399/PNG/anim.png')
     expect(file_information).not_to be_nil
-    expect(file_information.first.nature).to eq(:image)
+    expect(file_information.nature).to eq(:image)
   end
 
   it 'parses the JPEGs exif data' do
     file_information = FormatParser.parse_http('http://localhost:9399/exif-orientation-testimages/jpg/top_left.jpg')
     expect(file_information).not_to be_nil
-    expect(file_information.first.nature).to eq(:image)
-    expect(file_information.first.format).to eq(:jpg)
-    expect(file_information.first.orientation).to eq(:top_left)
+    expect(file_information.nature).to eq(:image)
+    expect(file_information.format).to eq(:jpg)
+    expect(file_information.orientation).to eq(:top_left)
   end
 
   it 'parses the TIFFs exif data' do
     file_information = FormatParser.parse_http('http://localhost:9399/TIFF/test.tif')
     expect(file_information).not_to be_nil
-    expect(file_information.first.nature).to eq(:image)
-    expect(file_information.first.format).to eq(:tif)
-    expect(file_information.first.orientation).to eq(:top_left)
+    expect(file_information.nature).to eq(:image)
+    expect(file_information.format).to eq(:tif)
+    expect(file_information.orientation).to eq(:top_left)
   end
 
   describe 'is able to correctly parse orientation for all remote JPEG EXIF examples from FastImage' do
@@ -65,9 +64,9 @@ describe 'Fetching data from HTTP remotes' do
         file_information = FormatParser.parse_http(remote_jpeg_path)
         expect(file_information).not_to be_nil
 
-        expect(file_information.first.orientation).to be_kind_of(Symbol)
+        expect(file_information.orientation).to be_kind_of(Symbol)
         # Filenames in this dir correspond with the orientation of the file
-        expect(filename.include?(file_information.first.orientation.to_s)).to be true
+        expect(filename.include?(file_information.orientation.to_s)).to be true 
       end
     end
   end
