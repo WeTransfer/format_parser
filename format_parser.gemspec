@@ -47,5 +47,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'simplecov', '~> 0.15'
   spec.add_development_dependency 'pry', '~> 0.11'
   spec.add_development_dependency 'yard', '~> 0.9'
-  spec.add_development_dependency 'wetransfer_style'
+  spec.add_development_dependency 'wetransfer_style', '0.4.0'
 end
