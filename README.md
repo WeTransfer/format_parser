@@ -18,27 +18,27 @@ and [dimensions,](https://github.com/sstephenson/dimensions) borrowing from them
 
 ## Basic usage
 
-Pass an IO object that responds to `read` and `seek` to `FormatParser` and an array of matches will be returned.
+Pass an IO object that responds to `read` and `seek` to `FormatParser` and the first confirmed match will be returned.
 
 ```ruby
-matches = FormatParser.parse(File.open("myimage.jpg", "rb"))
-matches.first.nature        #=> :image
-matches.first.format        #=> :jpg
-matches.first.width_px      #=> 320
-matches.first.height_px     #=> 240
-matches.first.orientation   #=> :top_left
+match = FormatParser.parse(File.open("myimage.jpg", "rb"))
+match.nature        #=> :image
+match.format        #=> :jpg
+match.width_px      #=> 320
+match.height_px     #=> 240
+match.orientation   #=> :top_left
 ```
 
-If you would rather receive only one result, call the gem as follows:
+If you would rather receive all potential results from the gem, call the gem as follows:
 
 ```ruby
-FormatParser.parse(File.open("myimage.jpg", "rb"), returns: :one)
+FormatParser.parse(File.open("myimage.jpg", "rb"), results: :all)
 ```
 
 You can also optimize the metadata extraction by providing hints to the gem:
 
 ```ruby
-FormatParser.parse(File.open("myimage", "rb"), natures: [:video, :image], formats: [:jpg, :png, :mp4])
+FormatParser.parse(File.open("myimage", "rb"), natures: [:video, :image], formats: [:jpg, :png, :mp4], results: :all)
 ```
 
 ## Creating your own parsers

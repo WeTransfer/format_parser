@@ -24,11 +24,6 @@ class FormatParser::JPEGParser
 
   private
 
-  def advance(n)
-    safe_read(@buf, n)
-    nil
-  end
-
   def read_char
     safe_read(@buf, 1).unpack('C').first
   end
@@ -112,7 +107,7 @@ class FormatParser::JPEGParser
 
   def skip_frame
     length = read_short - 2
-    advance(length)
+    safe_skip(@buf, length)
   end
 
   FormatParser.register_parser_constructor self

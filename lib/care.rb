@@ -27,6 +27,7 @@ class Care
 
     def read(n_bytes)
       return '' if n_bytes == 0 # As hardcoded for all Ruby IO objects
+      raise ArgumentError, "negative length #{n_bytes} given" if n_bytes < 0 # also as per Ruby IO objects
       read = @cache.byteslice(@io, @pos, n_bytes)
       return unless read && !read.empty?
       @pos += read.bytesize
