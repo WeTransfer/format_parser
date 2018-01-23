@@ -18,7 +18,7 @@ Gem::Specification.new do |spec|
   # Alert people to a change in the gem's interface, will remove in a subsequent version
   spec.post_install_message = %q{
     -----------------------------------------------------------------------------
-    | ATTENTION: format_parser v0.2.0 introduces changes to the gem's interface.|
+    | ALERT: format_parser **v0.3.0** introduces changes to the gem's interface.|
     | See https://github.com/WeTransfer/format_parser#basic-usage               |
     | for up-to-date usage instructions. Thank you for using format_parser! :)  |
     -----------------------------------------------------------------------------
