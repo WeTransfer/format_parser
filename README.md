@@ -117,3 +117,4 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 ### MOOV
 - bmff.mp4 is borrowed from the [bmff](https://github.com/zuku/bmff) project
 - Test_Circular MOV files were created by one of the project maintainers and are MIT licensed
+- the fixture-*.mp4 files were borrowed from the magic_bytes project
