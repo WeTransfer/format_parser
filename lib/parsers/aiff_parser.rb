@@ -56,9 +56,8 @@ class FormatParser::AIFFParser
 
   def unpack_comm_chunk(io)
     # Parse the COMM chunk
-    channels, sample_frames, sample_size, sample_rate_extended = safe_read(io, 2 + 4 + 2 + 10).unpack('nNna10')
+    channels, sample_frames, _sample_size, sample_rate_extended = safe_read(io, 2 + 4 + 2 + 10).unpack('nNna10')
     sample_rate = unpack_extended_float(sample_rate_extended)
-    bytes_per_sample = (sample_size - 1) / 8 + 1
 
     return unless sample_frames > 0
 

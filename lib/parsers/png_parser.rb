@@ -55,12 +55,6 @@ class FormatParser::PNGParser
     # we are dealing with an APNG.
     safe_skip(io, 4)
 
-    # dry-validation won't let booleans be filled with nil so we have to set
-    # has_animation to false by default
-    has_animation = nil
-    num_frames = nil
-    loop_n_times = nil
-
     chunk_length, chunk_type = chunk_length_and_type(io)
     if chunk_length == 8 && chunk_type == 'acTL'
       # https://wiki.mozilla.org/APNG_Specification#.60acTL.60:_The_Animation_Control_Chunk

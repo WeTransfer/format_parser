@@ -153,7 +153,7 @@ class FormatParser::MP3Parser
       [nil, v2l3, v2l2, v2l1],  # MPEG Version 2    # the first layer id is
       [nil, v1l3, v1l2, v1l1],  # MPEG Version 1    # reserved
     ]
-    samples_per_frame = 1152 # the default frame size for mp3
+
     channels_per_channel_mode = [
       2,  # 00 Stereo
       2,  # 01 Joint stereo (Stereo)
@@ -231,7 +231,7 @@ class FormatParser::MP3Parser
 
   def deep_fetch(from, *keys)
     keys.inject(from) { |receiver, key_or_idx| receiver.fetch(key_or_idx) }
-  rescue IndexError, KeyError, NoMethodError
+  rescue IndexError, NoMethodError
     raise InvalidDeepFetch, "Could not retrieve #{keys.inspect} from #{from.inspect}"
   end
 
