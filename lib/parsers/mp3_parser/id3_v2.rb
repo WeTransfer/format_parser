@@ -2,16 +2,16 @@ module FormatParser::MP3Parser::ID3V2
   def attempt_id3_v2_extraction(io)
     io.seek(0) # Only support header ID3v2
     header_bytes = io.read(10)
-    return nil unless header_bytes
+    return unless header_bytes
 
     header = parse_id3_v2_header(header_bytes)
-    return nil unless header[:tag] == 'ID3'
-    return nil unless header[:size] > 0
+    return unless header[:tag] == 'ID3'
+    return unless header[:size] > 0
 
     header_tag_payload = io.read(header[:size])
     header_tag_payload = StringIO.new(header_tag_payload)
 
-    return nil unless header_tag_payload.size == header[:size]
+    return unless header_tag_payload.size == header[:size]
 
     frames = []
     loop do
@@ -38,10 +38,10 @@ module FormatParser::MP3Parser::ID3V2
       :flags, :C1,
       :size, :a4,
     ]
-    keys, values = packspec.partition.with_index {|_, i| i.even? }
+    keys, values = packspec.partition.with_index { |_, i| i.even? }
     unpacked_values = byte_str.unpack(values.join)
     header_data = Hash[keys.zip(unpacked_values)]
-    
+
     header_data[:version] = header_data[:version].unpack('C2')
     header_data[:size] = decode_syncsafe_int(header_data[:size])
 

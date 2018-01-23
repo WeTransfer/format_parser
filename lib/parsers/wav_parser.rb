@@ -6,10 +6,10 @@ class FormatParser::WAVParser
   formats :wav
 
   def call(io)
-    # Read the RIFF header. Chunk descriptor should be RIFF, the size should 
-    # contain the size of the entire file in bytes minus 8 bytes for the 
+    # Read the RIFF header. Chunk descriptor should be RIFF, the size should
+    # contain the size of the entire file in bytes minus 8 bytes for the
     # two fields not included in this count: chunk_id and size.
-    chunk_id, size, riff_type = safe_read(io, 12).unpack('a4la4')
+    chunk_id, _size, riff_type = safe_read(io, 12).unpack('a4la4')
 
     # The chunk_id and riff_type should be RIFF and WAVE respectively
     return unless chunk_id == 'RIFF' && riff_type == 'WAVE'

@@ -8,13 +8,13 @@ class FormatParser::PSDParser
 
   def call(io)
     io = FormatParser::IOConstraint.new(io)
-    magic_bytes = safe_read(io, 4).unpack("C4")
+    magic_bytes = safe_read(io, 4).unpack('C4')
 
     return unless magic_bytes == PSD_HEADER
 
     # We can be reasonably certain this is a PSD so we grab the height
     # and width bytes
-    w,h = safe_read(io, 22).unpack("x10N2")
+    w, h = safe_read(io, 22).unpack('x10N2')
     FormatParser::Image.new(
       format: :psd,
       width_px: w,

@@ -11,8 +11,6 @@ class FormatParser::EXIFParser
     def readbyte
       if byte = read(1)
         byte.unpack('C').first
-      else
-        nil
       end
     end
 
@@ -62,19 +60,16 @@ class FormatParser::EXIFParser
 
   def orientation_parser(raw_exif_data)
     value = raw_exif_data.orientation.to_i
-    if valid_orientation?(value)
-      @orientation = ORIENTATIONS[value - 1]
-    end
+    @orientation = ORIENTATIONS[value - 1] if valid_orientation?(value)
   end
 
   def valid_orientation?(value)
     (1..ORIENTATIONS.length).include?(value)
   end
 
-  def cr2_check(file_io)
+  def cr2_check(_file_io)
     @file_io.seek(8)
     cr2_check_bytes = @file_io.read(2)
-    cr2_check_bytes == "CR" ? true : false
+    cr2_check_bytes == 'CR'
   end
-
 end

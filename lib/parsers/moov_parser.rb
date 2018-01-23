@@ -7,9 +7,9 @@ class FormatParser::MOOVParser
   # we can reasonably call "file type" (something
   # usable as a filename extension)
   FTYP_MAP = {
-    "qt  " => :mov,
-    "mp4 " => :mp4,
-    "m4a " => :m4a,
+    'qt  ' => :mov,
+    'mp4 ' => :mp4,
+    'm4a ' => :m4a,
   }
 
   natures :video
@@ -20,7 +20,7 @@ class FormatParser::MOOVParser
   private_constant :Decoder
 
   def call(io)
-    return nil unless matches_moov_definition?(io)
+    return unless matches_moov_definition?(io)
 
     # Now we know we are in a MOOV, so go back and parse out the atom structure.
     # Parsing out the atoms does not read their contents - at least it doesn't
@@ -40,7 +40,8 @@ class FormatParser::MOOVParser
     ftyp_atom = decoder.find_first_atom_by_path(atom_tree, 'ftyp')
     file_type = ftyp_atom.field_value(:major_brand)
 
-    width, height = nil, nil
+    width = nil
+    height = nil
 
     # Try to find the width and height in the tkhd
     if tkhd = decoder.find_first_atom_by_path(atom_tree, 'moov', 'trak', 'tkhd')
@@ -50,7 +51,8 @@ class FormatParser::MOOVParser
 
     # Try to find the "topmost" duration (respecting edits)
     if mdhd = decoder.find_first_atom_by_path(atom_tree, 'moov', 'mvhd')
-      timescale, duration = mdhd.field_value(:tscale), mdhd.field_value(:duration)
+      timescale = mdhd.field_value(:tscale)
+      duration = mdhd.field_value(:duration)
       media_duration_s = duration / timescale.to_f
     end
 

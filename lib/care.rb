@@ -7,8 +7,9 @@ class Care
   DEFAULT_PAGE_SIZE = 16 * 1024
 
   class IOWrapper
-    def initialize(io, cache=Cache.new(DEFAULT_PAGE_SIZE))
-      @io, @cache = io, cache
+    def initialize(io, cache = Cache.new(DEFAULT_PAGE_SIZE))
+      @io = io
+      @cache = cache
       @pos = 0
     end
 
@@ -27,7 +28,7 @@ class Care
     def read(n_bytes)
       return '' if n_bytes == 0 # As hardcoded for all Ruby IO objects
       read = @cache.byteslice(@io, @pos, n_bytes)
-      return nil unless read && !read.empty?
+      return unless read && !read.empty?
       @pos += read.bytesize
       read
     end
@@ -40,10 +41,6 @@ class Care
       clear
       @io.close if @io.respond_to?(:close)
     end
-
-    def size
-      @io.size
-    end
   end
 
   # Stores cached pages of data from the given IO as strings.
@@ -51,7 +48,7 @@ class Care
   class Cache
     def initialize(page_size = DEFAULT_PAGE_SIZE)
       @page_size = page_size.to_i
-      raise ArgumentError, "The page size must be a positive Integer" unless @page_size > 0
+      raise ArgumentError, 'The page size must be a positive Integer' unless @page_size > 0
       @pages = {}
       @lowest_known_empty_page = nil
     end
@@ -72,7 +69,7 @@ class Care
       first_page = at / @page_size
       last_page = (at + n_bytes) / @page_size
 
-      relevant_pages = (first_page..last_page).map{|i| hydrate_page(io, i) }
+      relevant_pages = (first_page..last_page).map { |i| hydrate_page(io, i) }
 
       # Create one string combining all the pages which are relevant for
       # us - it is much easier to address that string instead of piecing
@@ -96,11 +93,7 @@ class Care
 
       # Returning an empty string from read() is very confusing for the caller,
       # and no builtins do this - if we are at EOF we should return nil
-      if slice && !slice.empty?
-        slice
-      else
-        nil
-      end
+      slice if slice && !slice.empty?
     end
 
     def clear
@@ -110,9 +103,7 @@ class Care
     def hydrate_page(io, page_i)
       # Avoid trying to read the page if we know there is no content to fill it
       # in the underlying IO
-      if @lowest_known_empty_page && page_i >= @lowest_known_empty_page
-        return nil
-      end
+      return if @lowest_known_empty_page && page_i >= @lowest_known_empty_page
 
       @pages[page_i] ||= read_page(io, page_i)
     end

@@ -1,5 +1,4 @@
 class FormatParser::RemoteIO
-
   # Represents a failure that might be retried
   # (like a 5xx response or a timeout)
   class IntermittentFailure < StandardError
@@ -33,7 +32,7 @@ class FormatParser::RemoteIO
   #
   # @return [Integer] the size of the remote resource
   def size
-    raise "Remote size not yet obtained, need to perform at least one read() to retrieve it" unless @remote_size
+    raise 'Remote size not yet obtained, need to perform at least one read() to retrieve it' unless @remote_size
     @remote_size
   end
 
@@ -52,8 +51,6 @@ class FormatParser::RemoteIO
       @remote_size = maybe_size
       @pos += maybe_body.bytesize
       maybe_body.force_encoding(Encoding::ASCII_8BIT)
-    else
-      nil
     end
   end
 
@@ -67,7 +64,7 @@ class FormatParser::RemoteIO
     # We use a GET and not a HEAD request followed by a GET because
     # S3 does not allow HEAD requests if you only presigned your URL for GETs, so we
     # combine the first GET of a segment and retrieving the size of the resource
-    response = Faraday.get(@uri, nil, range: "bytes=%d-%d" % [range.begin, range.end])
+    response = Faraday.get(@uri, nil, range: 'bytes=%d-%d' % [range.begin, range.end])
 
     case response.status
     when 200, 206
@@ -90,7 +87,7 @@ class FormatParser::RemoteIO
       # which satisfies the Ruby IO convention. The caller should deal with `nil` being the result of a read()
       # S3 will also handily _not_ supply us with the Content-Range of the actual resource, so we
       # cannot hint size with this response - at lease not when working with S3
-      return nil
+      return
     when 500..599
       raise IntermittentFailure, "Server at #{@uri} replied with a #{response.status} and we might want to retry"
     else

@@ -2,15 +2,15 @@ require 'spec_helper'
 
 describe Care do
   describe Care::Cache do
-    let(:source) { StringIO.new("Hello there, this is our little caching reader") }
+    let(:source) { StringIO.new('Hello there, this is our little caching reader') }
 
     it 'performs correct reads at various offsets' do
       cache = Care::Cache.new(3)
-      expect(cache.byteslice(source, 0, 3)).to eq("Hel")
-      expect(cache.byteslice(source, 0, 7)).to eq("Hello t")
-      expect(cache.byteslice(source, 1, 7)).to eq("ello th")
-      expect(cache.byteslice(source, 11, 8)).to eq(", this i")
-      expect(cache.byteslice(source, 12, 12)).to eq(" this is our")
+      expect(cache.byteslice(source, 0, 3)).to eq('Hel')
+      expect(cache.byteslice(source, 0, 7)).to eq('Hello t')
+      expect(cache.byteslice(source, 1, 7)).to eq('ello th')
+      expect(cache.byteslice(source, 11, 8)).to eq(', this i')
+      expect(cache.byteslice(source, 12, 12)).to eq(' this is our')
       expect(cache.byteslice(source, 120, 12)).to be_nil
     end
 
@@ -23,10 +23,10 @@ describe Care do
 
     it 'can be cleared' do
       cache = Care::Cache.new(3)
-      expect(cache.byteslice(source, 0, 3)).to eq("Hel")
-      expect(cache.instance_variable_get("@pages")).not_to be_empty
+      expect(cache.byteslice(source, 0, 3)).to eq('Hel')
+      expect(cache.instance_variable_get('@pages')).not_to be_empty
       cache.clear
-      expect(cache.instance_variable_get("@pages")).to be_empty
+      expect(cache.instance_variable_get('@pages')).to be_empty
     end
 
     it 'fits all the reads into one if the input fits into one page' do
@@ -67,7 +67,7 @@ describe Care do
           @recorded_calls ||= []
           @recorded_calls << [io, at, n_bytes]
           # Pretend reads always succeed and return the requisite number of bytes
-          "x" * n_bytes
+          'x' * n_bytes
         end
       end
 

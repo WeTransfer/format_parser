@@ -1,6 +1,6 @@
 require 'simplecov'
 SimpleCov.start do
-  add_filter "/spec/"
+  add_filter '/spec/'
 end
 
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
@@ -21,7 +21,7 @@ RSpec.configure do |c|
   c.extend SpecHelpers # makes fixtures_dir available for example groups too
 end
 
-RSpec.shared_examples "an IO object compatible with IOConstraint" do
+RSpec.shared_examples 'an IO object compatible with IOConstraint' do
   it 'responds to the same subset of public instance methods' do
     requisite_methods = FormatParser::IOConstraint.public_instance_methods - Object.public_instance_methods
     requisite_methods.each do |requisite|

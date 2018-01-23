@@ -41,5 +41,4 @@ describe FormatParser::ReadLimiter do
       reader.read(1)
     }.to raise_error(/bytes budget \(512\) exceeded/)
   end
-
 end

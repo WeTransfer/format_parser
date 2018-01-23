@@ -19,9 +19,8 @@ class FormatParser::PNGParser
     6 => true,
   }
 
-
   def chunk_length_and_type(io)
-    safe_read(io, 8).unpack("Na4")
+    safe_read(io, 8).unpack('Na4')
   end
 
   def call(io)
@@ -36,7 +35,7 @@ class FormatParser::PNGParser
     # correct length as well.
     # IHDR _must_ come first, no exceptions. If it doesn't
     # we should not consider this a valid PNG.
-    return unless chunk_type == "IHDR" && chunk_length == 13
+    return unless chunk_type == 'IHDR' && chunk_length == 13
 
     chunk_data = safe_read(io, chunk_length)
     # Width:              4 bytes
@@ -46,8 +45,8 @@ class FormatParser::PNGParser
     # Compression method: 1 byte
     # Filter method:      1 byte
     # Interlace method:   1 byte
-    w, h, bit_depth, color_type,
-      compression_method, filter_method, interlace_method = chunk_data.unpack("N2C5")
+    w, h, _bit_depth, color_type, _compression_method,
+      _filter_method, _interlace_method = chunk_data.unpack('N2C5')
 
     color_mode = COLOR_TYPES.fetch(color_type)
     has_transparency = TRANSPARENCY_PER_COLOR_TYPE[color_type]
@@ -56,18 +55,12 @@ class FormatParser::PNGParser
     # we are dealing with an APNG.
     safe_skip(io, 4)
 
-    # dry-validation won't let booleans be filled with nil so we have to set
-    # has_animation to false by default
-    has_animation = nil
-    num_frames = nil
-    loop_n_times = nil
-
     chunk_length, chunk_type = chunk_length_and_type(io)
     if chunk_length == 8 && chunk_type == 'acTL'
       # https://wiki.mozilla.org/APNG_Specification#.60acTL.60:_The_Animation_Control_Chunk
       # Unlike GIF, we do have the frame count that we can recover
       has_animation = true
-      num_frames, loop_n_times = safe_read(io, 8).unpack('NN')
+      num_frames, _loop_n_times = safe_read(io, 8).unpack('NN')
     end
 
     FormatParser::Image.new(

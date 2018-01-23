@@ -2,10 +2,9 @@
 # read atoms and parse their data fields if applicable. Also contains
 # a few utility functions for finding atoms in a list etc.
 class FormatParser::MOOVParser::Decoder
-
   class Atom < Struct.new(:at, :atom_size, :atom_type, :path, :children, :atom_fields)
     def to_s
-      "%s (%s): %d bytes at offset %d" % [atom_type, path.join('.'), atom_size, at]
+      '%s (%s): %d bytes at offset %d' % [atom_type, path.join('.'), atom_size, at]
     end
 
     def field_value(data_field)
@@ -20,10 +19,10 @@ class FormatParser::MOOVParser::Decoder
   end
 
   # Atoms (boxes) that are known to only contain children, no data fields
-  KNOWN_BRANCH_ATOM_TYPES = %w( moov mdia trak clip edts minf dinf stbl udta meta)
+  KNOWN_BRANCH_ATOM_TYPES = %w(moov mdia trak clip edts minf dinf stbl udta meta)
 
   # Atoms (boxes) that are known to contain both leaves and data fields
-  KNOWN_BRANCH_AND_LEAF_ATOM_TYPES = %w( meta ) # the udta.meta thing used by iTunes
+  KNOWN_BRANCH_AND_LEAF_ATOM_TYPES = %w(meta) # the udta.meta thing used by iTunes
 
   # Limit how many atoms we scan in sequence, to prevent derailments
   MAX_ATOMS_AT_LEVEL = 128
@@ -32,13 +31,13 @@ class FormatParser::MOOVParser::Decoder
   # matches the type, drilling down if a list of atom names is given
   def find_first_atom_by_path(atoms, *atom_types)
     type_to_find = atom_types.shift
-    requisite = atoms.find {|e| e.atom_type == type_to_find }
+    requisite = atoms.find { |e| e.atom_type == type_to_find }
 
     # Return if we found our match
     return requisite if atom_types.empty?
 
     # Return nil if we didn't find the match at this nesting level
-    return nil unless requisite
+    return unless requisite
 
     # ...otherwise drill further down
     find_first_atom_by_path(requisite.children || [], *atom_types)
@@ -183,7 +182,7 @@ class FormatParser::MOOVParser::Decoder
   end
 
   def parse_atom_fields_per_type(io, atom_size, atom_type)
-    if respond_to?("parse_#{atom_type}_atom", including_privates = true)
+    if respond_to?("parse_#{atom_type}_atom", true)
       send("parse_#{atom_type}_atom", io, atom_size)
     else
       nil # We can't look inside this leaf atom
@@ -199,22 +198,16 @@ class FormatParser::MOOVParser::Decoder
     MAX_ATOMS_AT_LEVEL.times do
       atom_pos = io.pos
 
-      if atom_pos - initial_pos >= max_read
-        break
-      end
+      break if atom_pos - initial_pos >= max_read
 
-      size_and_type = io.read(4+4)
-      if size_and_type.to_s.bytesize < 8
-        break
-      end
+      size_and_type = io.read(4 + 4)
+      break if size_and_type.to_s.bytesize < 8
 
       atom_size, atom_type = size_and_type.unpack('Na4')
 
       # If atom_size is specified to be 1, it is larger than what fits into the
       # 4 bytes and we need to read it right after the atom type
-      if atom_size == 1
-        atom_size = read_64bit_uint(io)
-      end
+      atom_size = read_64bit_uint(io) if atom_size == 1
 
       # We are allowed to read what comes after
       # the atom size and atom type, but not any more than that
@@ -237,11 +230,11 @@ class FormatParser::MOOVParser::Decoder
   end
 
   def read_16bit_fixed_point(io)
-    whole, fraction = io.read(2).unpack('CC')
+    _whole, _fraction = io.read(2).unpack('CC')
   end
 
   def read_32bit_fixed_point(io)
-    whole, fraction = io.read(4).unpack('nn')
+    _whole, _fraction = io.read(4).unpack('nn')
   end
 
   def read_chars(io, n)
