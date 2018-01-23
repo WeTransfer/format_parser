@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'webrick'
 
-describe 'Fetching data from HTTP remotes' do  
+describe 'Fetching data from HTTP remotes' do
   before(:all) do
     log_file ||= StringIO.new
     log = WEBrick::Log.new(log_file)

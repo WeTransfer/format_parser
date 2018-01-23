@@ -37,7 +37,7 @@ describe FormatParser do
       it { is_expected.to include(image) }
       it { is_expected.to include(audio) }
     end
-\
+
     context '#parse called without hash options' do
       before do
         expect_any_instance_of(FormatParser::DPXParser).to receive(:call).and_return(image)
