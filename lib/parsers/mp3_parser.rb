@@ -63,14 +63,14 @@ class FormatParser::MP3Parser
 
     if maybe_xing_header
       duration = maybe_xing_header.frames * SAMPLES_PER_FRAME / first_frame.sample_rate.to_f
-      bit_rate = maybe_xing_header.byte_count * 8 / duration / 1000
+      _bit_rate = maybe_xing_header.byte_count * 8 / duration / 1000
       file_info.media_duration_seconds = duration
       return file_info
     end
 
     # Estimate duration using the frames we did parse - to have an exact one
     # we would need to have all the frames and thus read most of the file
-    avg_bitrate = float_average_over(initial_frames, :frame_bitrate)
+    _avg_bitrate = float_average_over(initial_frames, :frame_bitrate)
     avg_frame_size = float_average_over(initial_frames, :frame_length)
     avg_sample_rate = float_average_over(initial_frames, :sample_rate)
 
@@ -231,7 +231,7 @@ class FormatParser::MP3Parser
 
   def deep_fetch(from, *keys)
     keys.inject(from) { |receiver, key_or_idx| receiver.fetch(key_or_idx) }
-  rescue KeyError, IndexError, NoMethodError
+  rescue IndexError, KeyError, NoMethodError
     raise InvalidDeepFetch, "Could not retrieve #{keys.inspect} from #{from.inspect}"
   end
 

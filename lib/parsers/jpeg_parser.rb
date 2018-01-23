@@ -25,7 +25,8 @@ class FormatParser::JPEGParser
   private
 
   def advance(n)
-    safe_read(@buf, n); nil
+    safe_read(@buf, n)
+    nil
   end
 
   def read_char

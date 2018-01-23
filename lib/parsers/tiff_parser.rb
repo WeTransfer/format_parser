@@ -18,13 +18,13 @@ class FormatParser::TIFFParser
     w, h = read_tiff_by_endianness(io, endianness)
     scanner = FormatParser::EXIFParser.new(:tiff, io)
     scanner.scan_image_exif
-    return FormatParser::Image.new(
-        format: :tif,
-        width_px: w,
-        height_px: h,
-        # might be nil if EXIF metadata wasn't found
-        orientation: scanner.orientation
-      )
+    FormatParser::Image.new(
+      format: :tif,
+      width_px: w,
+      height_px: h,
+      # might be nil if EXIF metadata wasn't found
+      orientation: scanner.orientation
+    )
   end
 
   # TIFFs can be either big or little endian, so we check here

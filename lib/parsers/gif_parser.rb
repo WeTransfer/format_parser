@@ -14,7 +14,7 @@ class FormatParser::GIFParser
     return unless HEADERS.include?(header)
 
     w, h = safe_read(io, 4).unpack('vv')
-    gct_byte, bgcolor_index, pixel_aspect_ratio = safe_read(io, 5).unpack('Cvv')
+    gct_byte, _bgcolor_index, _pixel_aspect_ratio = safe_read(io, 5).unpack('Cvv')
 
     # and actually onwards for this:
     # http://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp

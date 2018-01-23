@@ -34,7 +34,8 @@ module FormatParser
     # by all parsers anyway. Additionally, when using RemoteIO we need
     # to explicitly obtain the size of the resource, which is only available
     # after having performed at least one successful GET - at least on S3
-    cached_io.read(1); cached_io.seek(0)
+    cached_io.read(1)
+    cached_io.seek(0)
 
     parse(cached_io)
   end
@@ -52,7 +53,7 @@ module FormatParser
              when :one
                1
              else
-               throw ArgumentError.new(":returns does not match any supported mode (:all, :one)")
+               throw ArgumentError.new(':returns does not match any supported mode (:all, :one)')
              end
 
     # Always instantiate parsers fresh for each input, since they might
@@ -80,14 +81,12 @@ module FormatParser
     results.to_a
   end
 
-  private
-
   def self.parsers_for(natures, formats)
     # returns lazy enumerator for only computing the minimum amount of work (see :returns keyword argument)
     @parsers.map(&:new).select do |parser|
       # Do a given parser contain any nature and/or format asked by the user?
       (natures & parser.natures).size > 0 && (formats & parser.formats).size > 0
-      end.lazy
+    end.lazy
   end
 
   Dir.glob(__dir__ + '/parsers/*.rb').sort.each do |parser_file|

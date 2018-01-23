@@ -12,7 +12,7 @@ describe FormatParser::WAVParser do
     end
   end
 
-  it "returns correct info about pcm files" do
+  it 'returns correct info about pcm files' do
     parse_result = subject.call(File.open(__dir__ + '/../fixtures/WAV/c_8kmp316.wav', 'rb'))
 
     expect(parse_result.nature).to eq(:audio)
@@ -23,7 +23,7 @@ describe FormatParser::WAVParser do
     expect(parse_result.media_duration_seconds).to be_within(0.01).of(13.81)
   end
 
-  it "returns correct info about pcm files with more channels" do
+  it 'returns correct info about pcm files with more channels' do
     parse_result = subject.call(File.open(__dir__ + '/../fixtures/WAV/c_39064__alienbomb__atmo-truck.wav', 'rb'))
 
     expect(parse_result.nature).to eq(:audio)
@@ -34,7 +34,7 @@ describe FormatParser::WAVParser do
     expect(parse_result.media_duration_seconds).to be_within(0.01).of(3.69)
   end
 
-  it "returns correct info about non pcm files" do
+  it 'returns correct info about non pcm files' do
     parse_result = subject.call(File.open(__dir__ + '/../fixtures/WAV/c_11k16bitpcm.wav', 'rb'))
 
     expect(parse_result.nature).to eq(:audio)

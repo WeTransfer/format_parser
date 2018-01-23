@@ -14,7 +14,7 @@ class FormatParser::PSDParser
 
     # We can be reasonably certain this is a PSD so we grab the height
     # and width bytes
-    w,h = safe_read(io, 22).unpack("x10N2")
+    w, h = safe_read(io, 22).unpack('x10N2')
     FormatParser::Image.new(
       format: :psd,
       width_px: w,

@@ -137,7 +137,7 @@ class FormatParser::DPXParser
 
     unpack_pattern = DPX_INFO
     unpack_pattern = DPX_INFO_LE if magic == LE_MAGIC
-    num_elements, pixels_per_line, num_lines, *_ = safe_read(io, HEADER_SIZE).unpack(unpack_pattern)
+    _num_elements, pixels_per_line, num_lines, *_ = safe_read(io, HEADER_SIZE).unpack(unpack_pattern)
     FormatParser::Image.new(
       format: :dpx,
       width_px: pixels_per_line,

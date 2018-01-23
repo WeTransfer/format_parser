@@ -51,7 +51,7 @@ describe 'Fetching data from HTTP remotes' do
 
         expect(file_information.first.orientation).to be_kind_of(Symbol)
         # Filenames in this dir correspond with the orientation of the file
-        expect(filename.include?(file_information.first.orientation.to_s)).to be true 
+        expect(filename.include?(file_information.first.orientation.to_s)).to be true
       end
     end
   end
@@ -60,15 +60,14 @@ describe 'Fetching data from HTTP remotes' do
     Dir.glob(fixtures_dir + '/**/*.*').sort.each do |fixture_path|
       filename = File.basename(fixture_path)
       it "parses #{filename} without raising any errors" do
-        remote_fixture_path = fixture_path.gsub(fixtures_dir, "http://localhost:9399")
+        remote_fixture_path = fixture_path.gsub(fixtures_dir, 'http://localhost:9399')
         # Some of the fixtures are in dirs with spaces
-        cleaned_remote_fixture_path = remote_fixture_path.gsub(" ", "%20")
+        cleaned_remote_fixture_path = remote_fixture_path.gsub(' ', '%20')
         FormatParser.parse_http(cleaned_remote_fixture_path)
       end
     end
   end
 
-  
   after(:all) do
     @server.stop
     @server_thread.join(0.5)

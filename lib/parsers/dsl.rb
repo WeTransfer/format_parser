@@ -18,8 +18,8 @@ module FormatParser
       private
 
       def __define(name, value)
-        throw ArgumentError("empty array") if value.empty?
-        throw ArgumentError("requires array of symbols") if value.any? { |s| !s.is_a?(Symbol) }
+        throw ArgumentError('empty array') if value.empty?
+        throw ArgumentError('requires array of symbols') if value.any? { |s| !s.is_a?(Symbol) }
         define_method(name) do
           value
         end

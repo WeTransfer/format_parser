@@ -31,10 +31,6 @@ class FormatParser::ReadLimiter
     @io.seek(to_offset)
   end
 
-  def size
-    @io.size
-  end
-
   def read(n)
     @bytes += n
     @reads += 1

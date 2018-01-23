@@ -67,10 +67,9 @@ class FormatParser::EXIFParser
     (1..ORIENTATIONS.length).include?(value)
   end
 
-  def cr2_check(file_io)
+  def cr2_check(_file_io)
     @file_io.seek(8)
     cr2_check_bytes = @file_io.read(2)
-    cr2_check_bytes == "CR" ? true : false
+    cr2_check_bytes == 'CR'
   end
-
 end

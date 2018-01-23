@@ -33,7 +33,7 @@ module FormatParser::MP3Parser::ID3V1
   end
 
   def parse_id3_v1(byte_str)
-    keys, values = PACKSPEC.partition.with_index { |_, i| i.even? }
+    _keys, values = PACKSPEC.partition.with_index { |_, i| i.even? }
     unpacked_values = byte_str.unpack(values.join)
     unpacked_values.map! { |e| e.is_a?(String) ? trim_id3v1_string(e) : e }
     TagInformation.new(unpacked_values)

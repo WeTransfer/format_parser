@@ -182,7 +182,7 @@ class FormatParser::MOOVParser::Decoder
   end
 
   def parse_atom_fields_per_type(io, atom_size, atom_type)
-    if respond_to?("parse_#{atom_type}_atom", including_privates = true)
+    if respond_to?("parse_#{atom_type}_atom", true)
       send("parse_#{atom_type}_atom", io, atom_size)
     else
       nil # We can't look inside this leaf atom
@@ -230,11 +230,11 @@ class FormatParser::MOOVParser::Decoder
   end
 
   def read_16bit_fixed_point(io)
-    whole, fraction = io.read(2).unpack('CC')
+    _whole, _fraction = io.read(2).unpack('CC')
   end
 
   def read_32bit_fixed_point(io)
-    whole, fraction = io.read(4).unpack('nn')
+    _whole, _fraction = io.read(4).unpack('nn')
   end
 
   def read_chars(io, n)

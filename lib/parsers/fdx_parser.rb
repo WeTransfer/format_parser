@@ -6,7 +6,7 @@ class FormatParser::FDXParser
   natures :document
 
   def call(io)
-    return if !xml_check(io)
+    return unless xml_check(io)
     file_and_document_type = safe_read(io, 100)
     file_type, document_type = check_for_document_type(file_and_document_type)
     return if file_type != :fdx

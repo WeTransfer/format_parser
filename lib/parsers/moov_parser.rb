@@ -20,7 +20,7 @@ class FormatParser::MOOVParser
   private_constant :Decoder
 
   def call(io)
-    return nil unless matches_moov_definition?(io)
+    return unless matches_moov_definition?(io)
 
     # Now we know we are in a MOOV, so go back and parse out the atom structure.
     # Parsing out the atoms does not read their contents - at least it doesn't

@@ -41,10 +41,6 @@ class Care
       clear
       @io.close if @io.respond_to?(:close)
     end
-
-    def size
-      @io.size
-    end
   end
 
   # Stores cached pages of data from the given IO as strings.
