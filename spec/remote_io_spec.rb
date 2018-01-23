@@ -6,7 +6,7 @@ describe FormatParser::RemoteIO do
   it 'returns the partial content when the server supplies a 206 status' do
     rio = described_class.new('https://images.invalid/img.jpg')
 
-    fake_resp = double(headers: {'Content-Range': '10-109/2577'}, status: 206, body: 'This is the response')
+    fake_resp = double(headers: {'Content-Range' => '10-109/2577'}, status: 206, body: 'This is the response')
     expect(Faraday).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=10-109').and_return(fake_resp)
 
     rio.seek(10)
@@ -17,7 +17,7 @@ describe FormatParser::RemoteIO do
   it 'returns the entire content when the server supplies the Content-Range response but sends a 200 status' do
     rio = described_class.new('https://images.invalid/img.jpg')
 
-    fake_resp = double(headers: {'Content-Range': '10-109/2577'}, status: 200, body: 'This is the response')
+    fake_resp = double(headers: {'Content-Range' => '10-109/2577'}, status: 200, body: 'This is the response')
     expect(Faraday).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=10-109').and_return(fake_resp)
 
     rio.seek(10)
@@ -48,7 +48,7 @@ describe FormatParser::RemoteIO do
   it 'does not overwrite size when the range cannot be satisfied and the response is 416' do
     rio = described_class.new('https://images.invalid/img.jpg')
 
-    fake_resp = double(headers: {'Content-Range': 'bytes 0-0/13'}, status: 206, body: 'a')
+    fake_resp = double(headers: {'Content-Range' => 'bytes 0-0/13'}, status: 206, body: 'a')
     expect(Faraday).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=0-0').and_return(fake_resp)
     rio.read(1)
 
@@ -78,7 +78,7 @@ describe FormatParser::RemoteIO do
 
     expect(rio.pos).to eq(0)
 
-    fake_resp = double(headers: {'Content-Range': 'bytes 0-0/13'}, status: 206, body: 'a')
+    fake_resp = double(headers: {'Content-Range' => 'bytes 0-0/13'}, status: 206, body: 'a')
     expect(Faraday).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=0-0').and_return(fake_resp)
     rio.read(1)
 
