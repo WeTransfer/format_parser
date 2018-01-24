@@ -58,4 +58,47 @@ describe FormatParser do
       end
     end
   end
+
+  describe 'parsers_for' do
+    it 'raises on an invalid request' do
+      expect {
+        FormatParser.parsers_for([:image], [:fdx])
+      }.to raise_error(/No parsers provide/)
+    end
+
+    it 'returns an intersection of all parsers supplying natures and formats requested' do
+      image_parsers = FormatParser.parsers_for([:image], [:tif, :jpg])
+      expect(image_parsers.length).to eq(2)
+    end
+
+    it 'omits parsers not matching formats' do
+      image_parsers = FormatParser.parsers_for([:image, :audio], [:tif, :jpg])
+      expect(image_parsers.length).to eq(2)
+    end
+
+    it 'omits parsers not matching nature' do
+      image_parsers = FormatParser.parsers_for([:image], [:tif, :jpg, :aiff, :mp3])
+      expect(image_parsers.length).to eq(2)
+    end
+  end
+
+  describe 'parser registration and deregistration with the module' do
+    it 'registers a parser for a certain nature and format' do
+      some_parser = ->(_io) { 'I parse EXRs! Whee!' }
+
+      expect {
+        FormatParser.parsers_for([:image], [:exr])
+      }.to raise_error(/No parsers provide/)
+
+      FormatParser.register_parser some_parser, natures: :image, formats: :exr
+
+      image_parsers = FormatParser.parsers_for([:image], [:exr])
+      expect(image_parsers).not_to be_empty
+
+      FormatParser.deregister_parser some_parser
+      expect {
+        FormatParser.parsers_for([:image], [:exr])
+      }.to raise_error(/No parsers provide/)
+    end
+  end
 end

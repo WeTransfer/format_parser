@@ -8,21 +8,34 @@ module FormatParser
   require_relative 'remote_io'
   require_relative 'io_constraint'
   require_relative 'care'
-  require_relative 'parsers/dsl'
 
   PARSER_MUX = Mutex.new
 
-  def self.register_parser_constructor(object_responding_to_new)
+  def self.register_parser(callable_or_responding_to_new, formats:, natures:)
+    parser_provided_formats = Array(formats)
+    parser_provided_natures = Array(natures)
     PARSER_MUX.synchronize do
-      @parsers ||= []
-      @parsers << object_responding_to_new
-      # Gathering natures and formats from parsers. An instance has to be created.
-      parser = object_responding_to_new.new
-      @natures ||= Set.new
-      # NOTE: merge method for sets modify the instance.
-      @natures.merge(parser.natures)
-      @formats ||= Set.new
-      @formats.merge(parser.formats)
+      @parsers ||= Set.new
+      @parsers << callable_or_responding_to_new
+      @natures_per_parser ||= {}
+      parser_provided_natures.each do |provided_nature|
+        @natures_per_parser[provided_nature] ||= Set.new
+        @natures_per_parser[provided_nature] << callable_or_responding_to_new
+      end
+      @formats_per_parser ||= {}
+      parser_provided_formats.each do |provided_format|
+        @formats_per_parser[provided_format] ||= Set.new
+        @formats_per_parser[provided_format] << callable_or_responding_to_new
+      end
+    end
+  end
+
+  def self.deregister_parser(callable_or_responding_to_new)
+    # Used only in tests
+    PARSER_MUX.synchronize do
+      (@parsers || []).delete(callable_or_responding_to_new)
+      (@natures_per_parser || {}).values.map { |e| e.delete(callable_or_responding_to_new) }
+      (@formats_per_parser || {}).values.map { |e| e.delete(callable_or_responding_to_new) }
     end
   end
 
@@ -41,7 +54,7 @@ module FormatParser
   end
 
   # Return all by default
-  def self.parse(io, natures: @natures.to_a, formats: @formats.to_a, results: :first)
+  def self.parse(io, natures: @natures_per_parser.keys, formats: @formats_per_parser.keys, results: :first)
     # If the cache is preconfigured do not apply an extra layer. It is going
     # to be preconfigured when using parse_http.
     io = Care::IOWrapper.new(io) unless io.is_a?(Care::IOWrapper)
@@ -60,7 +73,9 @@ module FormatParser
     # Always instantiate parsers fresh for each input, since they might
     # contain instance variables which otherwise would have to be reset
     # between invocations, and would complicate threading situations
-    results = parsers_for(natures, formats).map do |parser|
+    parsers = parsers_for(natures, formats)
+
+    results = parsers.lazy.map do |parser|
       # We need to rewind for each parser, anew
       io.seek(0)
       # Limit how many operations the parser can perform
@@ -78,16 +93,34 @@ module FormatParser
     end.reject(&:nil?).take(amount)
 
     return results.first if amount == 1
-    # Convert the results from a lazy enumerator to an array.
+    # Convert the results from a lazy enumerator to an Array.
     results.to_a
   end
 
-  def self.parsers_for(natures, formats)
-    # returns lazy enumerator for only computing the minimum amount of work (see :returns keyword argument)
-    @parsers.map(&:new).select do |parser|
-      # Do a given parser contain any nature and/or format asked by the user?
-      (natures & parser.natures).size > 0 && (formats & parser.formats).size > 0
-    end.lazy
+  def self.parsers_for(desired_natures, desired_formats)
+    assemble_parser_set = ->(hash_of_sets, keys_of_interest) {
+      hash_of_sets.values_at(*keys_of_interest).compact.inject(&:+) || Set.new
+    }
+
+    fitting_by_natures = assemble_parser_set[@natures_per_parser, desired_natures]
+    fitting_by_formats = assemble_parser_set[@formats_per_parser, desired_formats]
+    factories = fitting_by_natures & fitting_by_formats
+
+    if factories.empty?
+      raise ArgumentError, "No parsers provide both natures #{desired_natures.inspect} and formats #{desired_formats.inspect}"
+    end
+
+    factories.map { |callable_or_class| instantiate_parser(callable_or_class) }
+  end
+
+  def self.instantiate_parser(callable_or_responding_to_new)
+    if callable_or_responding_to_new.respond_to?(:call)
+      callable_or_responding_to_new
+    elsif callable_or_responding_to_new.respond_to?(:new)
+      callable_or_responding_to_new.new
+    else
+      raise ArgumentError, 'A parser should be either a class with an instance method #call or a Proc'
+    end
   end
 
   Dir.glob(__dir__ + '/parsers/*.rb').sort.each do |parser_file|

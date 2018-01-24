@@ -1,9 +1,5 @@
 class FormatParser::PNGParser
   include FormatParser::IOUtils
-  include FormatParser::DSL
-
-  natures :image
-  formats :png
 
   PNG_HEADER_BYTES = [137, 80, 78, 71, 13, 10, 26, 10].pack('C*')
   COLOR_TYPES = {
@@ -74,5 +70,5 @@ class FormatParser::PNGParser
     )
   end
 
-  FormatParser.register_parser_constructor self
+  FormatParser.register_parser self, natures: :image, formats: :png
 end

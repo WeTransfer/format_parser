@@ -1,6 +1,5 @@
 class FormatParser::JPEGParser
   include FormatParser::IOUtils
-  include FormatParser::DSL
 
   class InvalidStructure < StandardError
   end
@@ -10,9 +9,6 @@ class FormatParser::JPEGParser
   EOI_MARKER  = 0xD9  # end of image
   SOS_MARKER  = 0xDA  # start of stream
   APP1_MARKER = 0xE1  # maybe EXIF
-
-  natures :image
-  formats :jpg
 
   def call(io)
     @buf = FormatParser::IOConstraint.new(io)
@@ -110,5 +106,5 @@ class FormatParser::JPEGParser
     safe_skip(@buf, length)
   end
 
-  FormatParser.register_parser_constructor self
+  FormatParser.register_parser self, natures: :image, formats: :jpg
 end

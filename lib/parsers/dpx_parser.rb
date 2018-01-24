@@ -1,9 +1,5 @@
 class FormatParser::DPXParser
   include FormatParser::IOUtils
-  include FormatParser::DSL
-
-  natures :image
-  formats :dpx
 
   FILE_INFO = [
     #    :x4,   # magic bytes SDPX, we read them anyway so not in the pattern
@@ -145,5 +141,5 @@ class FormatParser::DPXParser
     )
   end
 
-  FormatParser.register_parser_constructor self
+  FormatParser.register_parser self, natures: :image, formats: :dpx
 end

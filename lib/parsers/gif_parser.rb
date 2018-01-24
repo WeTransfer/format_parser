@@ -1,12 +1,8 @@
 class FormatParser::GIFParser
   include FormatParser::IOUtils
-  include FormatParser::DSL
 
   HEADERS = ['GIF87a', 'GIF89a'].map(&:b)
   NETSCAPE_AND_AUTHENTICATION_CODE = 'NETSCAPE2.0'
-
-  natures :image
-  formats :gif
 
   def call(io)
     io = FormatParser::IOConstraint.new(io)
@@ -48,5 +44,5 @@ class FormatParser::GIFParser
     )
   end
 
-  FormatParser.register_parser_constructor self
+  FormatParser.register_parser self, natures: :image, formats: :gif
 end
