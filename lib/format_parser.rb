@@ -17,15 +17,15 @@ module FormatParser
     PARSER_MUX.synchronize do
       @parsers ||= Set.new
       @parsers << callable_or_responding_to_new
-      @natures_per_parser ||= {}
+      @parsers_per_nature ||= {}
       parser_provided_natures.each do |provided_nature|
-        @natures_per_parser[provided_nature] ||= Set.new
-        @natures_per_parser[provided_nature] << callable_or_responding_to_new
+        @parsers_per_nature[provided_nature] ||= Set.new
+        @parsers_per_nature[provided_nature] << callable_or_responding_to_new
       end
-      @formats_per_parser ||= {}
+      @parsers_per_format ||= {}
       parser_provided_formats.each do |provided_format|
-        @formats_per_parser[provided_format] ||= Set.new
-        @formats_per_parser[provided_format] << callable_or_responding_to_new
+        @parsers_per_format[provided_format] ||= Set.new
+        @parsers_per_format[provided_format] << callable_or_responding_to_new
       end
     end
   end
@@ -34,8 +34,8 @@ module FormatParser
     # Used only in tests
     PARSER_MUX.synchronize do
       (@parsers || []).delete(callable_or_responding_to_new)
-      (@natures_per_parser || {}).values.map { |e| e.delete(callable_or_responding_to_new) }
-      (@formats_per_parser || {}).values.map { |e| e.delete(callable_or_responding_to_new) }
+      (@parsers_per_nature || {}).values.map { |e| e.delete(callable_or_responding_to_new) }
+      (@parsers_per_format || {}).values.map { |e| e.delete(callable_or_responding_to_new) }
     end
   end
 
@@ -54,7 +54,7 @@ module FormatParser
   end
 
   # Return all by default
-  def self.parse(io, natures: @natures_per_parser.keys, formats: @formats_per_parser.keys, results: :first)
+  def self.parse(io, natures: @parsers_per_nature.keys, formats: @parsers_per_format.keys, results: :first)
     # If the cache is preconfigured do not apply an extra layer. It is going
     # to be preconfigured when using parse_http.
     io = Care::IOWrapper.new(io) unless io.is_a?(Care::IOWrapper)
@@ -102,8 +102,8 @@ module FormatParser
       hash_of_sets.values_at(*keys_of_interest).compact.inject(&:+) || Set.new
     }
 
-    fitting_by_natures = assemble_parser_set[@natures_per_parser, desired_natures]
-    fitting_by_formats = assemble_parser_set[@formats_per_parser, desired_formats]
+    fitting_by_natures = assemble_parser_set[@parsers_per_nature, desired_natures]
+    fitting_by_formats = assemble_parser_set[@parsers_per_format, desired_formats]
     factories = fitting_by_natures & fitting_by_formats
 
     if factories.empty?
