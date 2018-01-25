@@ -48,12 +48,12 @@ parsing, and then returns the metadata for the file (if it could recover any) or
 through all parsers by default, so if you are dealing with a file that is not "your" format - return `nil` from
 your method or `break` your Proc as early as possible. A blank `return` works fine too.
 
-The IO will at the minimum support the subset of the IO API defined in `ConstrainedIO`
+The IO will at the minimum support the subset of the IO API defined in `IOConstraint`
 
 Strictly, a parser should be one of the two things:
 
-1) An object that can be `call()`-ed itself, with an argument that conforms to `ConstrainedIO`
-2) An object that responsds to `new` and returns something that can be `call()`-ed with the same convention.
+1) An object that can be `call()`-ed itself, with an argument that conforms to `IOConstraint`
+2) An object that responds to `new` and returns something that can be `call()`-ed with the same convention.
 
 The second opton is useful for parsers that are stateful and non-reentrant. FormatParser is made to be used in
 threaded environments, and if you use instance variables you need your parser to be isolated from it's siblings in
@@ -67,8 +67,6 @@ Down below you can find a basic parser implementation:
 
 ```ruby
 MyParser = ->(io) {
-  # Make sure you are only using the right subset of IO methods
-  io = FormatParser::ConstrainedIO.new(io)
   # ... do some parsing with `io`
   magic_bytes = io.read(4)
   break if magic_bytes != 'XBMP'
@@ -94,8 +92,6 @@ If you are using a class, this is the skeleton to use:
 ```ruby
 class MyParser
   def call(io)
-    # Make sure you are only using the right subset of IO methods
-    io = FormatParser::ConstrainedIO.new(io)
     # ... do some parsing with `io`
     magic_bytes = io.read(4)
     return unless magic_bytes != 'XBMP'
@@ -107,12 +103,6 @@ class MyParser
     )
   end
 
-  # Register the parser with the module, so that it will be applied to any
-  # document given to `FormatParser.parse()`. The supported natures are currently
-  #      - :audio
-  #      - :document
-  #      - :image
-  #      - :video
   FormatParser.register_parser self, natures: :image, formats: :bmp
 end
 ```
