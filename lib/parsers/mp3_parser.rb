@@ -23,10 +23,6 @@ class FormatParser::MP3Parser
   # Default frame size for mp3
   SAMPLES_PER_FRAME = 1152
 
-  include FormatParser::DSL
-  natures :audio
-  formats :mp3
-
   def call(io)
     # Read the last 128 bytes which might contain ID3v1
     id3_v1 = ID3V1.attempt_id3_v1_extraction(io)
@@ -235,5 +231,5 @@ class FormatParser::MP3Parser
     raise InvalidDeepFetch, "Could not retrieve #{keys.inspect} from #{from.inspect}"
   end
 
-  FormatParser.register_parser_constructor self
+  FormatParser.register_parser self, natures: :audio, formats: :mp3
 end

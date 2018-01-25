@@ -1,6 +1,5 @@
 class FormatParser::AIFFParser
   include FormatParser::IOUtils
-  include FormatParser::DSL
 
   # Known chunk types we can omit when parsing,
   # grossly lifted from http://www.muratnkonar.com/aiff/
@@ -18,9 +17,6 @@ class FormatParser::AIFFParser
     '(c) ', # yes it is a thing
     'ANNO',
   ]
-
-  natures :audio
-  formats :aiff
 
   def call(io)
     io = FormatParser::IOConstraint.new(io)
@@ -84,5 +80,5 @@ class FormatParser::AIFFParser
     (sign == '1' ? -1.0 : 1.0) * (fraction.to_f / ((1 << 63) - 1)) * (2**exponent)
   end
 
-  FormatParser.register_parser_constructor self
+  FormatParser.register_parser self, natures: :audio, formats: :aiff
 end

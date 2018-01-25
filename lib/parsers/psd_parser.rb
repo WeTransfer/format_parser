@@ -1,10 +1,7 @@
 class FormatParser::PSDParser
   include FormatParser::IOUtils
-  include FormatParser::DSL
 
   PSD_HEADER = [0x38, 0x42, 0x50, 0x53]
-  natures :image
-  formats :psd
 
   def call(io)
     io = FormatParser::IOConstraint.new(io)
@@ -22,5 +19,5 @@ class FormatParser::PSDParser
     )
   end
 
-  FormatParser.register_parser_constructor self
+  FormatParser.register_parser self, natures: :image, formats: :psd
 end

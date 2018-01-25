@@ -1,6 +1,5 @@
 class FormatParser::MOOVParser
   include FormatParser::IOUtils
-  include FormatParser::DSL
   require_relative 'moov_parser/decoder'
 
   # Maps values of the "ftyp" atom to something
@@ -11,9 +10,6 @@ class FormatParser::MOOVParser
     'mp4 ' => :mp4,
     'm4a ' => :m4a,
   }
-
-  natures :video
-  formats *FTYP_MAP.values
 
   # It is currently not documented and not particularly well-tested,
   # so not considered a public API for now
@@ -80,5 +76,5 @@ class FormatParser::MOOVParser
     maybe_atom_size >= minimum_ftyp_atom_size && maybe_ftyp_atom_signature == 'ftyp'
   end
 
-  FormatParser.register_parser_constructor self
+  FormatParser.register_parser self, natures: :video, formats: FTYP_MAP.values
 end

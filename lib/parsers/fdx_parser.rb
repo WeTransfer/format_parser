@@ -1,9 +1,5 @@
 class FormatParser::FDXParser
   include FormatParser::IOUtils
-  include FormatParser::DSL
-
-  formats :fdx
-  natures :document
 
   def call(io)
     return unless xml_check(io)
@@ -29,5 +25,6 @@ class FormatParser::FDXParser
       return
     end
   end
-  FormatParser.register_parser_constructor self
+
+  FormatParser.register_parser self, natures: :document, formats: :fdx
 end

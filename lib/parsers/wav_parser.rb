@@ -1,9 +1,5 @@
 class FormatParser::WAVParser
   include FormatParser::IOUtils
-  include FormatParser::DSL
-
-  natures :audio
-  formats :wav
 
   def call(io)
     # Read the RIFF header. Chunk descriptor should be RIFF, the size should
@@ -99,5 +95,5 @@ class FormatParser::WAVParser
     )
   end
 
-  FormatParser.register_parser_constructor self
+  FormatParser.register_parser self, natures: :audio, formats: :wav
 end
