@@ -8,6 +8,7 @@ module FormatParser
   require_relative 'remote_io'
   require_relative 'io_constraint'
   require_relative 'care'
+  require 'set'
 
   PARSER_MUX = Mutex.new
 
