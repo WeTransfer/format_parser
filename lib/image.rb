@@ -1,5 +1,6 @@
 module FormatParser
   class Image
+
     NATURE = :image
 
     # What filetype was recognized? Will contain a non-ambiguous symbol
@@ -44,13 +45,24 @@ module FormatParser
     # it can be placed here
     attr_accessor :intrinsics
 
+    @@attributes = [ :format, :width_px, :height_px, :has_multiple_frames, :orientation, :has_transparency, :color_mode,
+                    :num_animation_or_video_frames, :image_orientation, :intrinsics ]
+
     # Only permits assignments via defined accessors
     def initialize(**attributes)
       attributes.map { |(k, v)| public_send("#{k}=", v) }
     end
 
+
+    def as_json(*attributes)
+      @@attributes.each_with_object({}) do |attribute, object|
+        object[attribute] = public_send(attribute)
+      end
+    end
+
     def nature
       NATURE
     end
+
   end
 end
