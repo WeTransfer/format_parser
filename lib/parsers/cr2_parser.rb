@@ -1,9 +1,12 @@
 class FormatParser::CR2Parser
   include FormatParser::IOUtils
 
-  # Variables
-  CR2_HEADER_BYTES = [0x43, 0x52, 0x02, 0x00]
-
   def call(io)
+    io = FormatParser::IOConstraint.new(io)
+    io.seek(8)
+    cr2_check_bytes = io.read(2)
+
+    # Check whether it's a CR2 file
+    return unless cr2_check_bytes == 'CR'
   end
 end
