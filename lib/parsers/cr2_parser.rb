@@ -53,9 +53,7 @@ class FormatParser::CR2Parser
       entry = safe_read(io, 12)
       tag_id = to_hex(entry[0..1])
       value = to_hex(entry[8..11])
-      if tag_id == searched_tag
-        return value
-        break
+        return value if tag_id == searched_tag
       end
     end
   end
