@@ -22,6 +22,8 @@ describe FormatParser::CR2Parser do
 
         expect(parsed.resolution).to be_kind_of(Integer)
         expect(parsed.resolution).to be > 0
+
+        expect(parsed.preview).not_to be_nil
       end
     end
   end
