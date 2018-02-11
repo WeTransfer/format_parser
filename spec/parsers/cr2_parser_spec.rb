@@ -34,7 +34,7 @@ describe FormatParser::CR2Parser do
     end
 
     it 'is able to return the preview image nil when bytes are off limits' do
-      file = fixtures_dir + '/CR2/RAW_CANON_5D_ARGB.CR2'
+      file = fixtures_dir + '/CR2/RAW_CANON_1DM2.CR2'
       parsed = subject.call(File.open(file, 'rb'))
       expect(parsed.preview).to be_nil
     end
