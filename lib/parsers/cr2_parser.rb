@@ -28,7 +28,7 @@ class FormatParser::CR2Parser
     # For more information about CR2 format,
     # see http://lclevy.free.fr/cr2/
     # and https://github.com/lclevy/libcraw2/blob/master/docs/cr2_poster.pdf
-    if0_offset = tiff_header[4..7].reverse.bytes.collect{ |c| c.to_s(16) }.join.hex
+    if0_offset = tiff_header[4..7].reverse.bytes.collect { |c| c.to_s(16) }.join.hex
 
     cr2_check_bytes = safe_read(io, 2)
 
@@ -52,7 +52,7 @@ class FormatParser::CR2Parser
   def parse_ifd(io, offset, searched_tag)
     io.seek(offset)
     entries_count = to_hex safe_read(io, 2)
-    entries_count.times do |index|
+    entries_count.times do
       entry = safe_read(io, 12)
       tag_id = to_hex(entry[0..1])
       value = to_hex(entry[8..11])
@@ -61,7 +61,7 @@ class FormatParser::CR2Parser
   end
 
   def to_hex(sequence)
-    sequence.bytes.reverse.map { |b| sprintf("%02X",b) }.join.hex
+    sequence.bytes.reverse.map { |b| sprintf('%02X', b) }.join.hex
   end
 
   def set_data(io, offset)
@@ -80,4 +80,3 @@ class FormatParser::CR2Parser
 
   FormatParser.register_parser self, natures: :image, formats: :cr2
 end
-
