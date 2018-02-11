@@ -23,6 +23,9 @@ class FormatParser::CR2Parser
     tiff_header = safe_read(io, 8)
 
     # Offset to IFD #0 where the preview image data is located
+    # For more information about CR2 format,
+    # see http://lclevy.free.fr/cr2/
+    # and https://github.com/lclevy/libcraw2/blob/master/docs/cr2_poster.pdf
     if0_offset = tiff_header[4..7].reverse.bytes.collect{ |c| c.to_s(16) }.join.hex
 
     cr2_check_bytes = safe_read(io, 2)
