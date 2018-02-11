@@ -40,6 +40,8 @@ class FormatParser::CR2Parser
     )
   end
 
+  private
+
   def parse_ifd(io, offset)
     io.seek(offset)
     entries_count = to_hex safe_read(io, 2)
