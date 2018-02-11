@@ -32,13 +32,11 @@ class FormatParser::CR2Parser
   end
   def parse_ifd(io, offset)
     io.seek(offset)
-    entries_count = safe_read(io, 2).reverse.bytes.collect{ |c| c.to_s(16) }.join.hex
+    entries_count = to_hex safe_read(io, 2)
     entries_count.times do |index|
       entry = safe_read(io, 12)
-      id = entry[0..1].bytes.reverse.map { |b| sprintf("%02X",b) }.join.hex
-      type = entry[2..3].bytes.reverse.map { |b| sprintf("%02X",b) }.join.hex
-      count = entry[4..7].bytes.reverse.map { |b| sprintf("%02X",b) }.join.hex
-      value = entry[8..11].bytes.reverse.map { |b| sprintf("%02X",b) }.join
+      tag_id = to_hex(entry[0..1])
+      value = to_hex(entry[8..11])
   def to_hex(sequence)
     sequence.bytes.reverse.map { |b| sprintf("%02X",b) }.join.hex
   end
