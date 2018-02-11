@@ -42,7 +42,8 @@ class FormatParser::CR2Parser
       height_px: @height,
       orientation: ORIENTATIONS[@orientation],
       image_orientation: @orientation,
-      resolution: @resolution
+      resolution: @resolution,
+      preview: parse_preview_image(io)
     )
   end
 
@@ -70,6 +71,11 @@ class FormatParser::CR2Parser
     @resolution = parse_ifd(io, offset, PREVIEW_RESOLUTION_TAG)
     @preview_offset = parse_ifd(io, offset, PREVIEW_IMAGE_OFFSET_TAG)
     @preview_byte_count = parse_ifd(io, offset, PREVIEW_IMAGE_BYTE_COUNT_TAG)
+  end
+
+  def parse_preview_image(io)
+    io.seek(@preview_offset)
+    safe_read(io, @preview_byte_count)
   end
 
   FormatParser.register_parser self, natures: :image, formats: :cr2
