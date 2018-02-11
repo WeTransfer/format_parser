@@ -39,6 +39,10 @@ class FormatParser::CR2Parser
       type = entry[2..3].bytes.reverse.map { |b| sprintf("%02X",b) }.join.hex
       count = entry[4..7].bytes.reverse.map { |b| sprintf("%02X",b) }.join.hex
       value = entry[8..11].bytes.reverse.map { |b| sprintf("%02X",b) }.join
+  def to_hex(sequence)
+    sequence.bytes.reverse.map { |b| sprintf("%02X",b) }.join.hex
+  end
+
     end
   end
 end
