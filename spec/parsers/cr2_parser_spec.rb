@@ -16,6 +16,10 @@ describe FormatParser::CR2Parser do
         expect(parsed.height_px).to be_kind_of(Integer)
         expect(parsed.height_px).to be > 0
 
+        expect(parsed.orientation).to be_kind_of(Symbol)
+
+        expect(parsed.resolution).to be_kind_of(Integer)
+        expect(parsed.resolution).to be > 0
       end
     end
   end
