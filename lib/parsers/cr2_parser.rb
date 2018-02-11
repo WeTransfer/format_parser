@@ -68,6 +68,8 @@ class FormatParser::CR2Parser
     @height = parse_ifd(io, offset, PREVIEW_HEIGHT_TAG)
     @orientation = parse_ifd(io, offset, PREVIEW_ORIENTATION_TAG)
     @resolution = parse_ifd(io, offset, PREVIEW_RESOLUTION_TAG)
+    @preview_offset = parse_ifd(io, offset, PREVIEW_IMAGE_OFFSET_TAG)
+    @preview_byte_count = parse_ifd(io, offset, PREVIEW_IMAGE_BYTE_COUNT_TAG)
   end
 
   FormatParser.register_parser self, natures: :image, formats: :cr2
