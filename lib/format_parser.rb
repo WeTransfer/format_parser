@@ -11,6 +11,9 @@ module FormatParser
   require_relative 'care'
 
   PARSER_MUX = Mutex.new
+  MAX_BYTES = 512 * 1024
+  MAX_READS = 64 * 1024
+  MAX_SEEKS = 64 * 1024
 
   def self.register_parser(callable_or_responding_to_new, formats:, natures:)
     parser_provided_formats = Array(formats)
@@ -80,7 +83,7 @@ module FormatParser
       # We need to rewind for each parser, anew
       io.seek(0)
       # Limit how many operations the parser can perform
-      limited_io = ReadLimiter.new(io, max_bytes: 512 * 1024, max_reads: 64 * 1024, max_seeks: 64 * 1024)
+      limited_io = ReadLimiter.new(io, max_bytes: MAX_BYTES, max_reads: MAX_READS, max_seeks: MAX_SEEKS)
       begin
         parser.call(limited_io)
       rescue IOUtils::InvalidRead
