@@ -37,10 +37,25 @@ class FormatParser::CR2Parser
       entry = safe_read(io, 12)
       tag_id = to_hex(entry[0..1])
       value = to_hex(entry[8..11])
+      set_data(tag_id, value)
+    end
+  end
+
   def to_hex(sequence)
     sequence.bytes.reverse.map { |b| sprintf("%02X",b) }.join.hex
   end
 
+  def set_data(tag, value)
+    case tag
+    when PREVIEW_WIDTH_TAG
+      @width = value
+    when PREVIEW_HEIGHT_TAG
+      @height = value
+    when PREVIEW_ORIENTATION_TAG
+      @orientation = value
+    when PREVIEW_RESOLUTION_TAG
+      @resolution = value
     end
   end
 end
+
