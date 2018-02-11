@@ -29,7 +29,10 @@ class FormatParser::CR2Parser
 
     # Check whether it's a CR2 file
     return unless cr2_check_bytes == 'CR'
+    parse_ifd(io, if0_offset)
+
   end
+
   def parse_ifd(io, offset)
     io.seek(offset)
     entries_count = to_hex safe_read(io, 2)
