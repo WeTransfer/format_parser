@@ -1,6 +1,23 @@
 class FormatParser::CR2Parser
   include FormatParser::IOUtils
 
+  # Variables
+  PREVIEW_WIDTH_TAG = 0x0100
+  PREVIEW_HEIGHT_TAG = 0x0101
+  PREVIEW_ORIENTATION_TAG = 0x0112
+  PREVIEW_RESOLUTION_TAG = 0x011a
+  ORIENTATIONS = [
+    nil,
+    :TopLeft,
+    :TopRight,
+    :BottomRight,
+    :BottomLeft,
+    :LeftTop,
+    :RightTop,
+    :RightBottom,
+    :LeftBottom,
+  ]
+
   def call(io)
     io = FormatParser::IOConstraint.new(io)
     io.seek(8)
