@@ -22,9 +22,21 @@ describe FormatParser::CR2Parser do
 
         expect(parsed.resolution).to be_kind_of(Integer)
         expect(parsed.resolution).to be > 0
-
-        expect(parsed.preview).not_to be_nil
       end
+    end
+  end
+
+  describe 'is able to parse preview image in the examples' do
+    it "is able to parse image in RAW_CANON_40D_SRAW_V103.CR2" do
+      file = fixtures_dir + '/CR2/RAW_CANON_40D_SRAW_V103.CR2'
+      parsed = subject.call(File.open(file, 'rb'))
+      expect(parsed.preview).not_to be_nil
+    end
+
+    it 'is able to return the preview image nil when bytes are off limits' do
+      file = fixtures_dir + '/CR2/RAW_CANON_5D_ARGB.CR2'
+      parsed = subject.call(File.open(file, 'rb'))
+      expect(parsed.preview).to be_nil
     end
   end
 
