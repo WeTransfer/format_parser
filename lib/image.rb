@@ -47,6 +47,9 @@ module FormatParser
     # it can be placed here
     attr_accessor :intrinsics
 
+    # Preview image blob
+    attr_accessor :preview
+
     # Only permits assignments via defined accessors
     def initialize(**attributes)
       attributes.map { |(k, v)| public_send("#{k}=", v) }
