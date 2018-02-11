@@ -20,8 +20,12 @@ class FormatParser::CR2Parser
 
   def call(io)
     io = FormatParser::IOConstraint.new(io)
-    io.seek(8)
-    cr2_check_bytes = io.read(2)
+    tiff_header = safe_read(io, 8)
+
+    # Offset to IFD #0 where the preview image data is located
+    if0_offset = tiff_header[4..7].reverse.bytes.collect{ |c| c.to_s(16) }.join.hex
+
+    cr2_check_bytes = safe_read(io, 2)
 
     # Check whether it's a CR2 file
     return unless cr2_check_bytes == 'CR'
