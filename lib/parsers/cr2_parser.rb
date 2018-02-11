@@ -75,7 +75,7 @@ class FormatParser::CR2Parser
   end
 
   def parse_preview_image(io)
-    return nil if @preview_byte_count > FormatParser::MAX_BYTES || @preview_offset > FormatParser::MAX_SEEKS
+    return if @preview_byte_count > FormatParser::MAX_BYTES || @preview_offset > FormatParser::MAX_SEEKS
     io.seek(@preview_offset)
     safe_read(io, @preview_byte_count)
   end

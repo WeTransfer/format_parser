@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe FormatParser::CR2Parser do
-  describe 'is able to parse all CR2 files' do
+  describe 'is able to parse CR2 files' do
     Dir.glob(fixtures_dir + '/CR2/*.CR2').each do |cr2_path|
       it "is able to parse #{File.basename(cr2_path)}" do
         parsed = subject.call(File.open(cr2_path, 'rb'))
@@ -27,7 +27,7 @@ describe FormatParser::CR2Parser do
   end
 
   describe 'is able to parse preview image in the examples' do
-    it "is able to parse image in RAW_CANON_40D_SRAW_V103.CR2" do
+    it 'is able to parse image in RAW_CANON_40D_SRAW_V103.CR2' do
       file = fixtures_dir + '/CR2/RAW_CANON_40D_SRAW_V103.CR2'
       parsed = subject.call(File.open(file, 'rb'))
       expect(parsed.preview).not_to be_nil
