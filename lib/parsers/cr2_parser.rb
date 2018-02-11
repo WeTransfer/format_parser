@@ -9,17 +9,6 @@ class FormatParser::CR2Parser
   PREVIEW_RESOLUTION_TAG = 0x011a
   PREVIEW_IMAGE_OFFSET_TAG = 0x0111
   PREVIEW_IMAGE_BYTE_COUNT_TAG = 0x0117
-  ORIENTATIONS = [
-    nil,
-    :TopLeft,
-    :TopRight,
-    :BottomRight,
-    :BottomLeft,
-    :LeftTop,
-    :RightTop,
-    :RightBottom,
-    :LeftBottom,
-  ]
 
   def call(io)
     io = FormatParser::IOConstraint.new(io)
@@ -41,7 +30,9 @@ class FormatParser::CR2Parser
       format: :cr2,
       width_px: @width,
       height_px: @height,
-      orientation: ORIENTATIONS[@orientation],
+      # EXIF orientation is one based index
+      # http://sylvana.net/jpegcrop/exif_orientation.html
+      orientation: FormatParser::EXIFParser::ORIENTATIONS[@orientation - 1],
       image_orientation: @orientation,
       resolution: @resolution,
       preview: parse_preview_image(io)
