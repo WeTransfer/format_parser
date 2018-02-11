@@ -67,5 +67,7 @@ class FormatParser::CR2Parser
     @orientation = parse_ifd(io, offset, PREVIEW_ORIENTATION_TAG)
     @resolution = parse_ifd(io, offset, PREVIEW_RESOLUTION_TAG)
   end
+
+  FormatParser.register_parser self, natures: :image, formats: :cr2
 end
 
