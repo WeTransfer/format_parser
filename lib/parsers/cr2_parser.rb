@@ -2,6 +2,7 @@ class FormatParser::CR2Parser
   include FormatParser::IOUtils
 
   # Variables
+  CR2_HEADER = [0x43, 0x52, 0x02, 0x00]
   PREVIEW_WIDTH_TAG = 0x0100
   PREVIEW_HEIGHT_TAG = 0x0101
   PREVIEW_ORIENTATION_TAG = 0x0112
@@ -24,16 +25,16 @@ class FormatParser::CR2Parser
     io = FormatParser::IOConstraint.new(io)
     tiff_header = safe_read(io, 8)
 
+    # Check whether it's a CR2 file
+    magic_bytes = safe_read(io, 4).unpack('C4')
+    return unless magic_bytes == CR2_HEADER
+
     # Offset to IFD #0 where the preview image data is located
     # For more information about CR2 format,
     # see http://lclevy.free.fr/cr2/
     # and https://github.com/lclevy/libcraw2/blob/master/docs/cr2_poster.pdf
     if0_offset = tiff_header[4..7].reverse.bytes.collect { |c| c.to_s(16) }.join.hex
 
-    cr2_check_bytes = safe_read(io, 2)
-
-    # Check whether it's a CR2 file
-    return unless cr2_check_bytes == 'CR'
     set_data(io, if0_offset)
 
     FormatParser::Image.new(
