@@ -23,4 +23,13 @@ describe FormatParser::CR2Parser do
       end
     end
   end
+
+  describe 'returns nil unless files are CR2' do
+    Dir.glob(fixtures_dir + '/PNG/*.png').each do |cr2_path|
+      it "should return nil for #{File.basename(cr2_path)}" do
+        parsed = subject.call(File.open(cr2_path, 'rb'))
+        expect(parsed).to be_nil
+      end
+    end
+  end
 end
