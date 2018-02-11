@@ -32,7 +32,7 @@ class FormatParser::CR2Parser
 
     # Check whether it's a CR2 file
     return unless cr2_check_bytes == 'CR'
-    parse_ifd(io, if0_offset)
+    set_data(io, if0_offset)
 
     FormatParser::Image.new(
       format: :cr2,
@@ -45,14 +45,17 @@ class FormatParser::CR2Parser
 
   private
 
-  def parse_ifd(io, offset)
+  def parse_ifd(io, offset, searched_tag)
     io.seek(offset)
     entries_count = to_hex safe_read(io, 2)
     entries_count.times do |index|
       entry = safe_read(io, 12)
       tag_id = to_hex(entry[0..1])
       value = to_hex(entry[8..11])
-      set_data(tag_id, value)
+      if tag_id == searched_tag
+        return value
+        break
+      end
     end
   end
 
@@ -60,17 +63,11 @@ class FormatParser::CR2Parser
     sequence.bytes.reverse.map { |b| sprintf("%02X",b) }.join.hex
   end
 
-  def set_data(tag, value)
-    case tag
-    when PREVIEW_WIDTH_TAG
-      @width = value
-    when PREVIEW_HEIGHT_TAG
-      @height = value
-    when PREVIEW_ORIENTATION_TAG
-      @orientation = value
-    when PREVIEW_RESOLUTION_TAG
-      @resolution = value
-    end
+  def set_data(io, offset)
+    @width = parse_ifd(io, offset, PREVIEW_WIDTH_TAG)
+    @height = parse_ifd(io, offset, PREVIEW_HEIGHT_TAG)
+    @orientation = parse_ifd(io, offset, PREVIEW_ORIENTATION_TAG)
+    @resolution = parse_ifd(io, offset, PREVIEW_RESOLUTION_TAG)
   end
 end
 
