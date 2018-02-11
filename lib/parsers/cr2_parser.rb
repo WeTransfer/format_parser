@@ -35,7 +35,8 @@ class FormatParser::CR2Parser
       format: :cr2,
       width_px: @width,
       height_px: @height,
-      orientation: ORIENTATIONS[@orientation]
+      orientation: ORIENTATIONS[@orientation],
+      resolution: @resolution
     )
   end
 
