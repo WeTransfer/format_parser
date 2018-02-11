@@ -31,6 +31,12 @@ class FormatParser::CR2Parser
     return unless cr2_check_bytes == 'CR'
     parse_ifd(io, if0_offset)
 
+    FormatParser::Image.new(
+      format: :cr2,
+      width_px: @width,
+      height_px: @height,
+      orientation: ORIENTATIONS[@orientation]
+    )
   end
 
   def parse_ifd(io, offset)
