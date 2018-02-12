@@ -92,7 +92,7 @@ class FormatParser::CR2Parser
 
   def set_orientation(io, offset)
     orient = parse_ifd(io, offset, PREVIEW_ORIENTATION_TAG).first
-    # Some old models does not have orientation info in TIFF headers
+    # Some old models do not have orientation info in TIFF headers
     return if orient > 8
     # EXIF orientation is an one based index
     # http://sylvana.net/jpegcrop/exif_orientation.html
