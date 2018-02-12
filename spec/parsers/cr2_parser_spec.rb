@@ -27,6 +27,14 @@ describe FormatParser::CR2Parser do
       file = fixtures_dir + '/CR2/RAW_CANON_40D_SRAW_V103.CR2'
       parsed = subject.call(File.open(file, 'rb'))
       expect(parsed.preview).not_to be_nil
+
+      file = Tempfile.new('parsed_image')
+      file.write parsed.preview
+      file.close
+
+      parsed_image = FormatParser.parse(File.open(file.path, 'rb'))
+      expect(parsed_image.nature).to eq(:image)
+      expect(parsed_image.format).to eq(:jpg)
     end
 
     it 'is able to return the preview image nil when bytes are off limits' do
