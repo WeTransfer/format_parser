@@ -53,7 +53,7 @@ describe FormatParser::CR2Parser do
       expect(parsed.image_orientation).to be > 0
     end
 
-    it 'is able to return the orientation nil for some old models' do
+    it 'is able to return the orientation nil for the examples from old Canon models' do
       file = fixtures_dir + '/CR2/_MG_8591.CR2'
       parsed = subject.call(File.open(file, 'rb'))
       expect(parsed.orientation).to be_nil
@@ -82,7 +82,7 @@ describe FormatParser::CR2Parser do
     end
   end
 
-  describe 'is able to return nil unless files are CR2' do
+  describe 'is able to return nil unless the examples are CR2' do
     Dir.glob(fixtures_dir + '/TIFF/*.tif').each do |cr2_path|
       it "should return nil for #{File.basename(cr2_path)}" do
         parsed = subject.call(File.open(cr2_path, 'rb'))
