@@ -31,15 +31,15 @@ class FormatParser::CR2Parser
     set_resolution(io, if0_offset)
     set_preview(io, if0_offset)
 
+    # Check CanonAFInfo or CanonAFInfo2 tags for width & height
     exif_offset = parse_ifd(io, if0_offset, 0x8769)
     makernote_offset = parse_ifd(io, exif_offset[0], 0x927c)
     af_info = parse_ifd(io, makernote_offset[0], 0x0026)
 
     # Old Canon models have CanonAFInfo tags (0x0012)
-    # Newer Canon models have CanonAFInfo2 tags (0x0026)
+    # Newer models have CanonAFInfo2 tags (0x0026) instead
     # See https://sno.phy.queensu.ca/~phil/exiftool/TagNames/Canon.html#AFInfo
-
-    if af_info != nil
+    if !af_info.nil?
       parse_new_model(io, af_info[0], af_info[1])
     else
       af_info = parse_ifd(io, makernote_offset[0], 0x0012)
@@ -50,8 +50,6 @@ class FormatParser::CR2Parser
       format: :cr2,
       width_px: @width,
       height_px: @height,
-      # EXIF orientation is an one based index
-      # http://sylvana.net/jpegcrop/exif_orientation.html
       orientation: @orientation,
       image_orientation: @image_orientation,
       resolution: @resolution,
@@ -93,20 +91,22 @@ class FormatParser::CR2Parser
   end
 
   def set_orientation(io, offset)
-    orient = parse_ifd(io, offset, PREVIEW_ORIENTATION_TAG)[0]
-    # Some old model does not have orientation info in TIFF headers
+    orient = parse_ifd(io, offset, PREVIEW_ORIENTATION_TAG).first
+    # Some old models does not have orientation info in TIFF headers
     return if orient > 8
+    # EXIF orientation is an one based index
+    # http://sylvana.net/jpegcrop/exif_orientation.html
     @orientation = FormatParser::EXIFParser::ORIENTATIONS[orient - 1]
     @image_orientation = orient
   end
 
   def set_resolution(io, offset)
-    @resolution = parse_ifd(io, offset, PREVIEW_RESOLUTION_TAG)[0]
+    @resolution = parse_ifd(io, offset, PREVIEW_RESOLUTION_TAG).first
   end
 
   def set_preview(io, offset)
-    @preview_offset = parse_ifd(io, offset, PREVIEW_IMAGE_OFFSET_TAG)[0]
-    @preview_byte_count = parse_ifd(io, offset, PREVIEW_IMAGE_BYTE_COUNT_TAG)[0]
+    @preview_offset = parse_ifd(io, offset, PREVIEW_IMAGE_OFFSET_TAG).first
+    @preview_byte_count = parse_ifd(io, offset, PREVIEW_IMAGE_BYTE_COUNT_TAG).first
   end
 
   def parse_preview_image(io)
