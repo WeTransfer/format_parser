@@ -13,6 +13,9 @@ module FormatParser
     # Number of pixels vertically in the pixel buffer
     attr_accessor :height_px
 
+    # Image resolution
+    attr_accessor :resolution
+
     # Whether the file has multiple frames (relevant for image files and video)
     attr_accessor :has_multiple_frames
 
@@ -43,6 +46,9 @@ module FormatParser
     # If a parser wants to provide any extra information to the caller
     # it can be placed here
     attr_accessor :intrinsics
+
+    # Preview image blob
+    attr_accessor :preview
 
     # Only permits assignments via defined accessors
     def initialize(**attributes)
