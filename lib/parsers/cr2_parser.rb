@@ -38,7 +38,7 @@ class FormatParser::CR2Parser
 
     # Old Canon models have CanonAFInfo tags (0x0012)
     # Newer models have CanonAFInfo2 tags (0x0026) instead
-    # See https://sno.phy.queensu.ca/~phil/exiftool/TagNames/Canon.html#AFInfo
+    # See https://sno.phy.queensu.ca/~phil/exiftool/TagNames/Canon.html
     if !af_info.nil?
       parse_new_model(io, af_info[0], af_info[1])
     else
