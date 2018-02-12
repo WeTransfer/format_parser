@@ -33,4 +33,13 @@ describe FormatParser::TIFFParser do
       end
     end
   end
+
+  describe 'is able to return nil when parsing CR2 examples' do
+    Dir.glob(fixtures_dir + '/CR2/*.CR2').each do |cr2_path|
+      it "is able to return nil when parsing #{File.basename(cr2_path)}" do
+        parsed = subject.call(File.open(cr2_path, 'rb'))
+        expect(parsed).to be_nil
+      end
+    end
+  end
 end
