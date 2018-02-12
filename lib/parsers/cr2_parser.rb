@@ -49,8 +49,8 @@ class FormatParser::CR2Parser
       height_px: @height,
       # EXIF orientation is an one based index
       # http://sylvana.net/jpegcrop/exif_orientation.html
-      orientation: FormatParser::EXIFParser::ORIENTATIONS[@orientation - 1],
-      image_orientation: @orientation,
+      orientation: @orientation,
+      image_orientation: @image_orientation,
       resolution: @resolution,
       preview: parse_preview_image(io)
     )
