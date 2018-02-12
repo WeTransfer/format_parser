@@ -49,9 +49,11 @@ class FormatParser::CR2Parser
     entries_count.times do
       entry = safe_read(io, 12)
       tag_id = to_hex(entry[0..1])
+      length = to_hex(entry[4..7])
       value = to_hex(entry[8..11])
-      return value if tag_id == searched_tag
+      return [value, length] if tag_id == searched_tag
     end
+    nil
   end
 
   def to_hex(sequence)
