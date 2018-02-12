@@ -28,6 +28,21 @@ class FormatParser::CR2Parser
     set_resolution(io, if0_offset)
     set_preview(io, if0_offset)
 
+    exif_offset = parse_ifd(io, if0_offset, 0x8769)
+    makernote_offset = parse_ifd(io, exif_offset[0], 0x927c)
+    af_info = parse_ifd(io, makernote_offset[0], 0x0026)
+
+    # Old Canon models have CanonAFInfo tags (0x0012)
+    # Newer Canon models have CanonAFInfo2 tags (0x0026)
+    # See https://sno.phy.queensu.ca/~phil/exiftool/TagNames/Canon.html#AFInfo
+
+    if af_info != nil
+      parse_new_model(io, af_info[0], af_info[1])
+    else
+      af_info = parse_ifd(io, makernote_offset[0], 0x0012)
+      parse_old_model(io, af_info[0], af_info[1])
+    end
+
     FormatParser::Image.new(
       format: :cr2,
       width_px: @width,
