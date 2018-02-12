@@ -2,7 +2,8 @@ class FormatParser::CR2Parser
   include FormatParser::IOUtils
 
   # Variables
-  CR2_HEADER = [0x43, 0x52, 0x02, 0x00]
+  TIFF_HEADER = [0x43, 0x52, 0x02, 0x00]
+  CR2_HEADER  = [0x43, 0x52, 0x02, 0x00]
   PREVIEW_WIDTH_TAG = 0x0100
   PREVIEW_HEIGHT_TAG = 0x0101
   PREVIEW_ORIENTATION_TAG = 0x0112
@@ -12,11 +13,13 @@ class FormatParser::CR2Parser
 
   def call(io)
     io = FormatParser::IOConstraint.new(io)
+
     tiff_header = safe_read(io, 8)
 
     # Check whether it's a CR2 file
+    tiff_bytes = tiff_header[0..3].bytes
     magic_bytes = safe_read(io, 4).unpack('C4')
-    return unless magic_bytes == CR2_HEADER
+    return unless magic_bytes == CR2_HEADER || tiff_bytes == TIFF_HEADER
 
     # Offset to IFD #0 where the preview image data is located
     # For more information about CR2 format,
