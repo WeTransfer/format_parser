@@ -24,7 +24,9 @@ class FormatParser::CR2Parser
     # and https://github.com/lclevy/libcraw2/blob/master/docs/cr2_poster.pdf
     if0_offset = tiff_header[4..7].reverse.bytes.collect { |c| c.to_s(16) }.join.hex
 
-    set_data(io, if0_offset)
+    set_orientation(io, if0_offset)
+    set_resolution(io, if0_offset)
+    set_preview(io, if0_offset)
 
     FormatParser::Image.new(
       format: :cr2,
@@ -56,13 +58,35 @@ class FormatParser::CR2Parser
     sequence.bytes.reverse.map { |b| sprintf('%02X', b) }.join.hex
   end
 
-  def set_data(io, offset)
-    @width = parse_ifd(io, offset, PREVIEW_WIDTH_TAG)
-    @height = parse_ifd(io, offset, PREVIEW_HEIGHT_TAG)
-    @orientation = parse_ifd(io, offset, PREVIEW_ORIENTATION_TAG)
-    @resolution = parse_ifd(io, offset, PREVIEW_RESOLUTION_TAG)
-    @preview_offset = parse_ifd(io, offset, PREVIEW_IMAGE_OFFSET_TAG)
-    @preview_byte_count = parse_ifd(io, offset, PREVIEW_IMAGE_BYTE_COUNT_TAG)
+  def parse_new_model(io, offset, length)
+    io.seek(offset)
+    items = safe_read(io, length)
+    @width = to_hex(items[8..9])
+    @height = to_hex(items[10..11])
+  end
+
+  def parse_old_model(io, offset, length)
+    io.seek(offset)
+    items = safe_read(io, length)
+    @width = to_hex(items[4..5])
+    @height = to_hex(items[6..7])
+  end
+
+  def set_orientation(io, offset)
+    orient = parse_ifd(io, offset, PREVIEW_ORIENTATION_TAG)[0]
+    # Some old model does not have orientation info in TIFF headers
+    return if orient > 8
+    @orientation = FormatParser::EXIFParser::ORIENTATIONS[orient - 1]
+    @image_orientation = orient
+  end
+
+  def set_resolution(io, offset)
+    @resolution = parse_ifd(io, offset, PREVIEW_RESOLUTION_TAG)[0]
+  end
+
+  def set_preview(io, offset)
+    @preview_offset = parse_ifd(io, offset, PREVIEW_IMAGE_OFFSET_TAG)[0]
+    @preview_byte_count = parse_ifd(io, offset, PREVIEW_IMAGE_BYTE_COUNT_TAG)[0]
   end
 
   def parse_preview_image(io)
