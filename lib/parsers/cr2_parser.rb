@@ -2,7 +2,7 @@ class FormatParser::CR2Parser
   include FormatParser::IOUtils
 
   # Variables
-  TIFF_HEADER = [0x43, 0x52, 0x02, 0x00]
+  TIFF_HEADER = [0x49, 0x49, 0x2a, 0x00]
   CR2_HEADER  = [0x43, 0x52, 0x02, 0x00]
 
   PREVIEW_ORIENTATION_TAG = 0x0112
