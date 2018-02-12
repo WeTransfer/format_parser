@@ -83,9 +83,9 @@ describe FormatParser::CR2Parser do
   end
 
   describe 'is able to return nil unless the examples are CR2' do
-    Dir.glob(fixtures_dir + '/TIFF/*.tif').each do |cr2_path|
-      it "should return nil for #{File.basename(cr2_path)}" do
-        parsed = subject.call(File.open(cr2_path, 'rb'))
+    Dir.glob(fixtures_dir + '/TIFF/*.tif').each do |tiff_path|
+      it "should return nil for #{File.basename(tiff_path)}" do
+        parsed = subject.call(File.open(tiff_path, 'rb'))
         expect(parsed).to be_nil
       end
     end
