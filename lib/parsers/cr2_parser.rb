@@ -131,6 +131,22 @@ class FormatParser::CR2Parser
     @shoot_date = read_data(io, shoot_date_offset[0], shoot_date_offset[1])
   end
 
+  def set_photo_info(io, offset)
+    # Type for exposure and aperture is unsigned rationnal
+    # Unsigned rational = 2x unsigned long (4 bytes)
+    exposure = parse_ifd(io, offset, EXPOSURE_TAG)
+    exposure_data = read_data(io, exposure[0], exposure[1]*8)
+    n = to_hex(exposure_data[0..3])
+    d = to_hex(exposure_data[4..7])
+    @exposure = "#{n}/#{d}"
+
+    aperture = parse_ifd(io, offset, APERTURE_TAG)
+    aperture_data = read_data(io, aperture[0], aperture[1]*8)
+    n = to_hex(aperture_data[0..3])
+    d = to_hex(aperture_data[4..7])
+    @aperture = "f#{n/d}"
+  end
+
   def read_data(io, offset, length)
     io.seek(offset)
     io.read(length)
