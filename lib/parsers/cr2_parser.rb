@@ -122,5 +122,18 @@ class FormatParser::CR2Parser
     safe_read(io, @preview_byte_count)
   end
 
+  def set_model_and_date(io, offset)
+    model_offset = parse_ifd(io, offset, CAMERA_MODEL_TAG)
+    @model = read_data(io, model_offset[0], model_offset[1])
+
+    shoot_date_offset = parse_ifd(io, offset, SHOOT_DATE_TAG)
+    @shoot_date = read_data(io, shoot_date_offset[0], shoot_date_offset[1])
+  end
+
+  def read_data(io, offset, length)
+    io.seek(offset)
+    io.read(length)
+  end
+
   FormatParser.register_parser self, natures: :image, formats: :cr2
 end
