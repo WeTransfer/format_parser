@@ -16,8 +16,13 @@ describe FormatParser::CR2Parser do
         expect(parsed.height_px).to be_kind_of(Integer)
         expect(parsed.height_px).to be > 0
 
-        expect(parsed.resolution).to be_kind_of(Integer)
-        expect(parsed.resolution).to be > 0
+        expect(parsed.intrinsics).not_to be_nil
+        expect(parsed.intrinsics[:camera_model]).to be_kind_of(String)
+        expect(parsed.intrinsics[:shoot_date]).to be_kind_of(String)
+        expect(parsed.intrinsics[:exposure]).to be_kind_of(String)
+        expect(parsed.intrinsics[:aperture]).to be_kind_of(String)
+        expect(parsed.intrinsics[:resolution]).to be_kind_of(Integer)
+        expect(parsed.intrinsics[:resolution]).to be > 0
       end
     end
   end
@@ -58,27 +63,6 @@ describe FormatParser::CR2Parser do
       parsed = subject.call(File.open(file, 'rb'))
       expect(parsed.orientation).to be_nil
       expect(parsed.image_orientation).to be_nil
-    end
-  end
-
-  describe 'is able to return class constant variables' do
-    it 'should return tiff header tag' do
-      expect(FormatParser::CR2Parser::TIFF_HEADER).to eq [0x49, 0x49, 0x2a, 0x00]
-    end
-    it 'should return cr2 header tag' do
-      expect(FormatParser::CR2Parser::CR2_HEADER).to eq [0x43, 0x52, 0x02, 0x00]
-    end
-    it 'should return preview orientation tag' do
-      expect(FormatParser::CR2Parser::PREVIEW_ORIENTATION_TAG).to eq 0x0112
-    end
-    it 'should return preview orientation tag' do
-      expect(FormatParser::CR2Parser::PREVIEW_RESOLUTION_TAG).to eq 0x011a
-    end
-    it 'should return preview offset tag' do
-      expect(FormatParser::CR2Parser::PREVIEW_IMAGE_OFFSET_TAG).to eq 0x0111
-    end
-    it 'should return preview bytes length tag' do
-      expect(FormatParser::CR2Parser::PREVIEW_IMAGE_BYTE_COUNT_TAG).to eq 0x0117
     end
   end
 
