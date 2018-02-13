@@ -114,11 +114,8 @@ class FormatParser::CR2Parser
   end
 
   def set_resolution(io, offset)
-    resolution = parse_ifd(io, offset, PREVIEW_RESOLUTION_TAG)
-    resolution_data = read_data(io, resolution[0], resolution[1]*8)
-    n = to_hex(resolution_data[0..3])
-    d = to_hex(resolution_data[4..7])
-    @resolution = n/d
+    resolution_data = parse_unsigned_rational_data(io, offset, PREVIEW_RESOLUTION_TAG)
+    @resolution = resolution_data[0]/resolution_data[1]
   end
 
   def set_preview(io, offset)
@@ -143,17 +140,11 @@ class FormatParser::CR2Parser
   def set_photo_info(io, offset)
     # Type for exposure and aperture is unsigned rational
     # Unsigned rational = 2x unsigned long (4 bytes)
-    exposure = parse_ifd(io, offset, EXPOSURE_TAG)
-    exposure_data = read_data(io, exposure[0], exposure[1]*8)
-    n = to_hex(exposure_data[0..3])
-    d = to_hex(exposure_data[4..7])
-    @exposure = "#{n}/#{d}"
+    exposure_data = parse_unsigned_rational_data(io, offset, EXPOSURE_TAG)
+    @exposure = "#{exposure_data[0]}/#{exposure_data[1]}"
 
-    aperture = parse_ifd(io, offset, APERTURE_TAG)
-    aperture_data = read_data(io, aperture[0], aperture[1]*8)
-    n = to_hex(aperture_data[0..3])
-    d = to_hex(aperture_data[4..7])
-    @aperture = "f#{n/d}"
+    aperture_data = parse_unsigned_rational_data(io, offset, APERTURE_TAG)
+    @aperture = "f#{aperture_data[0]/aperture_data[1]}"
   end
 
   def read_data(io, offset, length)
