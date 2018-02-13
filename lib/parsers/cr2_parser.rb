@@ -35,10 +35,8 @@ class FormatParser::CR2Parser
     # and https://github.com/lclevy/libcraw2/blob/master/docs/cr2_poster.pdf
     if0_offset = to_hex(tiff_header[4..7])
 
+    parse_ifd_0(io, if0_offset)
     set_orientation(io, if0_offset)
-    set_resolution(io, if0_offset)
-    set_preview(io, if0_offset)
-    set_model_and_date(io, if0_offset)
 
     # Check CanonAFInfo or CanonAFInfo2 tags in maker notes for width & height
     exif_offset = parse_ifd(io, if0_offset, EXIF_OFFSET_TAG)
@@ -103,6 +101,20 @@ class FormatParser::CR2Parser
     @height = to_hex(items[6..7])
   end
 
+  def parse_ifd_0(io, offset)
+    resolution_data = parse_unsigned_rational_data(io, offset, PREVIEW_RESOLUTION_TAG)
+    @resolution = resolution_data[0] / resolution_data[1]
+
+    @preview_offset = parse_ifd(io, offset, PREVIEW_IMAGE_OFFSET_TAG).first
+    @preview_byte_count = parse_ifd(io, offset, PREVIEW_IMAGE_BYTE_COUNT_TAG).first
+
+    model_offset = parse_ifd(io, offset, CAMERA_MODEL_TAG)
+    @model = read_data(io, model_offset[0], model_offset[1], model_offset[2])
+
+    shoot_date_offset = parse_ifd(io, offset, SHOOT_DATE_TAG)
+    @shoot_date = read_data(io, shoot_date_offset[0], shoot_date_offset[1], shoot_date_offset[2])
+  end
+
   def set_orientation(io, offset)
     orient = parse_ifd(io, offset, PREVIEW_ORIENTATION_TAG).first
     # Some old models do not have orientation info in TIFF headers
@@ -113,28 +125,10 @@ class FormatParser::CR2Parser
     @image_orientation = orient
   end
 
-  def set_resolution(io, offset)
-    resolution_data = parse_unsigned_rational_data(io, offset, PREVIEW_RESOLUTION_TAG)
-    @resolution = resolution_data[0] / resolution_data[1]
-  end
-
-  def set_preview(io, offset)
-    @preview_offset = parse_ifd(io, offset, PREVIEW_IMAGE_OFFSET_TAG).first
-    @preview_byte_count = parse_ifd(io, offset, PREVIEW_IMAGE_BYTE_COUNT_TAG).first
-  end
-
   def parse_preview_image(io)
     return if @preview_byte_count > FormatParser::MAX_BYTES || @preview_offset > FormatParser::MAX_SEEKS
     io.seek(@preview_offset)
     safe_read(io, @preview_byte_count)
-  end
-
-  def set_model_and_date(io, offset)
-    model_offset = parse_ifd(io, offset, CAMERA_MODEL_TAG)
-    @model = read_data(io, model_offset[0], model_offset[1], model_offset[2])
-
-    shoot_date_offset = parse_ifd(io, offset, SHOOT_DATE_TAG)
-    @shoot_date = read_data(io, shoot_date_offset[0], shoot_date_offset[1], shoot_date_offset[2])
   end
 
   def set_photo_info(io, offset)
