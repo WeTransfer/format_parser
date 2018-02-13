@@ -8,6 +8,10 @@ class FormatParser::CR2Parser
   PREVIEW_RESOLUTION_TAG = 0x011a
   PREVIEW_IMAGE_OFFSET_TAG = 0x0111
   PREVIEW_IMAGE_BYTE_COUNT_TAG = 0x0117
+  EXIF_OFFSET_TAG = 0x8769
+  MAKERNOTE_OFFSET_TAG = 0x927c
+  AFINFO_TAG = 0x0012
+  AF2INFO_TAG = 0x0026
 
   def call(io)
     io = FormatParser::IOConstraint.new(io)
@@ -31,17 +35,17 @@ class FormatParser::CR2Parser
     set_preview(io, if0_offset)
 
     # Check CanonAFInfo or CanonAFInfo2 tags in maker notes for width & height
-    exif_offset = parse_ifd(io, if0_offset, 0x8769)
-    makernote_offset = parse_ifd(io, exif_offset[0], 0x927c)
-    af_info = parse_ifd(io, makernote_offset[0], 0x0026)
+    exif_offset = parse_ifd(io, if0_offset, EXIF_OFFSET_TAG)
+    makernote_offset = parse_ifd(io, exif_offset[0], MAKERNOTE_OFFSET_TAG)
+    af_info = parse_ifd(io, makernote_offset[0], AF2INFO_TAG)
 
-    # Old Canon models have CanonAFInfo tags (0x0012)
-    # Newer models have CanonAFInfo2 tags (0x0026) instead
+    # Old Canon models have CanonAFInfo tags
+    # Newer models have CanonAFInfo2 tags instead
     # See https://sno.phy.queensu.ca/~phil/exiftool/TagNames/Canon.html
     if !af_info.nil?
       parse_new_model(io, af_info[0], af_info[1])
     else
-      af_info = parse_ifd(io, makernote_offset[0], 0x0012)
+      af_info = parse_ifd(io, makernote_offset[0], AFINFO_TAG)
       parse_old_model(io, af_info[0], af_info[1])
     end
 
