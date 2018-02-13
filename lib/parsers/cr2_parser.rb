@@ -137,8 +137,6 @@ class FormatParser::CR2Parser
   end
 
   def set_photo_info(io, offset)
-    # Type for exposure and aperture is unsigned rational
-    # Unsigned rational = 2x unsigned long (4 bytes)
     exposure_data = parse_unsigned_rational_data(io, offset, EXPOSURE_TAG)
     @exposure = "#{exposure_data[0]}/#{exposure_data[1]}"
 
@@ -162,6 +160,8 @@ class FormatParser::CR2Parser
   end
 
   def parse_unsigned_rational_data(io, offset, tag)
+    # Type for exposure, aperture and resolution is unsigned rational
+    # Unsigned rational = 2x unsigned long (4 bytes)
     data_offset = parse_ifd(io, offset, tag)
     data = read_data(io, data_offset[0], data_offset[1] * 8)
     n = to_hex(data[0..3])
