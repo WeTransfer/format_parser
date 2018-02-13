@@ -76,7 +76,7 @@ class FormatParser::CR2Parser
   end
 
   def to_hex(sequence)
-    sequence.bytes.reverse.map { |b| sprintf('%02X', b) }.join.hex
+    sequence.reverse.unpack('H*').join.hex
   end
 
   def parse_new_model(io, offset, length)
