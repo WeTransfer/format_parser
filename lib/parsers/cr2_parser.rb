@@ -41,6 +41,9 @@ class FormatParser::CR2Parser
 
     # Check CanonAFInfo or CanonAFInfo2 tags in maker notes for width & height
     exif_offset = parse_ifd(io, if0_offset, EXIF_OFFSET_TAG)
+
+    set_photo_info(io, exif_offset[0])
+
     makernote_offset = parse_ifd(io, exif_offset[0], MAKERNOTE_OFFSET_TAG)
     af_info = parse_ifd(io, makernote_offset[0], AF2INFO_TAG)
 
