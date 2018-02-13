@@ -37,6 +37,7 @@ class FormatParser::CR2Parser
     set_orientation(io, if0_offset)
     set_resolution(io, if0_offset)
     set_preview(io, if0_offset)
+    set_model_and_date(io, if0_offset)
 
     # Check CanonAFInfo or CanonAFInfo2 tags in maker notes for width & height
     exif_offset = parse_ifd(io, if0_offset, EXIF_OFFSET_TAG)
