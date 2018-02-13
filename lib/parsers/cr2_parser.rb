@@ -12,6 +12,10 @@ class FormatParser::CR2Parser
   MAKERNOTE_OFFSET_TAG = 0x927c
   AFINFO_TAG = 0x0012
   AF2INFO_TAG = 0x0026
+  CAMERA_MODEL_TAG = 0x0110
+  SHOOT_DATE_TAG = 0x0132
+  EXPOSURE_TAG = 0x829a
+  APERTURE_TAG = 0x829d
 
   def call(io)
     io = FormatParser::IOConstraint.new(io)
