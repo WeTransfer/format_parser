@@ -38,7 +38,6 @@ class FormatParser::CR2Parser
     parse_ifd_0(io, if0_offset)
     set_orientation(io, if0_offset)
 
-    # Check CanonAFInfo or CanonAFInfo2 tags in maker notes for width & height
     exif_offset = parse_ifd(io, if0_offset, EXIF_OFFSET_TAG)
 
     set_photo_info(io, exif_offset[0])
