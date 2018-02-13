@@ -169,5 +169,14 @@ class FormatParser::CR2Parser
       aperture: @aperture
     }
   end
+
+  def parse_unsigned_rational_data(io, offset, tag)
+    data_offset = parse_ifd(io, offset, tag)
+    data = read_data(io, data_offset[0], data_offset[1]*8)
+    n = to_hex(data[0..3])
+    d = to_hex(data[4..7])
+    [n, d]
+  end
+
   FormatParser.register_parser self, natures: :image, formats: :cr2
 end
