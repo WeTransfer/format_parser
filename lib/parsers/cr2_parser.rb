@@ -147,7 +147,15 @@ class FormatParser::CR2Parser
 
   def read_data(io, offset, length, type)
     io.seek(offset)
-    io.read(length)
+    data = io.read(length)
+    case type
+    when 5
+      n = to_hex(data[0..3])
+      d = to_hex(data[4..7])
+      [n, d]
+    else
+      data
+    end
   end
 
   def intrinsics
