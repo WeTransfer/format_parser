@@ -64,7 +64,8 @@ class FormatParser::CR2Parser
       orientation: @orientation,
       image_orientation: @image_orientation,
       resolution: @resolution,
-      preview: parse_preview_image(io)
+      preview: parse_preview_image(io),
+      intrinsics: intrinsics
     )
   end
 
@@ -155,5 +156,13 @@ class FormatParser::CR2Parser
     io.read(length)
   end
 
+  def intrinsics
+    {
+      camera_model: @model,
+      shoot_date: @shoot_date,
+      exposure: @exposure,
+      aperture: @aperture
+    }
+  end
   FormatParser.register_parser self, natures: :image, formats: :cr2
 end
