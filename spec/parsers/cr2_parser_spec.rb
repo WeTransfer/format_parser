@@ -61,27 +61,6 @@ describe FormatParser::CR2Parser do
     end
   end
 
-  describe 'is able to return class constant variables' do
-    it 'should return tiff header tag' do
-      expect(FormatParser::CR2Parser::TIFF_HEADER).to eq [0x49, 0x49, 0x2a, 0x00]
-    end
-    it 'should return cr2 header tag' do
-      expect(FormatParser::CR2Parser::CR2_HEADER).to eq [0x43, 0x52, 0x02, 0x00]
-    end
-    it 'should return preview orientation tag' do
-      expect(FormatParser::CR2Parser::PREVIEW_ORIENTATION_TAG).to eq 0x0112
-    end
-    it 'should return preview orientation tag' do
-      expect(FormatParser::CR2Parser::PREVIEW_RESOLUTION_TAG).to eq 0x011a
-    end
-    it 'should return preview offset tag' do
-      expect(FormatParser::CR2Parser::PREVIEW_IMAGE_OFFSET_TAG).to eq 0x0111
-    end
-    it 'should return preview bytes length tag' do
-      expect(FormatParser::CR2Parser::PREVIEW_IMAGE_BYTE_COUNT_TAG).to eq 0x0117
-    end
-  end
-
   describe 'is able to return nil unless the examples are CR2' do
     Dir.glob(fixtures_dir + '/TIFF/*.tif').each do |tiff_path|
       it "should return nil for #{File.basename(tiff_path)}" do
