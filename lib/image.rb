@@ -13,9 +13,6 @@ module FormatParser
     # Number of pixels vertically in the pixel buffer
     attr_accessor :height_px
 
-    # Image resolution
-    attr_accessor :resolution
-
     # Whether the file has multiple frames (relevant for image files and video)
     attr_accessor :has_multiple_frames
 

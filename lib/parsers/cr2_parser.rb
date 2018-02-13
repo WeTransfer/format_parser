@@ -64,7 +64,6 @@ class FormatParser::CR2Parser
       height_px: @height,
       orientation: @orientation,
       image_orientation: @image_orientation,
-      resolution: @resolution,
       preview: parse_preview_image(io),
       intrinsics: intrinsics
     )
@@ -157,7 +156,8 @@ class FormatParser::CR2Parser
       camera_model: @model,
       shoot_date: @shoot_date,
       exposure: @exposure,
-      aperture: @aperture
+      aperture: @aperture,
+      resolution: @resolution
     }
   end
 
