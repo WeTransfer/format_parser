@@ -131,10 +131,10 @@ class FormatParser::CR2Parser
 
   def set_model_and_date(io, offset)
     model_offset = parse_ifd(io, offset, CAMERA_MODEL_TAG)
-    @model = read_data(io, model_offset[0], model_offset[1])
+    @model = read_data(io, model_offset[0], model_offset[1], model_offset[2])
 
     shoot_date_offset = parse_ifd(io, offset, SHOOT_DATE_TAG)
-    @shoot_date = read_data(io, shoot_date_offset[0], shoot_date_offset[1])
+    @shoot_date = read_data(io, shoot_date_offset[0], shoot_date_offset[1], shoot_date_offset[2])
   end
 
   def set_photo_info(io, offset)
@@ -145,7 +145,7 @@ class FormatParser::CR2Parser
     @aperture = "f#{aperture_data[0] / aperture_data[1].to_f}"
   end
 
-  def read_data(io, offset, length)
+  def read_data(io, offset, length, type)
     io.seek(offset)
     io.read(length)
   end
@@ -164,10 +164,7 @@ class FormatParser::CR2Parser
     # Type for exposure, aperture and resolution is unsigned rational
     # Unsigned rational = 2x unsigned long (4 bytes)
     data_offset = parse_ifd(io, offset, tag)
-    data = read_data(io, data_offset[0], data_offset[1] * 8)
-    n = to_hex(data[0..3])
-    d = to_hex(data[4..7])
-    [n, d]
+    read_data(io, data_offset[0], data_offset[1] * 8, data_offset[2])
   end
 
   FormatParser.register_parser self, natures: :image, formats: :cr2
