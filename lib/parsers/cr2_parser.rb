@@ -143,7 +143,7 @@ class FormatParser::CR2Parser
     @exposure = "#{exposure_data[0]}/#{exposure_data[1]}"
 
     aperture_data = parse_unsigned_rational_data(io, offset, APERTURE_TAG)
-    @aperture = "f#{aperture_data[0] / aperture_data[1]}"
+    @aperture = "f#{aperture_data[0] / aperture_data[1].to_f}"
   end
 
   def read_data(io, offset, length)
