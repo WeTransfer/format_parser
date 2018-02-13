@@ -6,6 +6,7 @@ class FormatParser::CR2Parser
 
   PREVIEW_ORIENTATION_TAG = 0x0112
   PREVIEW_RESOLUTION_TAG = 0x011a
+  PREVIEW_RESOLUTION_UNIT_TAG = 0x0128
   PREVIEW_IMAGE_OFFSET_TAG = 0x0111
   PREVIEW_IMAGE_BYTE_COUNT_TAG = 0x0117
   EXIF_OFFSET_TAG = 0x8769
@@ -113,7 +114,11 @@ class FormatParser::CR2Parser
   end
 
   def set_resolution(io, offset)
-    @resolution = parse_ifd(io, offset, PREVIEW_RESOLUTION_TAG).first
+    resolution = parse_ifd(io, offset, PREVIEW_RESOLUTION_TAG)
+    resolution_data = read_data(io, resolution[0], resolution[1]*8)
+    n = to_hex(resolution_data[0..3])
+    d = to_hex(resolution_data[4..7])
+    @resolution = n/d
   end
 
   def set_preview(io, offset)
@@ -136,7 +141,7 @@ class FormatParser::CR2Parser
   end
 
   def set_photo_info(io, offset)
-    # Type for exposure and aperture is unsigned rationnal
+    # Type for exposure and aperture is unsigned rational
     # Unsigned rational = 2x unsigned long (4 bytes)
     exposure = parse_ifd(io, offset, EXPOSURE_TAG)
     exposure_data = read_data(io, exposure[0], exposure[1]*8)
