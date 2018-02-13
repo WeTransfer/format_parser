@@ -114,7 +114,7 @@ class FormatParser::CR2Parser
 
   def set_resolution(io, offset)
     resolution_data = parse_unsigned_rational_data(io, offset, PREVIEW_RESOLUTION_TAG)
-    @resolution = resolution_data[0]/resolution_data[1]
+    @resolution = resolution_data[0] / resolution_data[1]
   end
 
   def set_preview(io, offset)
@@ -143,7 +143,7 @@ class FormatParser::CR2Parser
     @exposure = "#{exposure_data[0]}/#{exposure_data[1]}"
 
     aperture_data = parse_unsigned_rational_data(io, offset, APERTURE_TAG)
-    @aperture = "f#{aperture_data[0]/aperture_data[1]}"
+    @aperture = "f#{aperture_data[0] / aperture_data[1]}"
   end
 
   def read_data(io, offset, length)
@@ -163,7 +163,7 @@ class FormatParser::CR2Parser
 
   def parse_unsigned_rational_data(io, offset, tag)
     data_offset = parse_ifd(io, offset, tag)
-    data = read_data(io, data_offset[0], data_offset[1]*8)
+    data = read_data(io, data_offset[0], data_offset[1] * 8)
     n = to_hex(data[0..3])
     d = to_hex(data[4..7])
     [n, d]
