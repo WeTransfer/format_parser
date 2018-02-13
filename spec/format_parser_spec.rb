@@ -101,18 +101,4 @@ describe FormatParser do
       }.to raise_error(/No parsers provide/)
     end
   end
-
-  describe 'maximum bytes variables' do
-    it 'returns 512 * 1024 maximum bytes for read limiter' do
-      expect(FormatParser::MAX_BYTES).to eq 512 * 1024
-    end
-
-    it 'returns 64 * 1024 maximum reads for read limiter' do
-      expect(FormatParser::MAX_READS).to eq 64 * 1024
-    end
-
-    it 'returns 64 * 1024 maximum seeks for read limiter' do
-      expect(FormatParser::MAX_SEEKS).to eq 64 * 1024
-    end
-  end
 end
