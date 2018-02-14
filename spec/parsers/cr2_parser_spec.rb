@@ -23,29 +23,11 @@ describe FormatParser::CR2Parser do
         expect(parsed.intrinsics[:aperture]).to be_kind_of(String)
         expect(parsed.intrinsics[:resolution]).to be_kind_of(Integer)
         expect(parsed.intrinsics[:resolution]).to be > 0
+        expect(parsed.intrinsics[:preview_offset]).to be_kind_of(Integer)
+        expect(parsed.intrinsics[:preview_offset]).to be > 0
+        expect(parsed.intrinsics[:preview_length]).to be_kind_of(Integer)
+        expect(parsed.intrinsics[:preview_length]).to be > 0
       end
-    end
-  end
-
-  describe 'is able to parse preview image in the examples' do
-    it 'is able to parse image in RAW_CANON_40D_SRAW_V103.CR2' do
-      file = fixtures_dir + '/CR2/RAW_CANON_40D_SRAW_V103.CR2'
-      parsed = subject.call(File.open(file, 'rb'))
-      expect(parsed.preview).not_to be_nil
-
-      file = Tempfile.new('parsed_image')
-      file.write parsed.preview
-      file.close
-
-      parsed_image = FormatParser.parse(File.open(file.path, 'rb'))
-      expect(parsed_image.nature).to eq(:image)
-      expect(parsed_image.format).to eq(:jpg)
-    end
-
-    it 'is able to return the preview image nil when bytes are off limits' do
-      file = fixtures_dir + '/CR2/RAW_CANON_1DM2.CR2'
-      parsed = subject.call(File.open(file, 'rb'))
-      expect(parsed.preview).to be_nil
     end
   end
 
