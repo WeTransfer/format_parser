@@ -72,7 +72,7 @@ class FormatParser::CR2Parser
     entries_count.times do
       ifd = ifd_entry safe_read(io, 12)
       tag_id = parse_sequence_to_int ifd[:tag]
-      return [ifd[:value], ifd[:length], ifd[:type]].map{ |item| parse_sequence_to_int(item) } if tag_id == searched_tag
+      return [ifd[:value], ifd[:length], ifd[:type]].map { |item| parse_sequence_to_int(item) } if tag_id == searched_tag
     end
     nil
   end
