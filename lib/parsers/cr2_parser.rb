@@ -101,7 +101,8 @@ class FormatParser::CR2Parser
   end
 
   def parse_ifd_0(io, offset)
-    resolution_data = parse_unsigned_rational_data(io, offset, PREVIEW_RESOLUTION_TAG)
+    resolution_offset = parse_ifd(io, offset, PREVIEW_RESOLUTION_TAG)
+    resolution_data = read_data(io, resolution_offset[0], resolution_offset[1] * 8, resolution_offset[2])
     @resolution = resolution_data[0] / resolution_data[1]
 
     @preview_offset = parse_ifd(io, offset, PREVIEW_IMAGE_OFFSET_TAG).first
@@ -131,10 +132,14 @@ class FormatParser::CR2Parser
   end
 
   def set_photo_info(io, offset)
-    exposure_data = parse_unsigned_rational_data(io, offset, EXPOSURE_TAG)
+    # Type for exposure, aperture and resolution is unsigned rational
+    # Unsigned rational = 2x unsigned long (4 bytes)
+    exposure_offset = parse_ifd(io, offset, EXPOSURE_TAG)
+    exposure_data = read_data(io, exposure_offset[0], exposure_offset[1] * 8, exposure_offset[2])
     @exposure = "#{exposure_data[0]}/#{exposure_data[1]}"
 
-    aperture_data = parse_unsigned_rational_data(io, offset, APERTURE_TAG)
+    aperture_offset = parse_ifd(io, offset, APERTURE_TAG)
+    aperture_data = read_data(io, aperture_offset[0], aperture_offset[1] * 8, aperture_offset[2])
     @aperture = "f#{aperture_data[0] / aperture_data[1].to_f}"
   end
 
@@ -159,13 +164,6 @@ class FormatParser::CR2Parser
       aperture: @aperture,
       resolution: @resolution
     }
-  end
-
-  def parse_unsigned_rational_data(io, offset, tag)
-    # Type for exposure, aperture and resolution is unsigned rational
-    # Unsigned rational = 2x unsigned long (4 bytes)
-    data_offset = parse_ifd(io, offset, tag)
-    read_data(io, data_offset[0], data_offset[1] * 8, data_offset[2])
   end
 
   FormatParser.register_parser self, natures: :image, formats: :cr2
