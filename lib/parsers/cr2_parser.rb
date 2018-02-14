@@ -33,7 +33,7 @@ class FormatParser::CR2Parser
     # For more information about CR2 format,
     # see http://lclevy.free.fr/cr2/
     # and https://github.com/lclevy/libcraw2/blob/master/docs/cr2_poster.pdf
-    if0_offset = to_hex(tiff_header[4..7])
+    if0_offset = parse_sequence_to_int tiff_header[4..7]
 
     parse_ifd_0(io, if0_offset)
     set_orientation(io, if0_offset)
@@ -70,34 +70,34 @@ class FormatParser::CR2Parser
 
   def parse_ifd(io, offset, searched_tag)
     io.seek(offset)
-    entries_count = to_hex safe_read(io, 2)
+    entries_count = parse_sequence_to_int safe_read(io, 2)
     entries_count.times do
       entry = safe_read(io, 12)
-      tag_id = to_hex(entry[0..1])
-      type = to_hex(entry[2..3])
-      length = to_hex(entry[4..7])
-      value = to_hex(entry[8..11])
+      tag_id = parse_sequence_to_int entry[0..1]
+      type = parse_sequence_to_int entry[2..3]
+      length = parse_sequence_to_int entry[4..7]
+      value = parse_sequence_to_int entry[8..11]
       return [value, length, type] if tag_id == searched_tag
     end
     nil
   end
 
-  def to_hex(sequence)
+  def parse_sequence_to_int(sequence)
     sequence.reverse.unpack('H*').join.hex
   end
 
   def parse_new_model(io, offset, length)
     io.seek(offset)
     items = safe_read(io, length)
-    @width = to_hex(items[8..9])
-    @height = to_hex(items[10..11])
+    @width = parse_sequence_to_int items[8..9]
+    @height = parse_sequence_to_int items[10..11]
   end
 
   def parse_old_model(io, offset, length)
     io.seek(offset)
     items = safe_read(io, length)
-    @width = to_hex(items[4..5])
-    @height = to_hex(items[6..7])
+    @width = parse_sequence_to_int items[4..5]
+    @height = parse_sequence_to_int items[6..7]
   end
 
   def parse_ifd_0(io, offset)
@@ -148,8 +148,8 @@ class FormatParser::CR2Parser
     data = io.read(length)
     case type
     when 5
-      n = to_hex(data[0..3])
-      d = to_hex(data[4..7])
+      n = parse_sequence_to_int data[0..3]
+      d = parse_sequence_to_int data[4..7]
       [n, d]
     else
       data
