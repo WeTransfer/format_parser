@@ -47,7 +47,7 @@ class FormatParser::CR2Parser
     # Old Canon models have CanonAFInfo tags
     # Newer models have CanonAFInfo2 tags instead
     # See https://sno.phy.queensu.ca/~phil/exiftool/TagNames/Canon.html
-    if !af_info.nil?
+    unless af_info.nil?
       parse_new_model(io, af_info[0], af_info[1])
     else
       af_info = parse_ifd(io, makernote_offset[0], AFINFO_TAG)
