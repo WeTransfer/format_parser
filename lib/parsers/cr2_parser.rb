@@ -60,7 +60,6 @@ class FormatParser::CR2Parser
       height_px: @height,
       orientation: @orientation,
       image_orientation: @image_orientation,
-      preview: parse_preview_image(io),
       intrinsics: intrinsics
     )
   end
@@ -124,12 +123,6 @@ class FormatParser::CR2Parser
     @image_orientation = orient
   end
 
-  def parse_preview_image(io)
-    return if @preview_byte_count > FormatParser::MAX_BYTES || @preview_offset > FormatParser::MAX_SEEKS
-    io.seek(@preview_offset)
-    safe_read(io, @preview_byte_count)
-  end
-
   def set_photo_info(io, offset)
     # Type for exposure, aperture and resolution is unsigned rational
     # Unsigned rational = 2x unsigned long (4 bytes)
@@ -161,7 +154,9 @@ class FormatParser::CR2Parser
       shoot_date: @shoot_date,
       exposure: @exposure,
       aperture: @aperture,
-      resolution: @resolution
+      resolution: @resolution,
+      preview_offset: @preview_offset,
+      preview_length: @preview_byte_count
     }
   end
 
