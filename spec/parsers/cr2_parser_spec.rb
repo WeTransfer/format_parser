@@ -18,9 +18,13 @@ describe FormatParser::CR2Parser do
 
         expect(parsed.intrinsics).not_to be_nil
         expect(parsed.intrinsics[:camera_model]).to be_kind_of(String)
+        expect(parsed.intrinsics[:camera_model]).to match(/Canon \w+/)
         expect(parsed.intrinsics[:shoot_date]).to be_kind_of(String)
+        expect(parsed.intrinsics[:shoot_date]).to match(/\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2}/)
         expect(parsed.intrinsics[:exposure]).to be_kind_of(String)
+        expect(parsed.intrinsics[:exposure]).to match(/1\/[0-9]+/)
         expect(parsed.intrinsics[:aperture]).to be_kind_of(String)
+        expect(parsed.intrinsics[:aperture]).to match(/f[0-9]+\.[0-9]/)
         expect(parsed.intrinsics[:resolution]).to be_kind_of(Integer)
         expect(parsed.intrinsics[:resolution]).to be > 0
         expect(parsed.intrinsics[:preview_offset]).to be_kind_of(Integer)

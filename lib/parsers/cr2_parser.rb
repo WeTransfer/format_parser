@@ -11,7 +11,7 @@ class FormatParser::CR2Parser
   EXIF_OFFSET_TAG = 0x8769
   MAKERNOTE_OFFSET_TAG = 0x927c
   AFINFO_TAG = 0x0012
-  AF2INFO_TAG = 0x0026
+  AFINFO2_TAG = 0x0026
   CAMERA_MODEL_TAG = 0x0110
   SHOOT_DATE_TAG = 0x0132
   EXPOSURE_TAG = 0x829a
@@ -42,16 +42,16 @@ class FormatParser::CR2Parser
     set_photo_info(io, exif_offset[0])
 
     makernote_offset = parse_ifd(io, exif_offset[0], MAKERNOTE_OFFSET_TAG)
-    af_info = parse_ifd(io, makernote_offset[0], AF2INFO_TAG)
 
     # Old Canon models have CanonAFInfo tags
     # Newer models have CanonAFInfo2 tags instead
     # See https://sno.phy.queensu.ca/~phil/exiftool/TagNames/Canon.html
+    af_info = parse_ifd(io, makernote_offset[0], AFINFO2_TAG)
     unless af_info.nil?
-      parse_new_model(io, af_info[0], af_info[1])
+      parse_dimensions(io, af_info[0], af_info[1], 8, 10)
     else
       af_info = parse_ifd(io, makernote_offset[0], AFINFO_TAG)
-      parse_old_model(io, af_info[0], af_info[1])
+      parse_dimensions(io, af_info[0], af_info[1], 4, 6)
     end
 
     FormatParser::Image.new(
@@ -84,18 +84,11 @@ class FormatParser::CR2Parser
     sequence.reverse.unpack('H*').join.hex
   end
 
-  def parse_new_model(io, offset, length)
+  def parse_dimensions(io, offset, length, w_offset, h_offset)
     io.seek(offset)
     items = safe_read(io, length)
-    @width = parse_sequence_to_int items[8..9]
-    @height = parse_sequence_to_int items[10..11]
-  end
-
-  def parse_old_model(io, offset, length)
-    io.seek(offset)
-    items = safe_read(io, length)
-    @width = parse_sequence_to_int items[4..5]
-    @height = parse_sequence_to_int items[6..7]
+    @width = parse_sequence_to_int items[w_offset..w_offset + 1]
+    @height = parse_sequence_to_int items[h_offset..h_offset + 1]
   end
 
   def parse_ifd_0(io, offset)
