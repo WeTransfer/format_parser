@@ -42,16 +42,16 @@ class FormatParser::CR2Parser
     set_photo_info(io, exif_offset[0])
 
     makernote_offset = parse_ifd(io, exif_offset[0], MAKERNOTE_OFFSET_TAG)
-    af_info = parse_ifd(io, makernote_offset[0], AF2INFO_TAG)
 
     # Old Canon models have CanonAFInfo tags
     # Newer models have CanonAFInfo2 tags instead
     # See https://sno.phy.queensu.ca/~phil/exiftool/TagNames/Canon.html
+    af_info = parse_ifd(io, makernote_offset[0], AFINFO2_TAG)
     unless af_info.nil?
-      parse_new_model(io, af_info[0], af_info[1])
+      parse_dimensions(io, af_info[0], af_info[1], 8, 10)
     else
       af_info = parse_ifd(io, makernote_offset[0], AFINFO_TAG)
-      parse_old_model(io, af_info[0], af_info[1])
+      parse_dimensions(io, af_info[0], af_info[1], 4, 6)
     end
 
     FormatParser::Image.new(
