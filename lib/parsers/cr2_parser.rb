@@ -84,18 +84,11 @@ class FormatParser::CR2Parser
     sequence.reverse.unpack('H*').join.hex
   end
 
-  def parse_new_model(io, offset, length)
+  def parse_dimensions(io, offset, length, w_offset, h_offset)
     io.seek(offset)
     items = safe_read(io, length)
-    @width = parse_sequence_to_int items[8..9]
-    @height = parse_sequence_to_int items[10..11]
-  end
-
-  def parse_old_model(io, offset, length)
-    io.seek(offset)
-    items = safe_read(io, length)
-    @width = parse_sequence_to_int items[4..5]
-    @height = parse_sequence_to_int items[6..7]
+    @width = parse_sequence_to_int items[w_offset..w_offset + 1]
+    @height = parse_sequence_to_int items[h_offset..h_offset + 1]
   end
 
   def parse_ifd_0(io, offset)
