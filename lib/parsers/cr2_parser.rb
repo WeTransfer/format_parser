@@ -47,7 +47,7 @@ class FormatParser::CR2Parser
     # Old Canon models have CanonAFInfo tags
     # Newer models have CanonAFInfo2 tags instead
     # See https://sno.phy.queensu.ca/~phil/exiftool/TagNames/Canon.html
-    if !af_info.nil?
+    unless af_info.nil?
       parse_new_model(io, af_info[0], af_info[1])
     else
       af_info = parse_ifd(io, makernote_offset[0], AFINFO_TAG)
@@ -70,14 +70,14 @@ class FormatParser::CR2Parser
     io.seek(offset)
     entries_count = parse_sequence_to_int safe_read(io, 2)
     entries_count.times do
-      entry = safe_read(io, 12)
-      tag_id = parse_sequence_to_int entry[0..1]
-      type = parse_sequence_to_int entry[2..3]
-      length = parse_sequence_to_int entry[4..7]
-      value = parse_sequence_to_int entry[8..11]
-      return [value, length, type] if tag_id == searched_tag
+      ifd = ifd_entry safe_read(io, 12)
+      return [ifd[:value], ifd[:length], ifd[:type]].map { |b| parse_sequence_to_int b } if ifd[:tag] == [searched_tag].pack('v')
     end
     nil
+  end
+
+  def ifd_entry(binary)
+    { tag: binary[0..1], type: binary[2..3], length: binary[4..7], value: binary[8..11] }
   end
 
   def parse_sequence_to_int(sequence)
