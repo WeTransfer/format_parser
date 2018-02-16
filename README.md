@@ -12,7 +12,7 @@ and [dimensions,](https://github.com/sstephenson/dimensions) borrowing from them
 
 ## Currently supported filetypes:
 
-`TIFF, PSD, PNG, MP3, JPEG, GIF, DPX, AIFF, WAV, FDX, MOV, MP4`
+`TIFF, CR2, PSD, PNG, MP3, JPEG, GIF, DPX, AIFF, WAV, FDX, MOV, MP4`
 
 ...with [more](https://github.com/WeTransfer/format_parser/issues?q=is%3Aissue+is%3Aopen+label%3Aformats) on the way!
 
@@ -158,3 +158,6 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 ### MOOV
 - bmff.mp4 is borrowed from the [bmff](https://github.com/zuku/bmff) project
 - Test_Circular MOV files were created by one of the project maintainers and are MIT licensed
+
+### CR2
+- CR2 examples are downloaded from http://www.rawsamples.ch/ and are Creative Common Licensed.

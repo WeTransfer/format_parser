@@ -10,7 +10,8 @@ class FormatParser::TIFFParser
     io = FormatParser::IOConstraint.new(io)
     magic_bytes = safe_read(io, 4).unpack('C4')
     endianness = scan_tiff_endianness(magic_bytes)
-    return unless endianness
+    return if !endianness || cr2_check(io)
+
     w, h = read_tiff_by_endianness(io, endianness)
     scanner = FormatParser::EXIFParser.new(:tiff, io)
     scanner.scan_image_exif
@@ -53,10 +54,17 @@ class FormatParser::TIFFParser
   end
 
   def read_tiff_by_endianness(io, endianness)
+    io.seek(4)
     offset = safe_read(io, 4).unpack(endianness.upcase)[0]
     io.seek(offset)
     scan_ifd(io, offset, endianness)
     [@width, @height]
+  end
+
+  def cr2_check(io)
+    io.seek(8)
+    cr2_check_bytes = safe_read(io, 2)
+    cr2_check_bytes == 'CR'
   end
 
   FormatParser.register_parser self, natures: :image, formats: :tif

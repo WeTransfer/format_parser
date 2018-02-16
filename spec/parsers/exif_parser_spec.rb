@@ -1,17 +1,6 @@
 require 'spec_helper'
 
 describe FormatParser::EXIFParser do
-  # ORIENTATIONS = [
-  #   :top_left,
-  #   :top_right,
-  #   :bottom_right,
-  #   :bottom_left,
-  #   :left_top,
-  #   :right_top,
-  #   :right_bottom,
-  #   :left_bottom
-  # ]
-
   describe 'is able to correctly parse orientation for all the JPEG EXIF examples from FastImage' do
     Dir.glob(fixtures_dir + '/exif-orientation-testimages/jpg/*.jpg').each do |jpeg_path|
       filename = File.basename(jpeg_path)
