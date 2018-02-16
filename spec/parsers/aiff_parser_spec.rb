@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe FormatParser::AIFFParser do
   it 'parses an AIFF sample file' do
-    parse_result = subject.call(File.open(__dir__ + '/fixtures/AIFF/fixture.aiff', 'rb'))
+    parse_result = subject.call(File.open(__dir__ + '/../fixtures/AIFF/fixture.aiff', 'rb'))
 
     expect(parse_result.nature).to eq(:audio)
     expect(parse_result.format).to eq(:aiff)
@@ -13,7 +13,7 @@ describe FormatParser::AIFFParser do
   end
 
   it 'parses a Logic Pro created AIFF sample file having a COMT chunk before a COMM chunk' do
-    parse_result = subject.call(File.open(__dir__ + '/fixtures/AIFF/fixture-logic-aiff.aif', 'rb'))
+    parse_result = subject.call(File.open(__dir__ + '/../fixtures/AIFF/fixture-logic-aiff.aif', 'rb'))
 
     expect(parse_result.nature).to eq(:audio)
     expect(parse_result.format).to eq(:aiff)
