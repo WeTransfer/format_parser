@@ -1,5 +1,7 @@
 module FormatParser
   class Document
+    include FormatParser::AttributesJSON
+
     NATURE = :document
 
     attr_accessor :format

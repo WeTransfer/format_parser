@@ -1,6 +1,7 @@
 require 'set'
 
 module FormatParser
+  require_relative 'attributes_json'
   require_relative 'image'
   require_relative 'audio'
   require_relative 'document'
