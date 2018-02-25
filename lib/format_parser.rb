@@ -1,5 +1,6 @@
+require 'set'
+
 module FormatParser
-  require 'set'
   require_relative 'image'
   require_relative 'audio'
   require_relative 'document'
