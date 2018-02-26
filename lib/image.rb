@@ -1,5 +1,7 @@
 module FormatParser
   class Image
+    include FormatParser::AttributesJSON
+
     NATURE = :image
 
     # What filetype was recognized? Will contain a non-ambiguous symbol

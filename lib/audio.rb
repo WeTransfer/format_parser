@@ -1,5 +1,7 @@
 module FormatParser
   class Audio
+    include FormatParser::AttributesJSON
+
     NATURE = :audio
 
     # Type of the file (e.g :mp3)

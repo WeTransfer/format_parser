@@ -1,5 +1,7 @@
 module FormatParser
   class Video
+    include FormatParser::AttributesJSON
+
     NATURE = :video
 
     attr_accessor :width_px
