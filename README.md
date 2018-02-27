@@ -41,17 +41,11 @@ You can also optimize the metadata extraction by providing hints to the gem:
 FormatParser.parse(File.open("myimage", "rb"), natures: [:video, :image], formats: [:jpg, :png, :mp4], results: :all)
 ```
 
-If you need format_parser to return JSON, you can use `.as_json` to achieve this:
+Return values of all parsers have built-in JSON serialization
 
 ```ruby
-class Foo
-  include AttributesJSON
-  attr_accessor :number_of_bars
-end
-
-the_foo = Foo.new
-the_foo.number_of_bars = 42
-the_foo.as_json #=> {:number_of_bars => 42}
+img_info = FormatParser.parse(File.open("myimage.jpg", "rb"))
+JSON.pretty_generate(img_info) #=> ...
 ```
 
 ## Creating your own parsers

@@ -25,4 +25,10 @@ module FormatParser::AttributesJSON
       h[reader_method_name] = value.respond_to?(:as_json) ? value.as_json : value
     end
   end
+
+  # Implements to_json with sane defaults - like
+  # support for `JSON.pretty_generate` vs. `JSON.dump`
+  def to_json(generator_state)
+    generator_state.generate(as_json)
+  end
 end
