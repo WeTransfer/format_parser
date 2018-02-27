@@ -26,4 +26,27 @@ describe FormatParser::AttributesJSON do
       expect(file_related_class.ancestors).to include(FormatParser::AttributesJSON)
     end
   end
+
+  it 'provides a default implementation of to_json as well' do
+    anon_class = Class.new do
+      include FormatParser::AttributesJSON
+      attr_accessor :foo, :bar, :baz
+      def nature
+        'good'
+      end
+    end
+    instance = anon_class.new
+    instance.foo = 42
+    instance.bar = 'abcdef'
+
+    output = JSON.dump(instance)
+    readback = JSON.parse(output, symbolize_names: true)
+
+    expect(readback).to have_key(:nature)
+
+    # Make sure we support pretty_generate correctly
+    pretty_output = JSON.pretty_generate(instance)
+    standard_output = JSON.dump(instance)
+    expect(pretty_output).not_to eq(standard_output)
+  end
 end
