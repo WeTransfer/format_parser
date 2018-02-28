@@ -21,6 +21,26 @@ describe FormatParser do
     end
   end
 
+  it 'fails gracefully when a parser module reads more and more causing page faults and prevents too many reads on the source' do
+    exploit = ->(io) {
+      loop {
+        skip = 16 * 1024
+        io.read(1)
+        io.seek(io.pos + skip)
+      }
+    }
+    FormatParser.register_parser exploit, natures: :document, formats: :exploit
+
+    sample_io = StringIO.new(Random.new.bytes(1024 * 1024 * 4))
+
+    expect(sample_io).to receive(:read).at_most(4).times.and_call_original
+
+    result = FormatParser.parse(sample_io, formats: [:exploit])
+    expect(result).to be_nil
+
+    FormatParser.deregister_parser(exploit)
+  end
+
   describe 'multiple values return' do
     let(:blob) { StringIO.new(Random.new.bytes(512 * 1024)) }
     let(:audio) { FormatParser::Audio.new(format: :aiff, num_audio_channels: 1) }

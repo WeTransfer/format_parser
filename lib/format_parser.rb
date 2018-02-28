@@ -13,9 +13,11 @@ module FormatParser
   require_relative 'care'
 
   PARSER_MUX = Mutex.new
-  MAX_BYTES = 512 * 1024
-  MAX_READS = 64 * 1024
-  MAX_SEEKS = 64 * 1024
+
+  MAX_BYTES_READ_PER_PARSER = 512 * 1024
+  MAX_READS_PER_PARSER = 64 * 1024
+  MAX_SEEKS_PER_PARSER = 64 * 1024
+  MAX_CACHE_PAGE_FAULTS_PER_PARSER = 4
 
   def self.register_parser(callable_or_responding_to_new, formats:, natures:)
     parser_provided_formats = Array(formats)
@@ -46,24 +48,17 @@ module FormatParser
   end
 
   def self.parse_http(url, **kwargs)
-    remote_io = RemoteIO.new(url)
-    cached_io = Care::IOWrapper.new(remote_io)
-
-    # Prefetch the first page, since it is very likely to be touched
-    # by all parsers anyway. Additionally, when using RemoteIO we need
-    # to explicitly obtain the size of the resource, which is only available
-    # after having performed at least one successful GET - at least on S3
-    cached_io.read(1)
-    cached_io.seek(0)
-
-    parse(cached_io, **kwargs)
+    parse(RemoteIO.new(url), **kwargs)
   end
 
   # Return all by default
   def self.parse(io, natures: @parsers_per_nature.keys, formats: @parsers_per_format.keys, results: :first)
-    # If the cache is preconfigured do not apply an extra layer. It is going
-    # to be preconfigured when using parse_http.
-    io = Care::IOWrapper.new(io) unless io.is_a?(Care::IOWrapper)
+    # Limit the number of cached _pages_ we may fetch. This allows us to limit the number
+    # of page faults (page cache misses) a parser may incur
+    read_limiter_under_cache = FormatParser::ReadLimiter.new(io, max_reads: MAX_CACHE_PAGE_FAULTS_PER_PARSER)
+
+    # Then configure a layer of caching on top of that
+    cached_io = Care::IOWrapper.new(read_limiter_under_cache)
 
     # How many results has the user asked for? Used to determinate whether an array
     # is returned or not.
@@ -83,9 +78,15 @@ module FormatParser
 
     results = parsers.lazy.map do |parser|
       # We need to rewind for each parser, anew
-      io.seek(0)
+      cached_io.seek(0)
+
+      # ...and we have to reset the cache page fault limit, each parser is allowed to cause N page faults
+      # - i.e. this is not a shared limit
+      read_limiter_under_cache.reset_limits!
+
       # Limit how many operations the parser can perform
-      limited_io = ReadLimiter.new(io, max_bytes: MAX_BYTES, max_reads: MAX_READS, max_seeks: MAX_SEEKS)
+      limited_io = ReadLimiter.new(cached_io, max_bytes: MAX_BYTES_READ_PER_PARSER, max_reads: MAX_READS_PER_PARSER, max_seeks: MAX_SEEKS_PER_PARSER)
+
       begin
         parser.call(limited_io)
       rescue IOUtils::InvalidRead
@@ -95,6 +96,8 @@ module FormatParser
         # The parser tried to read too much - most likely the file structure
         # caused the parser to go off-track. Strictly speaking we should log this
         # and examine the file more closely.
+        # Or the parser caused too many cache pages to be fetched, which likely means we should not allow
+        # it to continue
       end
     end.reject(&:nil?).take(amount)
 
