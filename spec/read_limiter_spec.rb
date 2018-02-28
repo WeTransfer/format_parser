@@ -41,4 +41,14 @@ describe FormatParser::ReadLimiter do
       reader.read(1)
     }.to raise_error(/bytes budget \(512\) exceeded/)
   end
+
+  it 'can be reset!' do
+    reader = FormatParser::ReadLimiter.new(io, max_bytes: 512)
+    reader.read(512)
+    expect {
+      reader.read(1)
+    }.to raise_error(/budget/)
+    reader.reset_limits!
+    reader.read(1)
+  end
 end
