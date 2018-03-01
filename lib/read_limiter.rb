@@ -45,4 +45,10 @@ class FormatParser::ReadLimiter
 
     @io.read(n)
   end
+
+  def reset_limits!
+    @seeks = 0
+    @reads = 0
+    @bytes = 0
+  end
 end
