@@ -5,12 +5,26 @@ require 'delegate'
 class FormatParser::EXIFParser
   include FormatParser::IOUtils
 
-  # EXIFR kindly requests the presence of getbyte and readbyte
-  # IO methods, which our constrained IO subset does not provide natively
+  # EXIFR kindly requests the presence of a few more methods than what our IOConstraint
+  # is willing to provide, but they can be derived from the available ones
   class IOExt < SimpleDelegator
     def readbyte
       if byte = read(1)
         byte.unpack('C').first
+      end
+    end
+
+    def seek(n, seek_mode = IO::SEEK_SET)
+      io = __getobj__
+      case seek_mode
+      when IO::SEEK_SET
+        io.seek(n)
+      when IO::SEEK_CUR
+        io.seek(io.pos + n)
+      when IO::SEEK_END
+        io.seek(io.size + n)
+      else
+        raise Errno::EINVAL
       end
     end
 
