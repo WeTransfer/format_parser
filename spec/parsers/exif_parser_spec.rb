@@ -30,4 +30,30 @@ describe FormatParser::EXIFParser do
       end
     end
   end
+
+  describe 'IOExt' do
+    it 'supports readbyte' do
+      io = FormatParser::EXIFParser::IOExt.new(StringIO.new('hello'))
+      expect(io.readbyte).to eq(104)
+    end
+
+    it 'supports getbyte' do
+      io = FormatParser::EXIFParser::IOExt.new(StringIO.new('hello'))
+      expect(io.getbyte).to eq(104)
+    end
+
+    it 'supports seek modes' do
+      io = FormatParser::EXIFParser::IOExt.new(StringIO.new('hello'))
+      io.seek(1, IO::SEEK_SET)
+
+      io.seek(1, IO::SEEK_CUR)
+      expect(io.read(1)).to eq('l')
+
+      io.seek(-1, IO::SEEK_END)
+      expect(io.read(1)).to eq('o')
+
+      io.seek(1)
+      expect(io.read(1)).to eq('e')
+    end
+  end
 end
