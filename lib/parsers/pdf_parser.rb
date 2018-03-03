@@ -1,10 +1,7 @@
 class FormatParser::PDFParser
   include FormatParser::IOUtils
 
-  class InvalidStructure < StandardError
-  end
-
-  # First 9 byes of a PDF should be in this format, according to:
+  # First 9 bytes of a PDF should be in this format, according to:
   #
   #  https://stackoverflow.com/questions/3108201/detect-if-pdf-file-is-correct-header-pdf
   #
