@@ -15,6 +15,7 @@ class FormatParser::JPEGParser
     @width             = nil
     @height            = nil
     @orientation       = nil
+    @intrinsics = {}
     scan
   end
 
@@ -51,7 +52,8 @@ class FormatParser::JPEGParser
           format: :jpg,
           width_px: @width,
           height_px: @height,
-          orientation: @orientation
+          orientation: @orientation,
+          intrinsics: @intrinsics,
         )
       end
     end
@@ -90,8 +92,10 @@ class FormatParser::JPEGParser
       if scanner.scan_image_exif
         @exif_output = scanner.exif_data
         @orientation = scanner.orientation unless scanner.orientation.nil?
-        @width = @exif_output.pixel_x_dimension || scanner.width
-        @height = @exif_output.pixel_y_dimension || scanner.height
+        @intrinsics[:exif_pixel_x_dimension] = @exif_output.pixel_x_dimension
+        @intrinsics[:exif_pixel_y_dimension] = @exif_output.pixel_y_dimension
+        @width = scanner.width
+        @height = scanner.height
       end
     end
   end

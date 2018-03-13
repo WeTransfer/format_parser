@@ -148,6 +148,9 @@ Therefore we adapt the following approaches:
 
 Unless specified otherwise in this section the fixture files are MIT licensed and from the FastImage and Dimensions projects.
 
+### JPEG
+- `divergent_pixel_dimensions_exif.jpg` is used with permission from LiveKom GmbH
+
 ### AIFF
 - fixture.aiff was created by one of the project maintainers and is MIT licensed
 
