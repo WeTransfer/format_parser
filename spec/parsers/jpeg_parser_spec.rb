@@ -46,6 +46,6 @@ describe FormatParser::JPEGParser do
     result = subject.call(File.open(jpeg_path, 'rb'))
     expect(result.width_px).to eq(1920)
     expect(result.height_px).to eq(1280)
-    expect(result.intrinsics).to eq({:exif_pixel_x_dimension=>8214, :exif_pixel_y_dimension=>5476})
+    expect(result.intrinsics).to eq(exif_pixel_x_dimension: 8214, exif_pixel_y_dimension: 5476)
   end
 end
