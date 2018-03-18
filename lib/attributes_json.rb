@@ -14,7 +14,7 @@ module FormatParser::AttributesJSON
 
   # Implements a sane default `as_json` for an object
   # that accessors defined
-  def as_json(*_maybe_root_option)
+  def as_json(root: false)
     h = {}
     h['nature'] = nature if respond_to?(:nature) # Needed for file info structs
     methods.grep(/\w\=$/).each_with_object(h) do |attr_writer_method_name, h|
@@ -24,11 +24,15 @@ module FormatParser::AttributesJSON
       # by the caller
       h[reader_method_name] = value.respond_to?(:as_json) ? value.as_json : value
     end
+    if root
+      {'format_parser_file_info' => h}
+    else
+      h
+    end
   end
 
-  # Implements to_json with sane defaults - like
-  # support for `JSON.pretty_generate` vs. `JSON.dump`
-  def to_json(generator_state)
-    generator_state.generate(as_json)
+  # Implements to_json with sane defaults, with or without arguments
+  def to_json(*maybe_generator_state)
+    as_json(root: false).to_json(*maybe_generator_state)
   end
 end

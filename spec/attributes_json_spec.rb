@@ -13,7 +13,7 @@ describe FormatParser::AttributesJSON do
     instance.foo = 42
     instance.bar = 'abcdef'
     expect(instance.as_json).to eq('nature' => 'good', 'foo' => 42, 'bar' => 'abcdef', 'baz' => nil)
-    expect(instance.as_json(root: true)).to eq('nature' => 'good', 'foo' => 42, 'bar' => 'abcdef', 'baz' => nil)
+    expect(instance.as_json(root: true)).to eq('format_parser_file_info' => {'nature' => 'good', 'foo' => 42, 'bar' => 'abcdef', 'baz' => nil})
   end
 
   it 'is included into file information types' do
@@ -48,5 +48,23 @@ describe FormatParser::AttributesJSON do
     pretty_output = JSON.pretty_generate(instance)
     standard_output = JSON.dump(instance)
     expect(pretty_output).not_to eq(standard_output)
+  end
+
+  it 'provides to_json without arguments' do
+    anon_class = Class.new do
+      include FormatParser::AttributesJSON
+      attr_accessor :foo, :bar, :baz
+      def nature
+        'good'
+      end
+    end
+    instance = anon_class.new
+    instance.foo = 42
+    instance.bar = 'abcdef'
+
+    output = instance.to_json
+    readback = JSON.parse(output, symbolize_names: true)
+
+    expect(readback).to have_key(:nature)
   end
 end
