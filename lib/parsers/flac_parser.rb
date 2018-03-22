@@ -1,18 +1,15 @@
 require 'ks'
 
 class FormatParser::FLACParser
-
   MAGIC_BYTES = 4
   MAGIC_BYTE_STRING = 'fLaC'
   BLOCK_HEADER_BYTES = 4
 
-
   def bytestring_to_int(s)
-    s.unpack("B*")[0].to_i(2)
+    s.unpack('B*')[0].to_i(2)
   end
 
   def call(io)
-
     magic_bytes = io.read(MAGIC_BYTES)
 
     return unless magic_bytes == MAGIC_BYTE_STRING
@@ -27,7 +24,7 @@ class FormatParser::FLACParser
 
     # Audo info comes in irregularly sized (i.e. not 8-bit) chunks,
     # so read total as bitstring and parse seperately
-    audio_info = io.read(8).unpack("B*")[0]
+    audio_info = io.read(8).unpack('B*')[0]
 
     # sample rate is 20 bits
     sample_rate = audio_info.slice!(0..19).to_i(2)

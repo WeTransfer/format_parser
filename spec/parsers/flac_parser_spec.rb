@@ -30,6 +30,4 @@ describe FormatParser::FLACParser do
     expect(parsed.media_duration_frames).to eq(152267)
     expect(parsed.media_duration_seconds).to be_within(0.01).of(13.81)
   end
-
-
 end
