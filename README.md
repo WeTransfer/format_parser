@@ -101,7 +101,7 @@ class MyParser
   def call(io)
     # ... do some parsing with `io`
     magic_bytes = io.read(4)
-    return unless magic_bytes != 'XBMP'
+    return unless magic_bytes == 'XBMP'
     # ... more parsing code
     # ...and return the FileInformation::Image object with the metadata.
     FormatParser::Image.new(
