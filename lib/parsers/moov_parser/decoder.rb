@@ -213,7 +213,7 @@ class FormatParser::MOOVParser::Decoder
       # the atom size and atom type, but not any more than that
       size_of_atom_type_and_size = io.pos - atom_pos
       atom_size_sans_header = atom_size - size_of_atom_type_and_size
-      
+
       children, fields = if KNOWN_BRANCH_ATOM_TYPES.include?(atom_type)
         [extract_atom_stream(io, atom_size_sans_header, current_branch + [atom_type]), nil]
       else # Assume leaf atom
