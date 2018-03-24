@@ -168,6 +168,7 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 ### MOOV
 - bmff.mp4 is borrowed from the [bmff](https://github.com/zuku/bmff) project
 - Test_Circular MOV files were created by one of the project maintainers and are MIT licensed
+- fixture.m4a was created by one of the project maintainers and is MIT licensed
 
 ### CR2
 - CR2 examples are downloaded from http://www.rawsamples.ch/ and are Creative Common Licensed.
