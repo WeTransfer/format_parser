@@ -34,9 +34,9 @@ describe FormatParser::MOOVParser do
       result = subject.call(File.open(moov_path, 'rb'))
 
       expect(result).not_to be_nil
-      expect(result.nature).to eq(:video)
-      expect(result.width_px).to be > 0
-      expect(result.height_px).to be > 0
+      expect(result.nature).to eq(:video) unless result.format == :m4a
+      expect(result.width_px).to be > 0 unless result.format == :m4a
+      expect(result.height_px).to be > 0 unless result.format == :m4a
       expect(result.media_duration_seconds).to be_kind_of(Float)
       expect(result.media_duration_seconds).to be > 0
 
@@ -44,7 +44,14 @@ describe FormatParser::MOOVParser do
     end
   end
 
-  it 'parses an M4A file and provides the necessary metadata'
+  it 'parses an M4A file and provides the necessary metadata' do
+    m4a_path = fixtures_dir + '/MOOV/M4A/fixture.m4a'
+
+    result = subject.call(File.open(m4a_path, 'rb'))
+    expect(result).not_to be_nil
+    expect(result.nature).to eq(:audio)
+    expect(result.format).to eq(:m4a)
+  end
 
   it 'parses a MOV file and provides the necessary metadata' do
     mov_path = fixtures_dir + '/MOOV/MOV/Test_Circular_ProRes422.mov'
