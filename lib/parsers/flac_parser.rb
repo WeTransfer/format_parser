@@ -22,8 +22,8 @@ class FormatParser::FLACParser
     minimum_frame_size = bytestring_to_int(io.read(3))
     maximum_frame_size = bytestring_to_int(io.read(3))
 
-    # Audo info comes in irregularly sized (i.e. not 8-bit) chunks,
-    # so read total as bitstring and parse seperately
+    # Audio info comes in irregularly sized (i.e. not 8-bit) chunks,
+    # so read total as bitstring and parse separately
     audio_info = io.read(8).unpack('B*')[0]
 
     # sample rate is 20 bits
