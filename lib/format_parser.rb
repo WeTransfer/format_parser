@@ -92,6 +92,10 @@ module FormatParser
       rescue IOUtils::InvalidRead
         # There was not enough data for this parser to work on,
         # and it triggered an error
+      rescue IOUtils::MalformedFile
+        # Unexpected input was encountered during the parsing of
+        # a file. This might indicate either a malicious or a
+        # corruped file.
       rescue ReadLimiter::BudgetExceeded
         # The parser tried to read too much - most likely the file structure
         # caused the parser to go off-track. Strictly speaking we should log this

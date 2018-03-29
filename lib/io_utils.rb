@@ -2,6 +2,9 @@ module FormatParser::IOUtils
   class InvalidRead < ArgumentError
   end
 
+  class MalformedFile < ArgumentError
+  end
+
   def safe_read(io, n)
     raise ArgumentError, 'Unbounded reads are not supported' if n.nil?
     buf = io.read(n)

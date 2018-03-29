@@ -1,6 +1,6 @@
-require 'ks'
-
 class FormatParser::FLACParser
+  include FormatParser::IOUtils
+
   MAGIC_BYTES = 4
   MAGIC_BYTE_STRING = 'fLaC'
   BLOCK_HEADER_BYTES = 4
@@ -10,24 +10,36 @@ class FormatParser::FLACParser
   end
 
   def call(io)
-    magic_bytes = io.read(MAGIC_BYTES)
+    magic_bytes = safe_read(io, MAGIC_BYTES)
 
     return unless magic_bytes == MAGIC_BYTE_STRING
 
     # Skip info we don't need
-    io.seek(MAGIC_BYTES + BLOCK_HEADER_BYTES)
+    safe_skip(io, BLOCK_HEADER_BYTES)
 
-    minimum_block_size = bytestring_to_int(io.read(2))
-    maximum_block_size = bytestring_to_int(io.read(2))
-    minimum_frame_size = bytestring_to_int(io.read(3))
-    maximum_frame_size = bytestring_to_int(io.read(3))
+    minimum_block_size = bytestring_to_int(safe_read(io, 2))
+
+    if minimum_block_size < 16
+      raise MalformedFile, 'FLAC file minimum block size must be larger than 16'
+    end
+
+    maximum_block_size = bytestring_to_int(safe_read(io, 2))
+
+    if maximum_block_size < minimum_block_size
+      raise MalformedFile, 'FLAC file maximum block size must be equal to or larger than minimum block size'
+    end
+
+    minimum_frame_size = bytestring_to_int(safe_read(io, 3))
+    maximum_frame_size = bytestring_to_int(safe_read(io, 3))
 
     # Audio info comes in irregularly sized (i.e. not 8-bit) chunks,
     # so read total as bitstring and parse separately
-    audio_info = io.read(8).unpack('B*')[0]
+    audio_info = safe_read(io, 8).unpack('B*')[0]
 
     # sample rate is 20 bits
     sample_rate = audio_info.slice!(0..19).to_i(2)
+
+    raise MalformedFile, 'FLAC file sample rate must be larger than 0' unless sample_rate > 0
 
     # Number of channels is 3 bits
     # Header contains number of channels minus one, so add one
@@ -40,6 +52,7 @@ class FormatParser::FLACParser
     # Total samples is 36 bits
     total_samples = audio_info.slice!(0..35).to_i(2)
 
+    # Division is safe due to check above
     duration = total_samples.to_f / sample_rate
 
     FormatParser::Audio.new(
