@@ -42,7 +42,7 @@ describe FormatParser::ZIPParser do
     expect(result.entries.length).to eq(3)
 
     dir_entry = result.entries.last
-    expect(dir_entry.filename).to eq("папочка/")
+    expect(dir_entry.filename).to eq('папочка/')
     expect(dir_entry.type).to eq(:directory)
   end
 end

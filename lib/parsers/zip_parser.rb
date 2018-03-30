@@ -29,7 +29,7 @@ class FormatParser::ZIPParser
     # Check for the EFS bit in the general-purpose flags. If it is set,
     # the entry filename can be treated as UTF-8
     if zip_entry.gp_flags & 0b100000000000 == 0b100000000000
-      zip_entry.filename.unpack("U*").pack("U*")
+      zip_entry.filename.unpack('U*').pack('U*')
     else
       zip_entry.filename.encode(Encoding::UTF_8, undefined: :replace)
     end
