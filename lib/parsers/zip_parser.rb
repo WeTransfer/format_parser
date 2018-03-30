@@ -6,7 +6,8 @@ class FormatParser::ZIPParser
     entries = reader.read_zip_structure(io: FormatParser::IOConstraint.new(io))
 
     entries_archive = entries.map do |ze|
-      FormatParser::Archive::Entry.new(type: :file, size: ze.uncompressed_size, filename: ze.filename)
+      decoded_filename = decode_filename(ze)
+      FormatParser::Archive::Entry.new(type: :file, size: ze.uncompressed_size, filename: decoded_filename)
     end
 
     FormatParser::Archive.new(format: :zip, entries: entries_archive)
@@ -14,4 +15,16 @@ class FormatParser::ZIPParser
     # This is not a ZIP, or a broken ZIP.
     return
   end
+
+  def decode_filename(zip_entry)
+    # Check for the EFS bit in the general-purpose flags. If it is set,
+    # the entry filename can be treated as UTF-8
+    if zip_entry.gp_flags & 0b100000000000 == 0b100000000000
+      zip_entry.filename.unpack("U*").pack("U*")
+    else
+      zip_entry.filename.encode(Encoding::UTF_8, undefined: :replace)
+    end
+  end
+
+  FormatParser.register_parser self, natures: [:archive, :document], formats: :zip
 end
