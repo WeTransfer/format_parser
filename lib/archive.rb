@@ -10,7 +10,9 @@ module FormatParser
       end
     end
 
-    NATURE = :archive
+    # Lots of Office and LibreOffice documents are in fact packaged into
+    # ZIPs, as are .epub files. We make `nature` customisable for this occasion
+    attr_accessor :nature
 
     # What filetype was recognized? Will contain a non-ambiguous symbol
     # referring to the file format. The symbol can be used as a filename
@@ -27,10 +29,6 @@ module FormatParser
     # Only permits assignments via defined accessors
     def initialize(**attributes)
       attributes.map { |(k, v)| public_send("#{k}=", v) }
-    end
-
-    def nature
-      NATURE
     end
   end
 end
