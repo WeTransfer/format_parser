@@ -53,7 +53,7 @@ describe FormatParser::ZIPParser do
     result = subject.call(fi_io)
     json_repr = JSON.pretty_generate(result)
 
-    json_parsed_repr = JSON.parse(json_repr, symbolize_names: :true)
+    json_parsed_repr = JSON.parse(json_repr, symbolize_names: true)
     expect(json_parsed_repr[:nature]).to eq('archive')
     expect(json_parsed_repr[:format]).to eq('zip')
     expect(json_parsed_repr[:entries]).to be_kind_of(Array)
