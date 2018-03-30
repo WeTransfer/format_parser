@@ -220,7 +220,6 @@ class FormatParser::ZIPParser::FileReader
 
   def assert_signature(io, signature_magic_number)
     readback = read_4b(io)
-    # Rubocop: Use a guard clause instead of wrapping the code inside a conditional expression
     if readback != signature_magic_number
       expected = '0x0' + signature_magic_number.to_s(16)
       actual = '0x0' + readback.to_s(16)
@@ -309,7 +308,6 @@ class FormatParser::ZIPParser::FileReader
         #
         # It means that before we read this stuff we need to check if the previously-read
         # values are at overflow, and only _then_ proceed to read them. Bah.
-        # Rubocop: convention: Line is too long.
         if e.uncompressed_size == 0xFFFFFFFF
           e.uncompressed_size = read_8b(zip64_extra)
         end
@@ -352,9 +350,6 @@ class FormatParser::ZIPParser::FileReader
   # that size, eof].
   # The only way I could find to do this was with a sliding window, but
   # there probably is a better way.
-  # Rubocop:  convention: Assignment Branch Condition size for
-  # locate_eocd_signature is too high. [17.49/15]
-  # Rubocop:  convention: Method has too many lines. [14/10]
   def locate_eocd_signature(in_str)
     # We have to scan from the _very_ tail. We read the very minimum size
     # the EOCD record can have (up to and including the comment size), using
@@ -385,9 +380,6 @@ class FormatParser::ZIPParser::FileReader
 
   # Find the Zip64 EOCD locator segment offset. Do this by seeking backwards from the
   # EOCD record in the archive by fixed offsets
-  # Rubocop: convention: Assignment Branch Condition size for
-  #          get_zip64_eocd_location is too high. [15.17/15]
-  # Rubocop: convention: Method has too many lines. [15/10]
   def get_zip64_eocd_location(file_io, eocd_offset)
     zip64_eocd_loc_offset = eocd_offset
     zip64_eocd_loc_offset -= 4 # The signature
@@ -411,13 +403,11 @@ class FormatParser::ZIPParser::FileReader
     disk_num = read_4b(file_io) # number of the disk
     raise UnsupportedFeature, 'The archive spans multiple disks' if disk_num != 0
     read_8b(file_io)
-  rescue ReadError
+  rescue ReadError, InvalidStructure
     nil
   end
 
-  # Rubocop: convention: Assignment Branch Condition size for
   #          num_files_and_central_directory_offset_zip64 is too high. [21.12/15]
-  # Rubocop: convention: Method has too many lines. [17/10]
   def num_files_and_central_directory_offset_zip64(io, zip64_end_of_cdir_location)
     seek(io, zip64_end_of_cdir_location)
 
@@ -453,7 +443,6 @@ class FormatParser::ZIPParser::FileReader
     [num_files_total, central_dir_offset, central_dir_size]
   end
 
-  # Rubocop: convention: Method has too many lines. [11/10]
   def num_files_and_central_directory_offset(file_io, eocd_offset)
     seek(file_io, eocd_offset)
 
@@ -475,7 +464,7 @@ class FormatParser::ZIPParser::FileReader
   # during various stages of reading. The log message is contained in the return value
   # of `yield` in the method (the log messages are lazy-evaluated).
   def log
-    $stderr.puts(yield)
+    # $stderr.puts(yield)
   end
 
   def parse_out_extra_fields(extra_fields_str)
