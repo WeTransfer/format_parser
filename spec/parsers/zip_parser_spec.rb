@@ -15,7 +15,7 @@ describe FormatParser::ZIPParser do
     entry = result.entries.fetch(5674)
     expect(entry.type).to eq(:file)
     expect(entry.size).to eq(47)
-    expect(entry.filename).to eq("file-0005674.txt")
+    expect(entry.filename).to eq('file-0005674.txt')
   end
 
   it 'parses a ZIP archive with a few files' do

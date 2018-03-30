@@ -29,14 +29,14 @@ class FormatParser::ZIPParser::FileReader
   MAX_END_OF_CENTRAL_DIRECTORY_RECORD_SIZE =
     begin
       4 + # Offset of the start of central directory
-      4 + # Size of the central directory
-      2 + # Number of files in the cdir
-      4 + # End-of-central-directory signature
-      2 + # Number of this disk
-      2 + # Number of disk with the start of cdir
-      2 + # Number of files in the cdir of this disk
-      2 + # The comment size
-      0xFFFF # Maximum comment size
+        4 + # Size of the central directory
+        2 + # Number of files in the cdir
+        4 + # End-of-central-directory signature
+        2 + # Number of this disk
+        2 + # Number of disk with the start of cdir
+        2 + # Number of files in the cdir of this disk
+        2 + # The comment size
+        0xFFFF # Maximum comment size
     end
 
   # To prevent too many tiny reads, read the maximum possible size of the local file header upfront.
@@ -45,29 +45,29 @@ class FormatParser::ZIPParser::FileReader
   MAX_LOCAL_HEADER_SIZE =
     begin
       4 + # signature
-      2 + # Version needed to extract
-      2 + # gp flags
-      2 + # storage mode
-      2 + # dos time
-      2 + # dos date
-      4 + # CRC32
-      4 + # Comp size
-      4 + # Uncomp size
-      2 + # Filename size
-      2 + # Extra fields size
-      0xFFFF + # Maximum filename size
-      0xFFFF   # Maximum extra fields size
+        2 + # Version needed to extract
+        2 + # gp flags
+        2 + # storage mode
+        2 + # dos time
+        2 + # dos date
+        4 + # CRC32
+        4 + # Comp size
+        4 + # Uncomp size
+        2 + # Filename size
+        2 + # Extra fields size
+        0xFFFF + # Maximum filename size
+        0xFFFF   # Maximum extra fields size
     end
 
   SIZE_OF_USABLE_EOCD_RECORD =
     begin
       4 + # Signature
-      2 + # Number of this disk
-      2 + # Number of the disk with the EOCD record
-      2 + # Number of entries in the central directory of this disk
-      2 + # Number of entries in the central directory total
-      4 + # Size of the central directory
-      4   # Start of the central directory offset
+        2 + # Number of this disk
+        2 + # Number of the disk with the EOCD record
+        2 + # Number of entries in the central directory of this disk
+        2 + # Number of entries in the central directory total
+        4 + # Size of the central directory
+        4   # Start of the central directory offset
     end
 
   private_constant :C_UINT32LE, :C_UINT16LE, :C_UINT64LE, :MAX_END_OF_CENTRAL_DIRECTORY_RECORD_SIZE,
@@ -178,15 +178,17 @@ class FormatParser::ZIPParser::FileReader
     central_directory_str = io.read(cdir_size + 1024)
     central_directory_io = StringIO.new(central_directory_str)
     log do
-      format('Read %d bytes with central directory + EOCD record and locator',
-             central_directory_str.bytesize)
+      format(
+        'Read %d bytes with central directory + EOCD record and locator',
+        central_directory_str.bytesize)
     end
 
     entries = (0...num_files).map do |entry_n|
       offset_location = cdir_location + central_directory_io.pos
       log do
-        format('Reading the central directory entry %d starting at offset %d',
-               entry_n, offset_location)
+        format(
+          'Reading the central directory entry %d starting at offset %d',
+          entry_n, offset_location)
       end
       read_cdir_entry(central_directory_io)
     end
@@ -212,8 +214,7 @@ class FormatParser::ZIPParser::FileReader
     io.seek(absolute_pos)
     unless absolute_pos == io.pos
       raise ReadError,
-            "Expected to seek to #{absolute_pos} but only \
-             got to #{io.pos}"
+            "Expected to seek to #{absolute_pos} but only got to #{io.pos}"
     end
     nil
   end
@@ -233,8 +234,7 @@ class FormatParser::ZIPParser::FileReader
     pos_after = io.pos
     delta = pos_after - pos_before
     unless delta == n
-      raise ReadError, "Expected to seek #{n} bytes ahead, but could \
-                        only seek #{delta} bytes ahead"
+      raise ReadError, "Expected to seek #{n} bytes ahead, but could only seek #{delta} bytes ahead"
     end
     nil
   end
@@ -243,8 +243,7 @@ class FormatParser::ZIPParser::FileReader
     io.read(n_bytes).tap do |d|
       raise ReadError, "Expected to read #{n_bytes} bytes, but the IO was at the end" if d.nil?
       unless d.bytesize == n_bytes
-        raise ReadError, "Expected to read #{n_bytes} bytes, \
-                          read #{d.bytesize}"
+        raise ReadError, "Expected to read #{n_bytes} bytes, read #{d.bytesize}"
       end
     end
   end
@@ -296,8 +295,9 @@ class FormatParser::ZIPParser::FileReader
         # the values fetched from the conventional header
         zip64_extra = StringIO.new(zip64_extra_contents)
         log do
-          format('Will read Zip64 extra data for %s, %d bytes',
-                 e.filename, zip64_extra.size)
+          format(
+            'Will read Zip64 extra data for %s, %d bytes',
+            e.filename, zip64_extra.size)
         end
         # Now here be dragons. The APPNOTE specifies that
         #
@@ -388,8 +388,9 @@ class FormatParser::ZIPParser::FileReader
     zip64_eocd_loc_offset -= 4 # Total number of disks
 
     log do
-      format('Will look for the Zip64 EOCD locator signature at offset %d',
-             zip64_eocd_loc_offset)
+      format(
+        'Will look for the Zip64 EOCD locator signature at offset %d',
+        zip64_eocd_loc_offset)
     end
 
     # If the offset is negative there is certainly no Zip64 EOCD locator here
@@ -433,8 +434,9 @@ class FormatParser::ZIPParser::FileReader
     end
 
     log do
-      format('Zip64 EOCD record states there are %d files in the archive',
-             num_files_total)
+      format(
+        'Zip64 EOCD record states there are %d files in the archive',
+        num_files_total)
     end
 
     central_dir_size    = read_8b(zip64_eocdr) # Size of the central directory

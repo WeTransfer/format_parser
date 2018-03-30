@@ -12,6 +12,6 @@ class FormatParser::ZIPParser
     FormatParser::Archive.new(format: :zip, entries: entries_archive)
   rescue FileReader::Error
     # This is not a ZIP, or a broken ZIP.
-    return nil
+    return
   end
 end
