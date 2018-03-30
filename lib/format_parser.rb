@@ -6,6 +6,7 @@ module FormatParser
   require_relative 'audio'
   require_relative 'document'
   require_relative 'video'
+  require_relative 'archive'
   require_relative 'io_utils'
   require_relative 'read_limiter'
   require_relative 'remote_io'
