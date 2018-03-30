@@ -3,7 +3,7 @@ class FormatParser::ZIPParser
 
   def call(io)
     reader = FileReader.new
-    entries = reader.read_zip_structure(io: FormatParser::IOConstraint.new(io))
+    entries = reader.read_zip_structure(io: FormatParser::ReadLimiter.new(io))
 
     entries_archive = entries.map do |ze|
       ft = directory?(ze) ? :directory : :file
