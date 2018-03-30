@@ -6,14 +6,23 @@ class FormatParser::ZIPParser
     entries = reader.read_zip_structure(io: FormatParser::IOConstraint.new(io))
 
     entries_archive = entries.map do |ze|
+      ft = directory?(ze) ? :directory : :file
       decoded_filename = decode_filename(ze)
-      FormatParser::Archive::Entry.new(type: :file, size: ze.uncompressed_size, filename: decoded_filename)
+      FormatParser::Archive::Entry.new(type: ft, size: ze.uncompressed_size, filename: decoded_filename)
     end
 
     FormatParser::Archive.new(format: :zip, entries: entries_archive)
   rescue FileReader::Error
     # This is not a ZIP, or a broken ZIP.
     return
+  end
+
+  def directory?(zip_entry)
+    # We can do a lap dance here and parse out the individual bit fields
+    # from the external attributes, check the OS type that is in the entry
+    # to see if it can be interpreted as UNIX or not, and generally have
+    # heaps of fun. Instead, we will be frugal.
+    zip_entry.filename.end_with?('/')
   end
 
   def decode_filename(zip_entry)

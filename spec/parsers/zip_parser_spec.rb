@@ -30,5 +30,19 @@ describe FormatParser::ZIPParser do
     expect(result.entries.length).to eq(3)
   end
 
-  it 'correctly identifies an empty directory'
+  it 'correctly identifies an empty directory' do
+    fixture_path = fixtures_dir + '/ZIP/arch_with_empty_dir.zip'
+    fi_io = File.open(fixture_path, 'rb')
+
+    result = subject.call(fi_io)
+    expect(result).not_to be_nil
+
+    expect(result.format).to eq(:zip)
+    expect(result.nature).to eq(:archive)
+    expect(result.entries.length).to eq(3)
+
+    dir_entry = result.entries.last
+    expect(dir_entry.filename).to eq("папочка/")
+    expect(dir_entry.type).to eq(:directory)
+  end
 end
