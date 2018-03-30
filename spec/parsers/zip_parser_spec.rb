@@ -45,4 +45,24 @@ describe FormatParser::ZIPParser do
     expect(dir_entry.filename).to eq('папочка/')
     expect(dir_entry.type).to eq(:directory)
   end
+
+  it 'returns a result that has a usable JSON representation' do
+    fixture_path = fixtures_dir + '/ZIP/arch_with_empty_dir.zip'
+    fi_io = File.open(fixture_path, 'rb')
+
+    result = subject.call(fi_io)
+    json_repr = JSON.pretty_generate(result)
+
+    json_parsed_repr = JSON.parse(json_repr, symbolize_names: :true)
+    expect(json_parsed_repr[:nature]).to eq('archive')
+    expect(json_parsed_repr[:format]).to eq('zip')
+    expect(json_parsed_repr[:entries]).to be_kind_of(Array)
+    expect(json_parsed_repr[:entries].length).to eq(3)
+
+    json_parsed_repr[:entries].each do |e|
+      expect(e[:filename]).to be_kind_of(String)
+      expect(e[:size]).to be_kind_of(Integer)
+      expect(e[:type]).to be_kind_of(String)
+    end
+  end
 end

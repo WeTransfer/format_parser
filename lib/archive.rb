@@ -3,7 +3,13 @@ require 'ks'
 module FormatParser
   class Archive
     include FormatParser::AttributesJSON
-    Entry = Ks.strict(:type, :size, :filename)
+
+    class Entry < Ks.strict(:type, :size, :filename)
+      def to_json(*a)
+        to_h.to_json(*a)
+      end
+    end
+
     NATURE = :archive
 
     # What filetype was recognized? Will contain a non-ambiguous symbol
