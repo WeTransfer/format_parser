@@ -30,9 +30,7 @@ class FormatParser::MP3Parser
     # Special case: some ZIPs (Office documents) did detect as MP3s.
     # To avoid having that happen, we check for the PKZIP signature -
     # local entry header signature - at the very start of the file
-    if io.read(6) == ZIP_LOCAL_ENTRY_SIGNATURE
-      return
-    end
+    return if io.read(6) == ZIP_LOCAL_ENTRY_SIGNATURE
     io.seek(0)
 
     # Read the last 128 bytes which might contain ID3v1
