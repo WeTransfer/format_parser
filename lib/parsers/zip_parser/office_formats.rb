@@ -1,17 +1,17 @@
 # Based on an unscientific sample of 63 documents I could find on my hard drive,
 # all docx/pptx/xlsx files contain, at the minimum, the following files:
-# 
+#
 #   [Content_types].xml
 #   _rels/.rels
 #   docProps/core.xml
 #   docPropx/app.xml
-# 
+#
 # Additionally, per file type, they contain the following:
-# 
+#
 #   word/document.xml
 #   xl/workbook.xml
 #   ppt/presentation.xml
-# 
+#
 # These are sufficient to say with certainty that a ZIP is in fact an Office document.
 # Also that unscientific sample revealed that I came to dislike MS Office so much as to
 # only have 63 documents on my entire workstation.
@@ -38,7 +38,7 @@ module FormatParser::ZIPParser::OfficeFormats
   end
 
   def office_file_format_from_entry_set(filenames_set)
-    file_type = if filenames_set.include?('word/document.xml')
+    if filenames_set.include?('word/document.xml')
       :docx
     elsif filenames_set.include?('xl/workbook.xml')
       :xlsx
