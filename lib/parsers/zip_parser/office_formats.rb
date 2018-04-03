@@ -26,15 +26,15 @@
 # token detection of specific filenames should be enough to say with certainty
 # that a document _is_ an Office document, and not just a ZIP.
 module FormatParser::ZIPParser::OfficeFormats
-  OFFICE_MARKER_FILES = %w(
-    [Content_types].xml
-    _rels/.rels
-    docProps/core.xml
-    docPropx/app.xml
-  )
+  OFFICE_MARKER_FILES = Set.new([
+    '[Content_Types].xml',
+    '_rels/.rels',
+    'docProps/core.xml',
+    'docProps/app.xml',
+  ])
 
   def office_document?(filenames_set)
-    filenames_set.subset?(Set.new(OFFICE_MARKER_FILES))
+    OFFICE_MARKER_FILES.subset?(filenames_set)
   end
 
   def office_file_format_from_entry_set(filenames_set)
@@ -47,6 +47,5 @@ module FormatParser::ZIPParser::OfficeFormats
     else
       :unknown
     end
-    FormatParser::Document.new(format: file_type, page_count: 1)
   end
 end
