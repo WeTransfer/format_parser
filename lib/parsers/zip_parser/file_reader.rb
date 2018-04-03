@@ -349,7 +349,7 @@ class FormatParser::ZIPParser::FileReader
     found_at_indices = []
     while last_i = in_string.index(of_substring, last_i)
       found_at_indices << last_i
-      last_i = last_i + of_substring.bytesize
+      last_i += of_substring.bytesize
     end
     found_at_indices
   end
@@ -363,7 +363,7 @@ class FormatParser::ZIPParser::FileReader
     indices.each do |check_at|
       maybe_record = in_str[check_at..str_size]
       # If the record is smaller than the minimum - we will never recover anything
-      return if maybe_record.bytesize < minimum_record_size
+      break if maybe_record.bytesize < minimum_record_size
       signature, *_rest, comment_size = maybe_record.unpack(unpack_pattern)
 
       # Check the only condition for the match
