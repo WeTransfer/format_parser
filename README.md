@@ -12,7 +12,7 @@ and [dimensions,](https://github.com/sstephenson/dimensions) borrowing from them
 
 ## Currently supported filetypes:
 
-`TIFF, CR2, PSD, PNG, MP3, JPEG, GIF, DPX, AIFF, WAV, FDX, MOV, MP4`
+`TIFF, CR2, PSD, PNG, MP3, JPEG, GIF, PDF, DPX, AIFF, WAV, FDX, MOV, MP4, M4A, FLAC, DOCX, PPTX, XLSX`
 
 ...with [more](https://github.com/WeTransfer/format_parser/issues?q=is%3Aissue+is%3Aopen+label%3Aformats) on the way!
 
