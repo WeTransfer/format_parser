@@ -62,6 +62,14 @@ describe FormatParser::ZIPParser do
     expect(result.format).to eq(:docx)
   end
 
+  it 'is able to handle specific fuzzed input' do
+    r = Random.new(354)
+    1024.times do
+      random_blob = StringIO.new(r.bytes(512 * 1024))
+      subject.call(random_blob) # If there is an error in one of the parsers the example will raise too
+    end
+  end
+
   it 'returns a result that has a usable JSON representation' do
     fixture_path = fixtures_dir + '/ZIP/arch_with_empty_dir.zip'
     fi_io = File.open(fixture_path, 'rb')
