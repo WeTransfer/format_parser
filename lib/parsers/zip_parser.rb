@@ -1,17 +1,27 @@
 class FormatParser::ZIPParser
   require_relative 'zip_parser/file_reader'
+  require_relative 'zip_parser/office_formats'
+
+  include OfficeFormats
 
   def call(io)
     reader = FileReader.new
     entries = reader.read_zip_structure(io: FormatParser::IOConstraint.new(io))
 
+    filenames_set = Set.new
     entries_archive = entries.map do |ze|
       ft = directory?(ze) ? :directory : :file
       decoded_filename = decode_filename(ze)
+      filenames_set << decoded_filename
       FormatParser::Archive::Entry.new(type: ft, size: ze.uncompressed_size, filename: decoded_filename)
     end
 
-    FormatParser::Archive.new(format: :zip, entries: entries_archive)
+    if office_document?(filenames_set)
+      office_format = office_file_format_from_entry_set(filenames_set)
+      FormatParser::Archive.new(nature: :document, format: office_format, entries: entries_archive)
+    else
+      FormatParser::Archive.new(nature: :archive,  format: :zip, entries: entries_archive)
+    end
   rescue FileReader::Error
     # This is not a ZIP, or a broken ZIP.
     return

@@ -46,6 +46,22 @@ describe FormatParser::ZIPParser do
     expect(dir_entry.type).to eq(:directory)
   end
 
+  it 'correctly identifies Word documents' do
+    fixture_path = fixtures_dir + '/ZIP/10.docx'
+    fi_io = File.open(fixture_path, 'rb')
+
+    result = subject.call(fi_io)
+    expect(result.nature).to eq(:document)
+    expect(result.format).to eq(:docx)
+
+    fixture_path = fixtures_dir + '/ZIP/sample-docx.docx'
+    fi_io = File.open(fixture_path, 'rb')
+
+    result = subject.call(fi_io)
+    expect(result.nature).to eq(:document)
+    expect(result.format).to eq(:docx)
+  end
+
   it 'returns a result that has a usable JSON representation' do
     fixture_path = fixtures_dir + '/ZIP/arch_with_empty_dir.zip'
     fi_io = File.open(fixture_path, 'rb')

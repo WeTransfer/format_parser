@@ -23,7 +23,16 @@ class FormatParser::MP3Parser
   # Default frame size for mp3
   SAMPLES_PER_FRAME = 1152
 
+  # For some edge cases
+  ZIP_LOCAL_ENTRY_SIGNATURE = "PK\x03\x04\x14\x00".b
+
   def call(io)
+    # Special case: some ZIPs (Office documents) did detect as MP3s.
+    # To avoid having that happen, we check for the PKZIP signature -
+    # local entry header signature - at the very start of the file
+    return if io.read(6) == ZIP_LOCAL_ENTRY_SIGNATURE
+    io.seek(0)
+
     # Read the last 128 bytes which might contain ID3v1
     id3_v1 = ID3V1.attempt_id3_v1_extraction(io)
     # Read the header bytes that might contain ID3v1
