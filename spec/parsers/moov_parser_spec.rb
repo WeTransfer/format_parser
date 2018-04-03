@@ -29,9 +29,22 @@ describe FormatParser::MOOVParser do
     end
   end
 
-  Dir.glob(fixtures_dir + '/MOOV/**/*.*').sort.each do |moov_path|
-    it "is able to parse #{File.basename(moov_path)}" do
-      result = subject.call(File.open(moov_path, 'rb'))
+  Dir.glob(fixtures_dir + '/MOOV/**/*.m4a').sort.each do |m4a_path|
+    it "is able to parse #{File.basename(m4a_path)}" do
+      result = subject.call(File.open(m4a_path, 'rb'))
+
+      expect(result).not_to be_nil
+      expect(result.nature).to eq(:audio)
+      expect(result.media_duration_seconds).to be_kind_of(Float)
+      expect(result.media_duration_seconds).to be > 0
+
+      expect(result.intrinsics).not_to be_nil
+    end
+  end
+
+  Dir.glob(fixtures_dir + '/MOOV/**/*.mov').sort.each do |mov_path|
+    it "is able to parse #{File.basename(mov_path)}" do
+      result = subject.call(File.open(mov_path, 'rb'))
 
       expect(result).not_to be_nil
       expect(result.nature).to eq(:video)
@@ -44,7 +57,29 @@ describe FormatParser::MOOVParser do
     end
   end
 
-  it 'parses an M4A file and provides the necessary metadata'
+  Dir.glob(fixtures_dir + '/MOOV/**/*.mp4').sort.each do |mp4_path|
+    it "is able to parse #{File.basename(mp4_path)}" do
+      result = subject.call(File.open(mp4_path, 'rb'))
+
+      expect(result).not_to be_nil
+      expect(result.nature).to eq(:video)
+      expect(result.width_px).to be > 0
+      expect(result.height_px).to be > 0
+      expect(result.media_duration_seconds).to be_kind_of(Float)
+      expect(result.media_duration_seconds).to be > 0
+
+      expect(result.intrinsics).not_to be_nil
+    end
+  end
+
+  it 'parses an M4A file and provides the necessary metadata' do
+    m4a_path = fixtures_dir + '/MOOV/M4A/fixture.m4a'
+
+    result = subject.call(File.open(m4a_path, 'rb'))
+    expect(result).not_to be_nil
+    expect(result.nature).to eq(:audio)
+    expect(result.format).to eq(:m4a)
+  end
 
   it 'parses a MOV file and provides the necessary metadata' do
     mov_path = fixtures_dir + '/MOOV/MOV/Test_Circular_ProRes422.mov'

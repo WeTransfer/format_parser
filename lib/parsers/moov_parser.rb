@@ -52,19 +52,28 @@ class FormatParser::MOOVParser
       media_duration_s = duration / timescale.to_f
     end
 
-    FormatParser::Video.new(
-      format: format_from_moov_type(file_type),
-      width_px: width,
-      height_px: height,
-      media_duration_seconds: media_duration_s,
-      intrinsics: atom_tree,
-    )
+    # M4A only contains audio, while MP4 and friends can contain video.
+    if format_from_moov_type(file_type) == :m4a
+      FormatParser::Audio.new(
+        format: format_from_moov_type(file_type),
+        media_duration_seconds: media_duration_s,
+        intrinsics: atom_tree,
+      )
+    else
+      FormatParser::Video.new(
+        format: format_from_moov_type(file_type),
+        width_px: width,
+        height_px: height,
+        media_duration_seconds: media_duration_s,
+        intrinsics: atom_tree,
+      )
+    end
   end
 
   private
 
   def format_from_moov_type(file_type)
-    FTYP_MAP.fetch(file_type, :mov)
+    FTYP_MAP.fetch(file_type.downcase, :mov)
   end
 
   # An MPEG4/MOV/M4A will start with the "ftyp" atom. The atom must have a length

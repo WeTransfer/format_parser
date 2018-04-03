@@ -159,7 +159,6 @@ class FormatParser::ZIPParser::FileReader
   def read_zip_structure(io:)
     zip_file_size = io.size
     eocd_offset = get_eocd_offset(io, zip_file_size)
-
     zip64_end_of_cdir_location = get_zip64_eocd_location(io, eocd_offset)
     num_files, cdir_location, cdir_size =
       if zip64_end_of_cdir_location
@@ -365,7 +364,6 @@ class FormatParser::ZIPParser::FileReader
       # We use negative values because if we used positive slice indices
       # we would have to detect the rollover ourselves
       break unless window = in_str[end_location, minimum_record_size]
-
       window_location = in_str.bytesize + end_location
       unpacked = window.unpack(unpack_pattern)
       # If we found the signarue, pick up the comment size, and check if the size of the window

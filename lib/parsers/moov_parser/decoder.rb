@@ -181,12 +181,21 @@ class FormatParser::MOOVParser::Decoder
     }
   end
 
+  def parse_meta_atom(io, atom_size)
+    parse_hdlr_atom(io, atom_size)
+  end
+
   def parse_atom_fields_per_type(io, atom_size, atom_type)
     if respond_to?("parse_#{atom_type}_atom", true)
       send("parse_#{atom_type}_atom", io, atom_size)
     else
       nil # We can't look inside this leaf atom
     end
+  end
+
+  def parse_atom_children_and_data_fields(io, atom_size_sans_header, atom_type, current_branch)
+    parse_atom_fields_per_type(io, atom_size_sans_header, atom_type)
+    extract_atom_stream(io, atom_size_sans_header, current_branch + [atom_type])
   end
 
   # Recursive descent parser - will drill down to atoms which
@@ -215,7 +224,7 @@ class FormatParser::MOOVParser::Decoder
       atom_size_sans_header = atom_size - size_of_atom_type_and_size
 
       children, fields = if KNOWN_BRANCH_AND_LEAF_ATOM_TYPES.include?(atom_type)
-        parse_atom_children_and_data_fields(io, atom_size_sans_header, atom_type)
+        parse_atom_children_and_data_fields(io, atom_size_sans_header, atom_type, current_branch)
       elsif KNOWN_BRANCH_ATOM_TYPES.include?(atom_type)
         [extract_atom_stream(io, atom_size_sans_header, current_branch + [atom_type]), nil]
       else # Assume leaf atom
