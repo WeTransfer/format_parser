@@ -360,9 +360,6 @@ class FormatParser::ZIPParser::FileReader
     minimum_record_size = 22
     end_location = minimum_record_size * -1
     loop do
-      # -100 here is an arbitrary number, but if not in place the this will continue
-      # reading gibberish (e.g. in our fuzz tests) forever
-      return if end_location < -100
       # If the window is nil, we have rolled off the start of the string, nothing to do here.
       # We use negative values because if we used positive slice indices
       # we would have to detect the rollover ourselves
