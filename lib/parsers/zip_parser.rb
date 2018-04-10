@@ -1,4 +1,5 @@
 class FormatParser::ZIPParser
+  UNICODE_REPLACEMENT_CHAR = [0xFFFD].pack('U')
   require_relative 'zip_parser/file_reader'
   require_relative 'zip_parser/office_formats'
 
@@ -11,7 +12,7 @@ class FormatParser::ZIPParser
     filenames_set = Set.new
     entries_archive = entries.map do |ze|
       ft = directory?(ze) ? :directory : :file
-      decoded_filename = decode_filename(ze)
+      decoded_filename = decode_filename_of(ze)
       filenames_set << decoded_filename
       FormatParser::Archive::Entry.new(type: ft, size: ze.uncompressed_size, filename: decoded_filename)
     end
@@ -35,13 +36,18 @@ class FormatParser::ZIPParser
     zip_entry.filename.end_with?('/')
   end
 
-  def decode_filename(zip_entry)
+  def decode_filename(filename, likely_unicode:)
+    filename.force_encoding(Encoding::UTF_8) if likely_unicode
+    filename.encode(Encoding::UTF_8, undefined: :replace, replace: UNICODE_REPLACEMENT_CHAR)
+  end
+
+  def decode_filename_of(zip_entry)
     # Check for the EFS bit in the general-purpose flags. If it is set,
     # the entry filename can be treated as UTF-8
     if zip_entry.gp_flags & 0b100000000000 == 0b100000000000
-      zip_entry.filename.unpack('U*').pack('U*')
+      decode_filename(zip_entry.filename, likely_unicode: true)
     else
-      zip_entry.filename.encode(Encoding::UTF_8, undefined: :replace)
+      decode_filename(zip_entry.filename, likely_unicode: false)
     end
   end
 

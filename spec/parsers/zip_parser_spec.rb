@@ -89,4 +89,14 @@ describe FormatParser::ZIPParser do
       expect(e[:type]).to be_kind_of(String)
     end
   end
+
+  it 'parses filenames in ZIP encoded in a local DOS encoding' do
+    spanish_zip_path = fixtures_dir + '/ZIP/broken_filename.zip'
+
+    result = subject.call(File.open(spanish_zip_path, 'rb'))
+
+    first_entry = result.entries.first
+    expect(first_entry.filename).to eq('Li��nia Extreme//')
+    expect(first_entry.type).to eq(:directory)
+  end
 end
