@@ -150,6 +150,7 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 
 ### JPEG
 - `divergent_pixel_dimensions_exif.jpg` is used with permission from LiveKom GmbH
+- `extended_reads.jpg` has kindly been made available by Raphaelle Pellerin for use exclusively with format_parser
 
 ### AIFF
 - fixture.aiff was created by one of the project maintainers and is MIT licensed
