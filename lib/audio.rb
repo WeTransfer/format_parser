@@ -11,12 +11,11 @@ module FormatParser
     # and for video files with embedded sound
     attr_accessor :num_audio_channels
 
-    # SampeThe number of audio channels for sound files that are muxed
-    # and for video files with embedded sound
+    # The sample rate of the audio file in hertz, as an Integer
     attr_accessor :audio_sample_rate_hz
 
-    # Duration of the media object (be it audio or video) in seconds,
-    # as a Float
+    # Duration of the media object (be it audio or video)
+    # in seconds, as a Float
     attr_accessor :media_duration_seconds
 
     # Duration of the media object in addressable frames or samples,
