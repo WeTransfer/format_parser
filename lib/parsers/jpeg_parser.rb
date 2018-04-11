@@ -98,6 +98,9 @@ class FormatParser::JPEGParser
         @height = scanner.height
       end
     end
+  rescue EXIFR::MalformedJPEG
+    # Not a JPEG or the Exif headers contain invalid data, or
+    # an APP1 marker was detected in a file that is not a JPEG
   end
 
   def read_frame
