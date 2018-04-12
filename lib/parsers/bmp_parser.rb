@@ -1,0 +1,35 @@
+class FormatParser::BMPParser
+  include FormatParser::IOUtils
+
+  VALID_BMP = 'BM'
+  PIXEL_ARRAY_OFFSET = 54
+  COLOR_TYPES = {
+    1 => :monochrome
+  }
+
+  def call(io)
+    io = FormatParser::IOConstraint.new(io)
+
+    magic_number, _file_size, _reserved1, _reserved2, dib_header_location  = safe_read(io, 14).unpack('A2Vv2V')
+    return unless VALID_BMP == magic_number
+    return unless dib_header_location == PIXEL_ARRAY_OFFSET
+
+    dib_header = safe_read(io, 40)
+
+    _header_size, width, height, _planes, bits_per_pixel,
+    _compression_method, _image_size, _hres,
+    _vres, _n_colors, _i_colors = dib_header.unpack("Vl<2v2V2l<2V2")
+
+    color_mode = COLOR_TYPES.fetch(bits_per_pixel) { :rgb }
+
+
+    FormatParser::Image.new(
+      format: :bmp,
+      width_px: width,
+      height_px: height,
+      color_mode: color_mode
+    )
+  end
+
+  FormatParser.register_parser self, natures: :image, formats: :bmp
+end
