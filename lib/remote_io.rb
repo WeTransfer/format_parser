@@ -1,3 +1,8 @@
+# Acts as a wrapper for turning a given URL into an IO object
+# you can read from and seek in. Uses Faraday under the hood
+# to perform fetches, so if you apply Faraday configuration
+# tweaks using `Faraday.default_connection = ...` these will
+# take effect for these RemoteIO objects as well
 class FormatParser::RemoteIO
   # Represents a failure that might be retried
   # (like a 5xx response or a timeout)

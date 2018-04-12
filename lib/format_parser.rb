@@ -1,5 +1,7 @@
 require 'set'
 
+# A pretty nimble module for parsing file metadata using partial reads. Contains all the
+# top-level methods of the library.
 module FormatParser
   require_relative 'attributes_json'
   require_relative 'image'
@@ -14,9 +16,19 @@ module FormatParser
   require_relative 'io_constraint'
   require_relative 'care'
 
+  # Is used to manage access to the shared array of parser constructors, which might
+  # potentially be mutated from different threads. The mutex won't be hit too often
+  # since it only locks when adding/removing parsers.
   PARSER_MUX = Mutex.new
   MAX_BYTES_READ_PER_PARSER = 1024 * 1024 * 2
 
+  # Register a parser object to be used to perform file format detection. Each parser FormatParser
+  # provides out of the box registers itself using this method.
+  #
+  # @param callable_or_responding_to_new[#call, #new] an object that either responds to #new or to #call
+  # @param formats[Array<Symbol>] file formats that the parser provides
+  # @param natures[Array<Symbol>] file natures that the parser provides
+  # @return void
   def self.register_parser(callable_or_responding_to_new, formats:, natures:)
     parser_provided_formats = Array(formats)
     parser_provided_natures = Array(natures)
@@ -36,6 +48,11 @@ module FormatParser
     end
   end
 
+  # Deregister a parser object (makes FormatParser forget this parser existed). Is mostly used in
+  # tests, but can also be used to forcibly disable some formats completely.
+  #
+  # @param callable_or_responding_to_new[#call, #new] an object that either responds to #new or to #call
+  # @return void
   def self.deregister_parser(callable_or_responding_to_new)
     # Used only in tests
     PARSER_MUX.synchronize do
@@ -45,11 +62,32 @@ module FormatParser
     end
   end
 
+  # Parses the resource at the given `url` and returns the results as if it were any IO
+  # given to `.parse`. The accepted keyword arguments are the same as the ones for `parse`.
+  #
+  # @param url[String, URI] the HTTP(S) URL to request the object from using Faraday and `Range:` requests
+  # @param kwargs the keyword arguments to be delegated to `.parse`
+  # @see {.parse}
   def self.parse_http(url, **kwargs)
     parse(RemoteIO.new(url), **kwargs)
   end
 
-  # Return all by default
+  # Parses the resource contained in the given IO-ish object, and returns either the first matched
+  # result (omitting all the other parsers), the first N results or all results.
+  #
+  # @param io[#seek, #pos, #read] an IO-ish object containing the resource to parse formats for
+  # @param natures[Array] an array of file natures to scope the parsing to.
+  #   For example `[:image]` will limit to image files.
+  #   The default value is "all natures known to FormatParser"
+  # @param formats[Array] an array of file formats to scope the parsing to.
+  #   For example `[:jpg, :tif]` will scope the parsing to TIFF and JPEG files.
+  #   The default value is "all formats known to FormatParser"
+  # @param results[:first, :all, Integer] one of the values defining how many results to return if parsing
+  #   is ambiguous. The default is `:first` which returns the first matching result. Other
+  #   possible values are `:all` to get all possible results and an Integer to return
+  #   at most N results.
+  # @return [Array<Result>, Result, nil] either an Array of results, a single parsing result or `nil`if
+  #   no useful metadata could be recovered from the file
   def self.parse(io, natures: @parsers_per_nature.keys, formats: @parsers_per_format.keys, results: :first)
     # We need to apply various limits so that parsers do not over-read, do not cause too many HTTP
     # requests to be dispatched and so on. These should be _balanced_ with one another- for example,
@@ -117,6 +155,16 @@ module FormatParser
     results.to_a
   end
 
+  # Returns objects that respond to `call` and can be called to perform parsing
+  # based on the _intersection_ of the two given nature/format constraints. For
+  # example, a constraint of "only image and only ZIP files" can be given -
+  # but would raise an error since no parsers provide both ZIP file parsing and
+  # images as their information.
+  #
+  # @param desired_natures[Array] which natures should be considered (like `[:image, :archive]`)
+  # @param desired_formats[Array] which formats should be considered (like `[:tif, :jpg]`)
+  # @return [Array<#call>] an array of callable parsers
+  # @raise ArgumentError when there are no parsers satisfying the constraint
   def self.parsers_for(desired_natures, desired_formats)
     assemble_parser_set = ->(hash_of_sets, keys_of_interest) {
       hash_of_sets.values_at(*keys_of_interest).compact.inject(&:+) || Set.new
@@ -133,6 +181,11 @@ module FormatParser
     factories.map { |callable_or_class| instantiate_parser(callable_or_class) }
   end
 
+  # Instantiates a parser object (an object that responds to `#call`) from a given class
+  # or returns the parameter as is if it is callable by itself - i.e. if it is a Proc
+  #
+  # @param callable_or_responding_to_new[#call, #new] a callable or a Class/Module
+  # @return [#call] a parser that can be called with an IO-ish argument
   def self.instantiate_parser(callable_or_responding_to_new)
     if callable_or_responding_to_new.respond_to?(:call)
       callable_or_responding_to_new
