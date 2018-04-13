@@ -7,6 +7,8 @@ class FormatParser::BMPParser
     1 => :monochrome
   }
 
+  # Based on https://en.wikipedia.org/wiki/BMP_file_format
+
   def call(io)
     io = FormatParser::IOConstraint.new(io)
 
@@ -17,8 +19,8 @@ class FormatParser::BMPParser
     dib_header = safe_read(io, 40)
 
     _header_size, width, height, _planes, bits_per_pixel,
-    _compression_method, _image_size, _hres,
-    _vres, _n_colors, _i_colors = dib_header.unpack("Vl<2v2V2l<2V2")
+    _compression_method, _image_size, horizontal_res,
+    vertical_res, _n_colors, _i_colors = dib_header.unpack("Vl<2v2V2l<2V2")
 
     color_mode = COLOR_TYPES.fetch(bits_per_pixel) { :rgb }
 
@@ -27,7 +29,11 @@ class FormatParser::BMPParser
       format: :bmp,
       width_px: width,
       height_px: height,
-      color_mode: color_mode
+      color_mode: color_mode,
+      intrinsics: {
+        vertical_resolution: vertical_res,
+        horizontal_resolution: horizontal_res
+      }
     )
   end
 

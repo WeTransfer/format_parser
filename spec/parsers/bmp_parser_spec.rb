@@ -11,8 +11,11 @@ describe FormatParser::BMPParser do
         expect(parsed.color_mode).to eq(:rgb)
 
         expect(parsed.width_px).to be_kind_of(Integer)
-
         expect(parsed.height_px).to be_kind_of(Integer)
+
+        expect(parsed.intrinsics).not_to be_nil
+        expect(parsed.intrinsics[:vertical_resolution]).to be_kind_of(Integer)
+        expect(parsed.intrinsics[:horizontal_resolution]).to be_kind_of(Integer)
       end
     end
   end
