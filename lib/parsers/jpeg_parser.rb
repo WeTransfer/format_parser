@@ -9,6 +9,7 @@ class FormatParser::JPEGParser
   EOI_MARKER  = 0xD9  # end of image
   SOS_MARKER  = 0xDA  # start of stream
   APP1_MARKER = 0xE1  # maybe EXIF
+  EXIF_MAGIC_STRING = "Exif\0\0".b
 
   def call(io)
     @buf = FormatParser::IOConstraint.new(io)
@@ -34,11 +35,21 @@ class FormatParser::JPEGParser
     signature = read_next_marker
     return unless signature == SOI_MARKER
 
+    seen_start_of_frame = false
     while marker = read_next_marker
       case marker
       when *SOF_MARKERS
         scan_start_of_frame
+        # We want to memorize when we have scanned the SOF markers
+        # and we have obtained the _exact_ pixel buffer dimensions,
+        # not the EXIF ones as they might be different because, say,
+        # the file was resized but the EXIF data has been copied
+        # verbatim from the larger version
+        seen_start_of_frame = true
       when EOI_MARKER, SOS_MARKER
+        # When we reach "End of image" or "Start of scan" markers
+        # we are transitioning into the image data that we don't need
+        # or we have reached EOF.
         break
       when APP1_MARKER
         scan_app1_frame
@@ -47,7 +58,7 @@ class FormatParser::JPEGParser
       end
 
       # Return at the earliest possible opportunity
-      if @width && @height
+      if @width && @height && seen_start_of_frame
         return  FormatParser::Image.new(
           format: :jpg,
           width_px: @width,
@@ -57,6 +68,7 @@ class FormatParser::JPEGParser
         )
       end
     end
+
     nil # We could not parse anything
   rescue InvalidStructure
     nil # Due to the way JPEG is structured it is possible that some invalid inputs will get caught
@@ -86,19 +98,39 @@ class FormatParser::JPEGParser
   end
 
   def scan_app1_frame
-    frame = @buf.read(8)
-    if frame.include?('Exif')
-      scanner = FormatParser::EXIFParser.new(:jpeg, @buf)
-      if scanner.scan_image_exif
-        @exif_output = scanner.exif_data
-        @orientation = scanner.orientation unless scanner.orientation.nil?
-        @intrinsics[:exif_pixel_x_dimension] = @exif_output.pixel_x_dimension
-        @intrinsics[:exif_pixel_y_dimension] = @exif_output.pixel_y_dimension
-        @width = scanner.width
-        @height = scanner.height
-      end
+    # Read the entire EXIF frame at once to not overload the number of reads. If we don't,
+    # EXIFR parses our file from the very beginning and does the same parsing we do, just
+    # the second time around. What we care about, rather, is the EXIF data only. So we will
+    # pry it out of the APP1 frame and parse it as the TIFF segment - which is what EXIFR
+    # does under the hood.
+    app1_frame_content_length = read_short - 2
+    app1_frame_bytes = safe_read(@buf, app1_frame_content_length)
+
+    maybe_exif_magic_str, maybe_exif_data = app1_frame_bytes[0..5], app1_frame_bytes[6..-1]
+    if maybe_exif_magic_str == EXIF_MAGIC_STRING
+      scanner = FormatParser::EXIFParser.new(StringIO.new(maybe_exif_data))
+      scanner.scan_image_tiff
+
+      @exif_output = scanner.exif_data
+      @orientation = scanner.orientation unless scanner.orientation.nil?
+      @intrinsics[:exif_pixel_x_dimension] = @exif_output.pixel_x_dimension
+      @intrinsics[:exif_pixel_y_dimension] = @exif_output.pixel_y_dimension
+      # Save these two for later, when we decide to provide display width /
+      # display height in addition to pixel buffer width / height. These two
+      # are _different concepts_. Imagine you have an image shot with a camera
+      # in portrait orientation, and the camera has an anamorphic lens. That
+      # anamorpohic lens is a smart lens, and therefore transmits pixel aspect
+      # ratio to the camera, and the camera encodes that aspect ratio into the
+      # image metadata. If we want to know what size our _pixel buffer_ will be,
+      # and how to _read_ the pixel data (stride/interleaving) - we need the
+      # pixel buffer dimensions. If we want to know what aspect and dimensions
+      # our file is going to have _once displayed_ and _once pixels have been
+      # brought to the right orientation_ we need to work with **display dimensions**
+      # which can be remarkably different from the pixel buffer dimensions.
+      @exif_width = scanner.width
+      @exif_height = scanner.height
     end
-  rescue EXIFR::MalformedJPEG
+  rescue EXIFR::MalformedTIFF
     # Not a JPEG or the Exif headers contain invalid data, or
     # an APP1 marker was detected in a file that is not a JPEG
   end
