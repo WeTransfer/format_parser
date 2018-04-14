@@ -35,17 +35,20 @@ class FormatParser::JPEGParser
     signature = read_next_marker
     return unless signature == SOI_MARKER
 
-    seen_start_of_frame = false
+    markers_start_at = @buf.pos
+
+    # Keynote files start with a series of _perfectly_ valid
+    # JPEG markers, probably for icon previews or QuickLook.
+    # We have to detect those and reject them earlier. We can
+    # make use of our magic ZIP reader to get there.
+    return if probably_keynote_zip?
+
+    @buf.seek(markers_start_at)
+
     while marker = read_next_marker
       case marker
       when *SOF_MARKERS
         scan_start_of_frame
-        # We want to memorize when we have scanned the SOF markers
-        # and we have obtained the _exact_ pixel buffer dimensions,
-        # not the EXIF ones as they might be different because, say,
-        # the file was resized but the EXIF data has been copied
-        # verbatim from the larger version
-        seen_start_of_frame = true
       when EOI_MARKER, SOS_MARKER
         # When we reach "End of image" or "Start of scan" markers
         # we are transitioning into the image data that we don't need
@@ -56,17 +59,17 @@ class FormatParser::JPEGParser
       else
         skip_frame
       end
+    end
 
-      # Return at the earliest possible opportunity
-      if @width && @height && seen_start_of_frame
-        return  FormatParser::Image.new(
-          format: :jpg,
-          width_px: @width,
-          height_px: @height,
-          orientation: @orientation,
-          intrinsics: @intrinsics,
-        )
-      end
+    # Return at the earliest possible opportunity
+    if @width && @height
+      return  FormatParser::Image.new(
+        format: :jpg,
+        width_px: @width,
+        height_px: @height,
+        orientation: @orientation,
+        intrinsics: @intrinsics,
+      )
     end
 
     nil # We could not parse anything
@@ -106,7 +109,8 @@ class FormatParser::JPEGParser
     app1_frame_content_length = read_short - 2
     app1_frame_bytes = safe_read(@buf, app1_frame_content_length)
 
-    maybe_exif_magic_str, maybe_exif_data = app1_frame_bytes[0..5], app1_frame_bytes[6..-1]
+    maybe_exif_magic_str = app1_frame_bytes[0..5]
+    maybe_exif_data = app1_frame_bytes[6..-1]
     if maybe_exif_magic_str == EXIF_MAGIC_STRING
       scanner = FormatParser::EXIFParser.new(StringIO.new(maybe_exif_data))
       scanner.scan_image_tiff
@@ -143,6 +147,11 @@ class FormatParser::JPEGParser
   def skip_frame
     length = read_short - 2
     safe_skip(@buf, length)
+  end
+
+  def probably_keynote_zip?
+    reader = FormatParser::ZIPParser::FileReader.new
+    reader.zip?(@buf)
   end
 
   FormatParser.register_parser self, natures: :image, formats: :jpg
