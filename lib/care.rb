@@ -4,7 +4,7 @@
 # is only available via HTTP, for example, we can have less
 # fetches and have them return more data for one fetch
 class Care
-  DEFAULT_PAGE_SIZE = 64 * 1024
+  DEFAULT_PAGE_SIZE = 128 * 1024
 
   class IOWrapper
     def initialize(io, cache = Cache.new(DEFAULT_PAGE_SIZE))
