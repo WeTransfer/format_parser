@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe FormatParser::BMPParser do
   describe 'is able to parse all the examples of BMP' do
-    Dir.glob(fixtures_dir + '/*.bmp').each do |bmp_path|
+    Dir.glob(fixtures_dir + '/BMP/*.bmp').each do |bmp_path|
       it "is able to parse #{File.basename(bmp_path)}" do
         parsed = subject.call(File.open(bmp_path, 'rb'))
         expect(parsed).not_to be_nil
