@@ -7,9 +7,9 @@ class Care
   DEFAULT_PAGE_SIZE = 128 * 1024
 
   class IOWrapper
-    def initialize(io, cache = Cache.new(DEFAULT_PAGE_SIZE))
+    def initialize(io, page_size: DEFAULT_PAGE_SIZE)
+      @cache = Cache.new(page_size)
       @io = io
-      @cache = cache
       @pos = 0
     end
 
@@ -107,6 +107,21 @@ class Care
       return if @lowest_known_empty_page && page_i >= @lowest_known_empty_page
 
       @pages[page_i] ||= read_page(io, page_i)
+    end
+
+    def inspect
+      # To avoid page _contents_ in the inspect outputs we need to implement our own inspect.
+
+      # Simulate the builtin object ID output https://stackoverflow.com/a/11765495/153886
+      oid_str = (object_id << 1).to_s(16).rjust(16, '0')
+
+      ivars = instance_variables
+      ivars.delete(:@pages)
+      ivars_str = ivars.map do |ivar|
+        "#{ivar}=#{instance_variable_get(ivar).inspect}"
+      end.join(' ')
+      synthetic_vars = 'num_hydrated_pages=%d' % @pages.length
+      '#<%s:%s %s %s>' % [self.class, oid_str, synthetic_vars, ivars_str]
     end
 
     def read_page(io, page_i)

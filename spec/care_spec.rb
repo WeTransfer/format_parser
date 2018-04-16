@@ -4,6 +4,11 @@ describe Care do
   describe Care::Cache do
     let(:source) { StringIO.new('Hello there, this is our little caching reader') }
 
+    it 'provides #inspect but does not output the actual @pages instance variable with it' do
+      cache = Care::Cache.new(3)
+      expect(cache.inspect).not_to include('@pages')
+    end
+
     it 'performs correct reads at various offsets' do
       cache = Care::Cache.new(3)
       expect(cache.byteslice(source, 0, 3)).to eq('Hel')
@@ -72,9 +77,10 @@ describe Care do
       end
 
       cache_double = fake_cache_class.new
+      expect(Care::Cache).to receive(:new).and_return(cache_double)
       io_double = double('IO')
 
-      subject = Care::IOWrapper.new(io_double, cache_double)
+      subject = Care::IOWrapper.new(io_double)
 
       expect(subject.pos).to eq(0)
       subject.read(2)

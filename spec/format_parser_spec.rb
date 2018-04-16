@@ -31,9 +31,9 @@ describe FormatParser do
     }
     FormatParser.register_parser exploit, natures: :document, formats: :exploit
 
-    sample_io = StringIO.new(Random.new.bytes(1024 * 1024 * 4))
+    sample_io = StringIO.new(Random.new.bytes(1024 * 1024 * 8))
 
-    expect(sample_io).to receive(:read).at_most(4).times.and_call_original
+    expect(sample_io).to receive(:read).at_most(8).times.and_call_original
 
     result = FormatParser.parse(sample_io, formats: [:exploit])
     expect(result).to be_nil
