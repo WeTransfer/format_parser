@@ -1,4 +1,3 @@
-require 'exifr/jpeg'
 require 'exifr/tiff'
 require 'delegate'
 
