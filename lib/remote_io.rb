@@ -94,8 +94,10 @@ class FormatParser::RemoteIO
       # cannot hint size with this response - at lease not when working with S3
       return
     when 500..599
+      FormatParser::Measurometer.increment_counter('format_parser.RemoteIO.upstream50x_errors', 1)
       raise IntermittentFailure, "Server at #{@uri} replied with a #{response.status} and we might want to retry"
     else
+      FormatParser::Measurometer.increment_counter('format_parser.RemoteIO.invalid_request_errors', 1)
       raise InvalidRequest, "Server at #{@uri} replied with a #{response.status} and refused our request"
     end
   end
