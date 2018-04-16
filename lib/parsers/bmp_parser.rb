@@ -12,7 +12,7 @@ class FormatParser::BMPParser
   def call(io)
     io = FormatParser::IOConstraint.new(io)
 
-    magic_number, _file_size, _reserved1, _reserved2, dib_header_location  = safe_read(io, 14).unpack('A2Vv2V')
+    magic_number, _file_size, _reserved1, _reserved2, dib_header_location = safe_read(io, 14).unpack('A2Vv2V')
     return unless VALID_BMP == magic_number
     return unless dib_header_location == PIXEL_ARRAY_OFFSET
 
@@ -20,10 +20,9 @@ class FormatParser::BMPParser
 
     _header_size, width, height, _planes, bits_per_pixel,
     _compression_method, _image_size, horizontal_res,
-    vertical_res, _n_colors, _i_colors = dib_header.unpack("Vl<2v2V2l<2V2")
+    vertical_res, _n_colors, _i_colors = dib_header.unpack('Vl<2v2V2l<2V2')
 
     color_mode = COLOR_TYPES.fetch(bits_per_pixel) { :rgb }
-
 
     FormatParser::Image.new(
       format: :bmp,
