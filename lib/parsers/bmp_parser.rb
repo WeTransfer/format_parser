@@ -1,3 +1,5 @@
+# Based on https://en.wikipedia.org/wiki/BMP_file_format
+
 class FormatParser::BMPParser
   include FormatParser::IOUtils
 
@@ -6,8 +8,6 @@ class FormatParser::BMPParser
   COLOR_TYPES = {
     1 => :monochrome
   }
-
-  # Based on https://en.wikipedia.org/wiki/BMP_file_format
 
   def call(io)
     io = FormatParser::IOConstraint.new(io)
