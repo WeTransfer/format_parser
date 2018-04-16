@@ -49,10 +49,9 @@ describe FormatParser::JPEGParser do
     expect(result.intrinsics).to eq(exif_pixel_x_dimension: 8214, exif_pixel_y_dimension: 5476)
   end
 
-  it 'fails correctly (with the right exception being raised) on a Keynote file' do
-    jpeg_path = fixtures_dir + '/JPEG/keynote_recognized_as_jpeg.key'
-    expect {
-      subject.call(File.open(jpeg_path, 'rb'))
-    }.to raise_error(FormatParser::IOUtils::InvalidRead)
+  it 'does not return a result for a Keynote document' do
+    key_path = fixtures_dir + '/JPEG/keynote_recognized_as_jpeg.key'
+    result = subject.call(File.open(key_path, 'rb'))
+    expect(result).to be_nil
   end
 end

@@ -13,8 +13,8 @@ class FormatParser::TIFFParser
     return if !endianness || cr2_check(io)
 
     w, h = read_tiff_by_endianness(io, endianness)
-    scanner = FormatParser::EXIFParser.new(:tiff, io)
-    scanner.scan_image_exif
+    scanner = FormatParser::EXIFParser.new(io)
+    scanner.scan_image_tiff
     FormatParser::Image.new(
       format: :tif,
       width_px: w,

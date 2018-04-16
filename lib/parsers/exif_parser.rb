@@ -1,4 +1,3 @@
-require 'exifr/jpeg'
 require 'exifr/tiff'
 require 'delegate'
 
@@ -48,22 +47,16 @@ class FormatParser::EXIFParser
     :left_bottom
   ]
 
-  def initialize(filetype, file_io)
-    @filetype = filetype
-    @file_io = IOExt.new(file_io)
+  def initialize(io_blob_with_exif_data)
+    @exif_io = IOExt.new(io_blob_with_exif_data)
     @exif_data = nil
     @orientation = nil
     @height = nil
     @width = nil
   end
 
-  def scan_image_exif
-    # Without the magic bytes EXIFR throws an error
-    @file_io.seek(0)
-    raw_exif_data = EXIFR::JPEG.new(@file_io) if @filetype == :jpeg
-    # Return if it's a CR2, which we don't parse yet
-    return if cr2_check(@file_io)
-    raw_exif_data = EXIFR::TIFF.new(@file_io) if @filetype == :tiff
+  def scan_image_tiff
+    raw_exif_data = EXIFR::TIFF.new(@exif_io)
     # For things that we don't yet have a parser for
     # we make the raw exif result available
     @exif_data = raw_exif_data
@@ -79,11 +72,5 @@ class FormatParser::EXIFParser
 
   def valid_orientation?(value)
     (1..ORIENTATIONS.length).include?(value)
-  end
-
-  def cr2_check(_file_io)
-    @file_io.seek(8)
-    cr2_check_bytes = @file_io.read(2)
-    cr2_check_bytes == 'CR'
   end
 end

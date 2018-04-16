@@ -6,8 +6,10 @@ class FormatParser::ZIPParser
   include OfficeFormats
 
   def call(io)
+    io = FormatParser::IOConstraint.new(io)
+
     reader = FileReader.new
-    entries = reader.read_zip_structure(io: FormatParser::IOConstraint.new(io))
+    entries = reader.read_zip_structure(io: io)
 
     filenames_set = Set.new
     entries_archive = entries.map do |ze|

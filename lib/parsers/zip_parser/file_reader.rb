@@ -195,6 +195,25 @@ class FormatParser::ZIPParser::FileReader
     entries
   end
 
+  # Tells whether the given IO is likely to be a ZIP file without
+  # performing too many detailed reads
+  #
+  # @param io[#tell, #seek, #read, #size] an IO-ish object
+  # @return [Boolean]
+  def zip?(io)
+    zip_file_size = io.size
+    eocd_offset = get_eocd_offset(io, zip_file_size)
+    zip64_end_of_cdir_location = get_zip64_eocd_location(io, eocd_offset)
+    if zip64_end_of_cdir_location
+      num_files_and_central_directory_offset_zip64(io, zip64_end_of_cdir_location)
+    else
+      num_files_and_central_directory_offset(io, eocd_offset)
+    end
+    true
+  rescue Error
+    false
+  end
+
   private
 
   def skip_ahead_2(io)
