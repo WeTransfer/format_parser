@@ -11,10 +11,6 @@ class FormatParser::MOOVParser
     'm4a ' => :m4a,
   }
 
-  # It is currently not documented and not particularly well-tested,
-  # so not considered a public API for now
-  private_constant :Decoder
-
   def call(io)
     return unless matches_moov_definition?(io)
 

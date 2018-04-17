@@ -130,29 +130,47 @@ module FormatParser
 
       # We need to rewind for each parser, anew
       limited_io.seek(0)
-
-      begin
-        parser.call(limited_io)
-      rescue IOUtils::InvalidRead
-        # There was not enough data for this parser to work on,
-        # and it triggered an error
-      rescue IOUtils::MalformedFile
-        # Unexpected input was encountered during the parsing of
-        # a file. This might indicate either a malicious or a
-        # corruped file.
-      rescue ReadLimiter::BudgetExceeded
-        # The parser tried to read too much - most likely the file structure
-        # caused the parser to go off-track. Strictly speaking we should log this
-        # and examine the file more closely.
-        # Or the parser caused too many cache pages to be fetched, which likely means we should not allow
-        # it to continue
-      end
+      execute_parser_and_capture_expected_exceptions(parser, limited_io)
     end.reject(&:nil?).take(amount)
 
-    return results.first if amount == 1
-
     # Convert the results from a lazy enumerator to an Array.
-    results.to_a
+    results = results.to_a
+
+    if results.empty?
+      Measurometer.increment_counter('format_parser.unknown_files', 1)
+    end
+
+    amount == 1 ? results.first : results
+  end
+
+  def self.execute_parser_and_capture_expected_exceptions(parser, limited_io)
+    parser_name_for_instrumentation = parser.class.to_s.split('::').last
+    Measurometer.instrument('format_parser.parser.%s' % parser_name_for_instrumentation) do
+      parser.call(limited_io).tap do |result|
+        if result
+          Measurometer.increment_counter('format_parser.detected_natures.%s' % result.nature, 1)
+          Measurometer.increment_counter('format_parser.detected_formats.%s' % result.format, 1)
+        end
+      end
+    end
+  rescue IOUtils::InvalidRead
+    # There was not enough data for this parser to work on,
+    # and it triggered an error
+    Measurometer.increment_counter('format_parser.invalid_read_errors', 1)
+  rescue IOUtils::MalformedFile
+    # Unexpected input was encountered during the parsing of
+    # a file. This might indicate either a malicious or a
+    # corruped file.
+    Measurometer.increment_counter('format_parser.malformed_errors', 1)
+  rescue ReadLimiter::BudgetExceeded
+    # The parser tried to read too much - most likely the file structure
+    # caused the parser to go off-track. Strictly speaking we should log this
+    # and examine the file more closely.
+    # Or the parser caused too many cache pages to be fetched, which likely means we should not allow
+    # it to continue
+    Measurometer.increment_counter('format_parser.exceeded_budget_errors', 1)
+  ensure
+    limited_io.send_metrics(parser_name_for_instrumentation)
   end
 
   # Returns objects that respond to `call` and can be called to perform parsing
@@ -199,4 +217,7 @@ module FormatParser
   Dir.glob(__dir__ + '/parsers/*.rb').sort.each do |parser_file|
     require parser_file
   end
+  # The Measurometer latches itself onto existing classes, so load it after
+  # we have loaded all the parsers
+  require_relative 'measurometer'
 end

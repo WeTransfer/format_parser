@@ -27,15 +27,9 @@ describe 'IOUtils' do
       }.to raise_error(FormatParser::IOUtils::InvalidRead)
     end
 
-    it 'uses #pos if available on the object' do
+    it 'uses #pos available on the object' do
       fake_io = double(pos: 11)
       expect(fake_io).to receive(:seek).with(11 + 5)
-      safe_skip(fake_io, 5)
-    end
-
-    it 'uses #read if no #pos is available on the object' do
-      fake_io = double
-      expect(fake_io).to receive(:read).with(5).and_return('x' * 5)
       safe_skip(fake_io, 5)
     end
   end

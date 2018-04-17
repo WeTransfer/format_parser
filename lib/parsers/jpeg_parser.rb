@@ -112,6 +112,7 @@ class FormatParser::JPEGParser
     maybe_exif_magic_str = app1_frame_bytes[0..5]
     maybe_exif_data = app1_frame_bytes[6..-1]
     if maybe_exif_magic_str == EXIF_MAGIC_STRING
+      FormatParser::Measurometer.add_distribution_value('format_parser.JPEGParser.bytes_sent_to_exif_parser', maybe_exif_data.bytesize)
       scanner = FormatParser::EXIFParser.new(StringIO.new(maybe_exif_data))
       scanner.scan_image_tiff
 

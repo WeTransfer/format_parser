@@ -26,11 +26,7 @@ module FormatParser::IOUtils
 
     raise InvalidRead, 'Negative skips are not supported' if n < 0
 
-    if io.respond_to?(:pos)
-      io.seek(io.pos + n)
-    else
-      safe_read(io, n)
-    end
+    io.seek(io.pos + n)
     nil
   end
 

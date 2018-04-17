@@ -27,11 +27,12 @@ describe 'Fetching data from HTTP remotes' do
   end
 
   it '#parse_http is called with hash options' do
-    expect_any_instance_of(FormatParser::AIFFParser).to receive(:call).and_return(:audio)
-    result = FormatParser.parse_http('http://localhost:9399/PNG/anim.png', results: :all)
+    fake_result = double(nature: :audio, format: :aiff)
+    expect_any_instance_of(FormatParser::AIFFParser).to receive(:call).and_return(fake_result)
+    results = FormatParser.parse_http('http://localhost:9399/PNG/anim.png', results: :all)
 
-    expect(result.include?(:audio)).to be true
-    expect(result.count).to eq(2)
+    expect(results.count).to eq(2)
+    expect(results).to include(fake_result)
   end
 
   it 'parses the animated PNG over HTTP' do

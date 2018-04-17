@@ -69,6 +69,17 @@ class FormatParser::ReadLimiter
     @io.read(n_bytes)
   end
 
+  # Sends the metrics about the state of this ReadLimiter to a Measurometer
+  #
+  # @param prefix[String] the prefix to set. For example, with prefix "TIFF" the metrics will be called
+  #   `format_parser.TIFF.read_limiter.num_seeks` and so forth
+  # @return void
+  def send_metrics(prefix)
+    FormatParser::Measurometer.add_distribution_value('format_parser.%s.read_limiter.num_seeks' % prefix, @seeks)
+    FormatParser::Measurometer.add_distribution_value('format_parser.%s.read_limiter.num_reads' % prefix, @reads)
+    FormatParser::Measurometer.add_distribution_value('format_parser.%s.read_limiter.read_bytes' % prefix, @bytes)
+  end
+
   # Resets all the recorded call counters so that the object can be reused for the next parser,
   # which will have it's own limits
   # @return void
