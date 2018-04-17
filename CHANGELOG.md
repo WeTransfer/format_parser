@@ -35,3 +35,61 @@
 
 ## 0.3.3
 * Implement a sane to_json as well
+
+## 0.3.2
+* Add default as_json
+* Test on 2.5.0
+
+## 0.3.1
+* Remove post install warning
+* Moved aiff_parser_spec.rb to spec/parsers
+* CR2 file support
+* Add require 'set' to format_parser.rb
+* Use register_parser for natures/fmts
+
+## 0.3.0
+* Reverse API changes to support :first as default and add opts to parse_http
+* Implement and comply with rubocop
+* JPEG parser and Care fixes
+* Add format and count options to parse_http
+* Return first result as default
+* Use hashes for MOOV atom default fields
+
+## 0.2.0
+* Implement parser DSL
+
+## 0.1.7
+* Fix read(0) on Care::IOWrapper, introduce top-level tests
+
+## 0.1.6
+* Fix mp3 parsing bug
+* Add MOOV parser
+
+## 0.1.5
+* Add FDX parser
+* Remove dry-structs
+* New interface updates
+
+## 0.1.4
+* Add WAV parser
+
+## 0.1.3
+* Add MP3 parser
+* Add FileInformation#intrinsics
+* Disallow negative Care offsets
+
+## 0.1.2
+* Introduce a restrictive IO subset wrapper
+* Switch rewind for seek in exif parser
+* Prep for OSS release
+* Add fuzz spec
+* Improve orientation parsing
+* Optimisation for PNG and invalid input protection on JPEG
+
+## 0.1.1
+* Add AIFF parser
+
+## 0.1.0
+* Add parsers for PNG, JPG, TIFF, PSD
+* Add GIF parser
+* Add DPX parser
