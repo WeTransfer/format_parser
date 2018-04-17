@@ -1,5 +1,8 @@
+## 0.8.0
+* Add `Measurometer` for applying instrumentation around FormatParser operaions. See documentation for usage.
+
 ## 0.7.0
-* Configure READ limits centrally
+* Configure read limits / pagefault limits centrally so that those limits make sense together
 
 ## 0.6.0
 * Double the cache page size once more
