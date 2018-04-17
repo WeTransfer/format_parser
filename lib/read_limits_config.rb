@@ -5,7 +5,6 @@ class FormatParser::ReadLimitsConfig
     @max_read_bytes_per_parser = total_bytes_available_per_parser.to_i
   end
 
-
   # Defines how many bytes each parser may request to read from the IO object given to it.
   # Is used to artificially limit unbounded reads in parsers that may wander off and
   # try to gulp in the file given to them indefinitely due to infinite loops or

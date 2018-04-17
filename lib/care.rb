@@ -10,7 +10,6 @@ class Care
   # Wraps any given IO with Care caching superpowers. Supports the subset
   # of IO declared in IOConstraint.
   class IOWrapper
-
     # Creates a new IOWrapper around the given source IO
     #
     # @param io[#seek, #pos, #size] the IO to wrap
@@ -157,7 +156,6 @@ class Care
     # We provide an overridden implementation of #inspect to avoid
     # printing the actual contents of the cached pages
     def inspect
-
       # Simulate the builtin object ID output https://stackoverflow.com/a/11765495/153886
       oid_str = (object_id << 1).to_s(16).rjust(16, '0')
 
