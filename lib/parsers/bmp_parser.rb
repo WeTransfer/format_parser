@@ -5,9 +5,6 @@ class FormatParser::BMPParser
 
   VALID_BMP = 'BM'
   PIXEL_ARRAY_OFFSET = 54
-  COLOR_TYPES = {
-    1 => :monochrome
-  }
 
   def call(io)
     io = FormatParser::IOConstraint.new(io)
@@ -18,17 +15,15 @@ class FormatParser::BMPParser
 
     dib_header = safe_read(io, 40)
 
-    _header_size, width, height, _planes, bits_per_pixel,
+    _header_size, width, height, _planes, _bits_per_pixel,
     _compression_method, _image_size, horizontal_res,
     vertical_res, _n_colors, _i_colors = dib_header.unpack('Vl<2v2V2l<2V2')
-
-    color_mode = COLOR_TYPES.fetch(bits_per_pixel) { :rgb }
 
     FormatParser::Image.new(
       format: :bmp,
       width_px: width,
       height_px: height,
-      color_mode: color_mode,
+      color_mode: :rgb,
       intrinsics: {
         vertical_resolution: vertical_res,
         horizontal_resolution: horizontal_res
