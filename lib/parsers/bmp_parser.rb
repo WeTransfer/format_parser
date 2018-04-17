@@ -19,14 +19,20 @@ class FormatParser::BMPParser
     _compression_method, _image_size, horizontal_res,
     vertical_res, _n_colors, _i_colors = dib_header.unpack('Vl<2v2V2l<2V2')
 
+    # There are cases where the height might by negative indicating the data
+    # is ordered from top to bottom instead of bottom to top
+    # http://www.dragonwins.com/domains/getteched/bmp/bmpfileformat.htm#The%20Image%20Header
+    data_order = height < 0 ? :inverse : :normal
+
     FormatParser::Image.new(
       format: :bmp,
       width_px: width,
-      height_px: height,
+      height_px: height.abs,
       color_mode: :rgb,
       intrinsics: {
         vertical_resolution: vertical_res,
-        horizontal_resolution: horizontal_res
+        horizontal_resolution: horizontal_res,
+        data_order: data_order
       }
     )
   end
