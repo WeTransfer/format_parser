@@ -16,7 +16,7 @@ If you are interested in contributing code and would like to learn more about th
 
  - [ruby](https://ruby-doc.org)
  - [rspec](http://rspec.info/) (for testing)
- 
+
 # How do I make a contribution?
 
 ## Using the issue tracker
@@ -101,7 +101,7 @@ project's developers might not want to merge into the project.
 Please adhere to the coding conventions used throughout the project (indentation,
 accurate comments, etc.) and any other requirements (such as test coverage).
 
-The test suite can be run with `bundle exec rspec`. 
+The test suite can be run with `bundle exec rspec`.
 
 Follow this process if you'd like your work considered for inclusion in the
 project:
@@ -155,3 +155,7 @@ project:
 license your work under the same license as that used by the project, which you
 can see by clicking [here](https://github.com/WeTransfer/format_parser/blob/master/LICENSE.txt).
 This provision also applies to the test files you include with the changed code as fixtures.
+
+## Changelog
+
+When creating a new release you must add an entry in the `CHANGELOG.md`.
