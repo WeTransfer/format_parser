@@ -4,27 +4,49 @@
 # is only available via HTTP, for example, we can have less
 # fetches and have them return more data for one fetch
 class Care
+  # Defines the size of a page in bytes that the Care will prefetch
   DEFAULT_PAGE_SIZE = 128 * 1024
 
+  # Wraps any given IO with Care caching superpowers. Supports the subset
+  # of IO declared in IOConstraint.
   class IOWrapper
+    # Creates a new IOWrapper around the given source IO
+    #
+    # @param io[#seek, #pos, #size] the IO to wrap
+    # @param page_size[Integer] the size of the cache page to use for this wrapper
     def initialize(io, page_size: DEFAULT_PAGE_SIZE)
       @cache = Cache.new(page_size)
       @io = io
       @pos = 0
     end
 
+    # Returns the size of the resource contained in the IO
+    #
+    # @return Integer
     def size
       @io.size
     end
 
+    # Seeks the IO to the given absolute offset from the start of the file/resource
+    #
+    # @param to[Integer] offset in the IO
+    # @return Integer
     def seek(to)
       @pos = to
     end
 
+    # Returns the current position/offset within the IO
+    #
+    # @return Integer
     def pos
       @pos
     end
 
+    # Returns at most `n_bytes` of data from the IO or less if less data was available
+    # before the EOF was hit
+    #
+    # @param n_bytes[Integer]
+    # @return [String, nil] the content read from the IO or `nil` if no data was available
     def read(n_bytes)
       return '' if n_bytes == 0 # As hardcoded for all Ruby IO objects
       raise ArgumentError, "negative length #{n_bytes} given" if n_bytes < 0 # also as per Ruby IO objects
@@ -34,10 +56,17 @@ class Care
       read
     end
 
+    # Clears all the cached pages explicitly to help GC
+    #
+    # @return void
     def clear
       @cache.clear
     end
 
+    # Clears all the cached pages explicitly to help GC, and
+    # calls `#close` on the source IO if the IO responds to `#close`
+    #
+    # @return void
     def close
       clear
       @io.close if @io.respond_to?(:close)
@@ -47,6 +76,7 @@ class Care
   # Stores cached pages of data from the given IO as strings.
   # Pages are sized to be `page_size` or less (for the last page).
   class Cache
+    # Initializes a new cache pages container with pages of given size
     def initialize(page_size = DEFAULT_PAGE_SIZE)
       @page_size = page_size.to_i
       raise ArgumentError, 'The page size must be a positive Integer' unless @page_size > 0
@@ -59,6 +89,12 @@ class Care
     # If the IO has been exhausted, `nil` will be returned
     # instead. Will use the cached pages where available,
     # or fetch pages where necessary
+    #
+    # @param io[#seek, #read] the IO to read data from
+    # @param at[Integer] at which offset we have to read
+    # @param n_bytes[Integer] how many bytes we want to read/cache
+    # @return [String, nil] the content read from the IO or `nil` if no data was available
+    # @raise ArgumentError
     def byteslice(io, at, n_bytes)
       if n_bytes < 1
         raise ArgumentError, "The number of bytes to fetch must be a positive Integer, but was #{n_bytes}"
@@ -97,10 +133,18 @@ class Care
       slice if slice && !slice.empty?
     end
 
+    # Clears the page cache of all strings with data
+    #
+    # @return void
     def clear
       @pages.clear
     end
 
+    # Hydrates a page at the certain index or returns the contents of
+    # that page if it is already in the cache
+    #
+    # @param io[IO] the IO to read from
+    # @param page_i[Integer] which page (zero-based) to hydrate and return
     def hydrate_page(io, page_i)
       # Avoid trying to read the page if we know there is no content to fill it
       # in the underlying IO
@@ -109,9 +153,9 @@ class Care
       @pages[page_i] ||= read_page(io, page_i)
     end
 
+    # We provide an overridden implementation of #inspect to avoid
+    # printing the actual contents of the cached pages
     def inspect
-      # To avoid page _contents_ in the inspect outputs we need to implement our own inspect.
-
       # Simulate the builtin object ID output https://stackoverflow.com/a/11765495/153886
       oid_str = (object_id << 1).to_s(16).rjust(16, '0')
 
@@ -124,6 +168,10 @@ class Care
       '#<%s:%s %s %s>' % [self.class, oid_str, synthetic_vars, ivars_str]
     end
 
+    # Reads the requested page from the given IO
+    #
+    # @param io[IO] the IO to read from
+    # @param page_i[Integer] which page (zero-based) to read
     def read_page(io, page_i)
       io.seek(page_i * @page_size)
       read_result = io.read(@page_size)

@@ -19,18 +19,33 @@ class FormatParser::IOConstraint
     @io = io
   end
 
+  # Returns at most `n_bytes` of data from the IO or less if less data was available
+  # before the EOF was hit
+  #
+  # @param n_bytes[Integer]
+  # @return [String, nil] the content read from the IO or `nil` if no data was available
   def read(n_bytes)
     @io.read(n_bytes)
   end
 
-  def seek(absolute_offset)
-    @io.seek(absolute_offset)
+  # Seeks the IO to the given absolute offset from the start of the file/resource
+  #
+  # @param to[Integer] offset in the IO
+  # @return Integer
+  def seek(to)
+    @io.seek(to)
   end
 
+  # Returns the size of the resource contained in the IO
+  #
+  # @return Integer
   def size
     @io.size
   end
 
+  # Returns the current position/offset within the IO
+  #
+  # @return Integer
   def pos
     @io.pos
   end
