@@ -12,7 +12,24 @@ and [dimensions,](https://github.com/sstephenson/dimensions) borrowing from them
 
 ## Currently supported filetypes:
 
-`TIFF, CR2, PSD, PNG, MP3, JPEG, GIF, PDF, DPX, AIFF, WAV, FDX, MOV, MP4, M4A, FLAC, DOCX, PPTX, XLSX`
+* TIFF
+* CR2
+* PSD
+* PNG
+* MP3
+* JPEG
+* GIF
+* PDF
+* DPX
+* AIFF
+* WAV
+* FLAC
+* FDX
+* MOV
+* MP4
+* M4A
+* ZIP
+* DOCX, PPTX, XLSX
 
 ...with [more](https://github.com/WeTransfer/format_parser/issues?q=is%3Aissue+is%3Aopen+label%3Aformats) on the way!
 
@@ -32,7 +49,7 @@ match.orientation   #=> :top_left
 If you would rather receive all potential results from the gem, call the gem as follows:
 
 ```ruby
-FormatParser.parse(File.open("myimage.jpg", "rb"), results: :all)
+array_of_results = FormatParser.parse(File.open("myimage.jpg", "rb"), results: :all)
 ```
 
 You can also optimize the metadata extraction by providing hints to the gem:
@@ -50,69 +67,7 @@ JSON.pretty_generate(img_info) #=> ...
 
 ## Creating your own parsers
 
-In order to create new parsers, you have to write a method or a  Proc that accepts an IO and performs the
-parsing, and then returns the metadata for the file (if it could recover any) or `nil` if it couldn't. All files pass
-through all parsers by default, so if you are dealing with a file that is not "your" format - return `nil` from
-your method or `break` your Proc as early as possible. A blank `return` works fine too.
-
-The IO will at the minimum support the subset of the IO API defined in `IOConstraint`
-
-Strictly, a parser should be one of the two things:
-
-1) An object that can be `call()`-ed itself, with an argument that conforms to `IOConstraint`
-2) An object that responds to `new` and returns something that can be `call()`-ed with the same convention.
-
-The second opton is useful for parsers that are stateful and non-reentrant. FormatParser is made to be used in
-threaded environments, and if you use instance variables you need your parser to be isolated from it's siblings in
-other threads - therefore you can pass a Class on registration to have your parser instantiated for each `call()`,
-anew.
-
-Your parser has to be registered using `FormatParser.register_parser` with the information on the formats
-and file natures it provides.
-
-Down below you can find a basic parser implementation:
-
-```ruby
-MyParser = ->(io) {
-  # ... do some parsing with `io`
-  magic_bytes = io.read(4)
-  break if magic_bytes != 'XBMP'
-  # ... more parsing code
-  # ...and return the FileInformation::Image object with the metadata.
-  FormatParser::Image.new(
-    width_px: parsed_width,
-    height_px: parsed_height,
-  )
-}
-
-# Register the parser with the module, so that it will be applied to any
-# document given to `FormatParser.parse()`. The supported natures are currently
-#      - :audio
-#      - :document
-#      - :image
-#      - :video
-FormatParser.register_parser MyParser, natures: :image, formats: :bmp
-```
-
-If you are using a class, this is the skeleton to use:
-
-```ruby
-class MyParser
-  def call(io)
-    # ... do some parsing with `io`
-    magic_bytes = io.read(4)
-    return unless magic_bytes == 'XBMP'
-    # ... more parsing code
-    # ...and return the FileInformation::Image object with the metadata.
-    FormatParser::Image.new(
-      width_px: parsed_width,
-      height_px: parsed_height,
-    )
-  end
-
-  FormatParser.register_parser self, natures: :image, formats: :bmp
-end
-```
+See the [section on writing parsers in CONTRIBUTING.md](CONTRIBUTING.md##so-you-want-to-contribute-a-new-parser)
 
 ## Design rationale
 
