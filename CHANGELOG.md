@@ -1,3 +1,6 @@
+## 0.9.0
+* Add a parser for the BMP image file format
+
 ## 0.8.0
 * Add `Measurometer` for applying instrumentation around FormatParser operaions. See documentation for usage.
 
