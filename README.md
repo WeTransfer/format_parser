@@ -67,7 +67,7 @@ JSON.pretty_generate(img_info) #=> ...
 
 ## Creating your own parsers
 
-See the [section on writing parsers in CONTRIBUTING.md](CONTRIBUTING.md##so-you-want-to-contribute-a-new-parser)
+See the [section on writing parsers in CONTRIBUTING.md](CONTRIBUTING.md#so-you-want-to-contribute-a-new-parser)
 
 ## Design rationale
 
