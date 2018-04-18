@@ -96,18 +96,6 @@ your method or `break` your Proc as early as possible. A blank `return` works fi
 
 The IO will at the minimum support the subset of the IO API defined in `IOConstraint`
 
-Strictly, a parser should be one of the two things:
-
-1) An object that can be `call()`-ed itself, with an argument that conforms to `IOConstraint`
-2) An object that responds to `new` and returns something that can be `call()`-ed with the same convention.
-
-The second opton is useful for parsers that are stateful and non-reentrant. It also provides better automatic
-instrumentation names for metrics sourced to `Measurometer` automatically. 
-
-FormatParser is made to be used in threaded environments, and if you use instance variables
-you need your parser to be isolated from it's siblings in other threads - therefore you can pass
-a Class on registration to have your parser instantiated for each `call()`, anew.
-
 Your parser has to be registered using `FormatParser.register_parser` with the information on the formats
 and file natures it provides.
 
@@ -123,6 +111,7 @@ MyParser = ->(io) {
   parsed_witdh, parsed_height = io.read(8).unpack('VV')
   # ...and return the FileInformation::Image object with the metadata.
   FormatParser::Image.new(
+    format: :imga,
     width_px: parsed_width,
     height_px: parsed_height,
   )
@@ -134,7 +123,8 @@ MyParser = ->(io) {
 #      - :document
 #      - :image
 #      - :video
-FormatParser.register_parser MyParser, natures: :image, formats: :bmp
+#      - :archive
+FormatParser.register_parser MyParser, natures: :image, formats: :imga
 ```
 
 If you are using a class, this is the skeleton to use:
@@ -149,6 +139,7 @@ class MyParser
     break if @magic_bytes != 'IMGA'
     parsed_witdh, parsed_height = io.read(8).unpack('VV')
     FormatParser::Image.new(
+      format: :imga,
       width_px: parsed_width,
       height_px: parsed_height,
     )
@@ -157,6 +148,20 @@ class MyParser
   FormatParser.register_parser self, natures: :image, formats: :bmp
 end
 ```
+
+### Calling convention for preparing parsers
+
+A parser that gets registered using `register_parser` must be either:
+
+1) An object that can be `call()`-ed itself, with an argument that conforms to `IOConstraint`
+2) An object that responds to `new` and returns something that can be `call()`-ed with with an argument that conforms to `IOConstraint`.
+
+The second opton is recommended  for most cases.
+
+FormatParser is made to be used in threaded environments, and if you use instance variables
+you need your parser to be isolated from it's siblings in other threads - therefore you can pass
+a Class on registration to have your parser instantiated for each `call()`, anew.
+
 
 ## Pull requests
 
