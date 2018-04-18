@@ -87,6 +87,82 @@ or no result as soon as possible (once you know the file is not fit for your spe
 Bear in mind that we enforce read budgets per-parser, so you will not be allowed to perform
 too many reads, or perform reads which are too large.
 
+In order to create new parsers, it is recommended to make a well-named class with an instance method `call`.
+
+`call` accepts the IO-ish object as an argument, parses data that it reads from it,
+and then returns the metadata for the file (if it could recover any) or `nil` if it couldn't. All files pass
+through all parsers by default, so if you are dealing with a file that is not "your" format - return `nil` from
+your method or `break` your Proc as early as possible. A blank `return` works fine too.
+
+The IO will at the minimum support the subset of the IO API defined in `IOConstraint`
+
+Your parser has to be registered using `FormatParser.register_parser` with the information on the formats
+and file natures it provides.
+
+Down below you can find the most basic parser implementation:
+
+```ruby
+MyParser = ->(io) {
+  # ... do some parsing with `io`
+  magic_bytes = io.read(4)
+  # breaking the block returns `nil` to the caller signaling "no match"
+  break if magic_bytes != 'IMGA'
+
+  parsed_witdh, parsed_height = io.read(8).unpack('VV')
+  # ...and return the FileInformation::Image object with the metadata.
+  FormatParser::Image.new(
+    format: :imga,
+    width_px: parsed_width,
+    height_px: parsed_height,
+  )
+}
+
+# Register the parser with the module, so that it will be applied to any
+# document given to `FormatParser.parse()`. The supported natures are currently
+#      - :audio
+#      - :document
+#      - :image
+#      - :video
+#      - :archive
+FormatParser.register_parser MyParser, natures: :image, formats: :imga
+```
+
+If you are using a class, this is the skeleton to use:
+
+```ruby
+class MyParser
+  def call(io)
+    # ... do some parsing with `io`
+    # The instance will be discarded after parsing, so using instance variables
+    # is permitted - they are not shared between calls to `call`
+    @magic_bytes = io.read(4)
+    break if @magic_bytes != 'IMGA'
+    parsed_witdh, parsed_height = io.read(8).unpack('VV')
+    FormatParser::Image.new(
+      format: :imga,
+      width_px: parsed_width,
+      height_px: parsed_height,
+    )
+  end
+
+  FormatParser.register_parser self, natures: :image, formats: :bmp
+end
+```
+
+### Calling convention for preparing parsers
+
+A parser that gets registered using `register_parser` must be either:
+
+1) An object that can be `call()`-ed itself, with an argument that conforms to `IOConstraint`
+2) An object that responds to `new` and returns something that can be `call()`-ed with with an argument that conforms to `IOConstraint`.
+
+The second opton is recommended  for most cases.
+
+FormatParser is made to be used in threaded environments, and if you use instance variables
+you need your parser to be isolated from it's siblings in other threads - therefore you can pass
+a Class on registration to have your parser instantiated for each `call()`, anew.
+
+
 ## Pull requests
 
 Good pull requests-patches, improvements, new features-are a fantastic
