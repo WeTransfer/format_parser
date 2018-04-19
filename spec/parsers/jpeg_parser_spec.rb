@@ -49,6 +49,14 @@ describe FormatParser::JPEGParser do
     expect(result.intrinsics).to eq(exif_pixel_x_dimension: 8214, exif_pixel_y_dimension: 5476)
   end
 
+  it 'does not continue parsing for inordinate amount of time if the file contains no 0xFF bytes' do
+    bytes_except_null_byte = 0x0..0xFE
+    no_markers = ([0xFF, 0xD8] + (16 * 1024).times.map { rand(bytes_except_null_byte) }).pack('C*')
+    expect(subject).to receive(:read_char).at_least(100).times.at_most(1024).times.and_call_original
+    result = subject.call(StringIO.new(no_markers))
+    expect(result).to be_nil
+  end
+
   it 'does not return a result for a Keynote document' do
     key_path = fixtures_dir + '/JPEG/keynote_recognized_as_jpeg.key'
     result = subject.call(File.open(key_path, 'rb'))

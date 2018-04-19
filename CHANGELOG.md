@@ -1,3 +1,5 @@
+* Make JPEG parser bail out earlier if no marker can be found for 1024KB of raw data
+
 ## 0.9.0
 * Add a parser for the BMP image file format
 
