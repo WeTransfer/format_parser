@@ -50,8 +50,17 @@ describe FormatParser::JPEGParser do
   end
 
   it 'does not continue parsing for inordinate amount of time if the file contains no 0xFF bytes' do
-    bytes_except_null_byte = 0x0..0xFE
-    no_markers = ([0xFF, 0xD8] + (16 * 1024).times.map { rand(bytes_except_null_byte) }).pack('C*')
+    # Create a large fuzzed input that consists of any bytes except 0xFF,
+    # so that the marker detector has nothing to latch on to
+    bytes_except_byte_255 = 0x0..0xFE
+
+    # Start the blob with the usual SOI marker - 0xFF 0xD8, so that the parser does not
+    # bail out too early and actually "bites" into the blob
+    no_markers = ([0xFF, 0xD8] + (16 * 1024).times.map { rand(bytes_except_byte_255) }).pack('C*')
+
+    # Yes, assertions on a private method - but we want to ensure we do not read more
+    # single bytes than the restriction stipulates we may. At the same time we check that
+    # the method does indeed, get triggered
     expect(subject).to receive(:read_char).at_least(100).times.at_most(1024).times.and_call_original
     result = subject.call(StringIO.new(no_markers))
     expect(result).to be_nil
