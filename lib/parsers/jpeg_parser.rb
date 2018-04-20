@@ -10,6 +10,7 @@ class FormatParser::JPEGParser
   SOS_MARKER  = 0xDA  # start of stream
   APP1_MARKER = 0xE1  # maybe EXIF
   EXIF_MAGIC_STRING = "Exif\0\0".b
+  MAX_GETBYTE_CALLS_WHEN_LOOKING_FOR_MARKER = 1023
 
   def call(io)
     @buf = FormatParser::IOConstraint.new(io)
@@ -78,11 +79,17 @@ class FormatParser::JPEGParser
   end
 
   # Read a byte, if it is 0xFF then skip bytes as long as they are also 0xFF (byte stuffing)
-  # and return the first byte scanned that is not 0xFF
+  # and return the first byte scanned that is not 0xFF. Also applies limits so that we do not
+  # read for inordinate amount of time should we encounter a file where we _do_ have a SOI
+  # marker at the start and then no markers for a _very_ long time (happened with some PSDs)
   def read_next_marker
-    c = read_char while c != 0xFF
-    c = read_char while c == 0xFF
-    c
+    max_two_byte_reads = MAX_GETBYTE_CALLS_WHEN_LOOKING_FOR_MARKER / 2
+    max_two_byte_reads.times do
+      previous = read_char
+      current = read_char
+      return current if previous == 0xFF && current != 0xFF
+    end
+    nil # Nothing found
   end
 
   def scan_start_of_frame
