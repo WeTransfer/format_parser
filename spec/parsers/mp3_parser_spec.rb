@@ -44,4 +44,11 @@ describe FormatParser::MP3Parser do
 
     expect(parsed.intrinsics).not_to be_nil
   end
+
+  it 'avoids returning a result when the parsed duration is infinite' do
+    fpath = fixtures_dir + '/JPEG/UNVIEWABLE_many_APP1_markers_before_sos.jpg'
+    parsed = subject.call(File.open(fpath, 'rb'))
+
+    expect(parsed).to be_nil
+  end
 end
