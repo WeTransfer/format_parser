@@ -1,4 +1,5 @@
-* Make JPEG parser bail out earlier if no marker is found while scanning through 1024 bytes of data
+## 0.9.1
+* Perf: Make JPEG parser bail out earlier if no marker is found while scanning through 1024 bytes of data
 
 ## 0.9.0
 * Add a parser for the BMP image file format
