@@ -72,6 +72,18 @@ module FormatParser
     parse(RemoteIO.new(url), **kwargs)
   end
 
+  # Parses the file at the given `path` and returns the results as if it were any IO
+  # given to `.parse`. The accepted keyword arguments are the same as the ones for `parse`.
+  #
+  # @param path[String] the path to the file to parse on the local filesystem
+  # @param kwargs the keyword arguments to be delegated to `.parse`
+  # @see {.parse}
+  def self.parse_file_at(path, **kwargs)
+    File.open(path, 'rb') do |io|
+      parse(io, **kwargs)
+    end
+  end
+
   # Parses the resource contained in the given IO-ish object, and returns either the first matched
   # result (omitting all the other parsers), the first N results or all results.
   #
