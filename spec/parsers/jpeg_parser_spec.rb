@@ -50,7 +50,7 @@ describe FormatParser::JPEGParser do
   end
 
   it 'reads an example with many APP1 markers at the beginning of which none are EXIF' do
-    fixture_path = fixtures_dir + '/JPEG/UNVIEWABLE_many_APP1_markers_before_sos.jpg'
+    fixture_path = fixtures_dir + '/JPEG/UNVIEWABLE_many_APP1_markers_before_SOS.jpg'
     io = FormatParser::ReadLimiter.new(File.open(fixture_path, 'rb'))
 
     result = subject.call(io)
