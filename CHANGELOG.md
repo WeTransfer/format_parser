@@ -1,3 +1,10 @@
+## 0.9.2
+* Make sure MP3 parser returns `nil` when encountering infinite duration
+* Do not read JPEG APP1 markers that contain no EXIF data
+* Explicitly replace `Float::INFINITY` values in `AttributesJSON` with `nil` as per JSON convention
+* Make sure the cached pages in `Care` are explicitly deleted after each `parse` call (should help GC)
+* Raise the pagefaults restriction to 16 to cope with "too many useless markers in JPEGs" scenario once more
+
 ## 0.9.1
 * Perf: Make JPEG parser bail out earlier if no marker is found while scanning through 1024 bytes of data
 
