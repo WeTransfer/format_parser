@@ -31,12 +31,11 @@ return_values = ARGV.map do |path_or_url|
       results: result_or_results,
     }
   else
-    single_result = FormatParser.public_send(method_name, path_or_url, **options)
-    did_detect = true if single_result
+    did_detect = true if result_or_results
     {
       source_path_or_url: path_or_url,
       options: options,
-      result: single_result,
+      result: result_or_results,
     }
   end
 end
