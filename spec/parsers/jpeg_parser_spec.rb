@@ -50,7 +50,7 @@ describe FormatParser::JPEGParser do
   end
 
   it 'reads an example with many APP1 markers at the beginning of which none are EXIF' do
-    fixture_path = fixtures_dir + '/JPEG/UNVIEWABLE_many_APP1_markers_before_SOS.jpg'
+    fixture_path = fixtures_dir + '/JPEG/too_many_APP1_markers_surrogate.jpg'
     io = FormatParser::ReadLimiter.new(File.open(fixture_path, 'rb'))
 
     result = subject.call(io)
@@ -59,7 +59,8 @@ describe FormatParser::JPEGParser do
     expect(result.width_px).to eq(1920)
     expect(result.height_px).to eq(1200)
 
-    expect(io.reads).to be_within(1024).of(1349)
+    expect(io.bytes).to be < (128 * 1024)
+    expect(io.reads).to be < (1024 * 4)
   end
 
   it 'does not continue parsing for inordinate amount of time if the file contains no 0xFF bytes' do

@@ -46,7 +46,7 @@ describe FormatParser::MP3Parser do
   end
 
   it 'avoids returning a result when the parsed duration is infinite' do
-    fpath = fixtures_dir + '/JPEG/UNVIEWABLE_many_APP1_markers_before_SOS.jpg'
+    fpath = fixtures_dir + '/JPEG/too_many_APP1_markers_surrogate.jpg'
     parsed = subject.call(File.open(fpath, 'rb'))
 
     expect(parsed).to be_nil
