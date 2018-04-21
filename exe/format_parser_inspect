@@ -20,7 +20,7 @@ end.parse!
 
 did_detect = false
 return_values = ARGV.map do |path_or_url|
-  method_name = path_or_url.start_with?('http') ? :parse_http : :parse_file_at
+  method_name = path_or_url =~ /^http(s?)\:\/\// ? :parse_http : :parse_file_at
   result_or_results = FormatParser.public_send(method_name, path_or_url, **options)
   if options[:results] != :first
     did_detect = true if result_or_results.any?
