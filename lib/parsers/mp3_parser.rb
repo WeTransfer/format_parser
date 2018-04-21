@@ -83,6 +83,10 @@ class FormatParser::MP3Parser
     est_samples = est_frame_count * SAMPLES_PER_FRAME
     est_duration_seconds = est_samples / avg_sample_rate
 
+    # Safeguard for i.e. some JPEGs being recognized as MP3
+    # to prevent ambiguous recognition
+    return if est_duration_seconds == Float::INFINITY
+
     file_info.media_duration_seconds = est_duration_seconds
     file_info
   end

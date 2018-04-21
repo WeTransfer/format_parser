@@ -2,6 +2,8 @@
 class FormatParser::ReadLimiter
   NO_LIMIT = nil
 
+  attr_reader :seeks, :reads, :bytes
+
   class BudgetExceeded < StandardError
   end
 
