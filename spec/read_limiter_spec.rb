@@ -18,18 +18,6 @@ describe FormatParser::ReadLimiter do
     expect(reader.pos).to eq(2)
   end
 
-  it 'exposes #reads, #seeks, #bytes' do
-    reader = FormatParser::ReadLimiter.new(io)
-    expect(reader.pos).to eq(0)
-    reader.read(2)
-    reader.seek(3)
-    reader.seek(4)
-
-    expect(reader.reads).to eq(1)
-    expect(reader.bytes).to eq(2)
-    expect(reader.seeks).to eq(2)
-  end
-
   it 'enforces the number of seeks' do
     reader = FormatParser::ReadLimiter.new(io, max_seeks: 4)
     4.times { reader.seek(1) }

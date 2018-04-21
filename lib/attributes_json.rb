@@ -20,7 +20,6 @@ module FormatParser::AttributesJSON
     methods.grep(/\w\=$/).each_with_object(h) do |attr_writer_method_name, h|
       reader_method_name = attr_writer_method_name.to_s.gsub(/\=$/, '')
       value = public_send(reader_method_name)
-      value = nil if value == Float::INFINITY
       # When calling as_json on our members there is no need to pass the root: option given to us
       # by the caller
       h[reader_method_name] = value.respond_to?(:as_json) ? value.as_json : value

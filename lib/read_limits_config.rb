@@ -1,5 +1,5 @@
 class FormatParser::ReadLimitsConfig
-  MAX_PAGE_FAULTS = 16
+  MAX_PAGE_FAULTS = 8
 
   def initialize(total_bytes_available_per_parser)
     @max_read_bytes_per_parser = total_bytes_available_per_parser.to_i
