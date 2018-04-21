@@ -62,6 +62,8 @@ class FormatParser::JPEGParser
       end
     end
 
+    FormatParser::Measurometer.add_distribution_value('format_parser.JPEGParser.bytes_read_until_capture', @buf.pos)
+
     # Return at the earliest possible opportunity
     if @width && @height
       return  FormatParser::Image.new(
@@ -114,34 +116,42 @@ class FormatParser::JPEGParser
     # pry it out of the APP1 frame and parse it as the TIFF segment - which is what EXIFR
     # does under the hood.
     app1_frame_content_length = read_short - 2
-    app1_frame_bytes = safe_read(@buf, app1_frame_content_length)
 
-    maybe_exif_magic_str = app1_frame_bytes[0..5]
-    maybe_exif_data = app1_frame_bytes[6..-1]
-    if maybe_exif_magic_str == EXIF_MAGIC_STRING
-      FormatParser::Measurometer.add_distribution_value('format_parser.JPEGParser.bytes_sent_to_exif_parser', maybe_exif_data.bytesize)
-      scanner = FormatParser::EXIFParser.new(StringIO.new(maybe_exif_data))
-      scanner.scan_image_tiff
+    # Peek whether the contents of the marker starts with Exif\0
+    maybe_exif_magic_str = safe_read(@buf, EXIF_MAGIC_STRING.bytesize)
 
-      @exif_output = scanner.exif_data
-      @orientation = scanner.orientation unless scanner.orientation.nil?
-      @intrinsics[:exif_pixel_x_dimension] = @exif_output.pixel_x_dimension
-      @intrinsics[:exif_pixel_y_dimension] = @exif_output.pixel_y_dimension
-      # Save these two for later, when we decide to provide display width /
-      # display height in addition to pixel buffer width / height. These two
-      # are _different concepts_. Imagine you have an image shot with a camera
-      # in portrait orientation, and the camera has an anamorphic lens. That
-      # anamorpohic lens is a smart lens, and therefore transmits pixel aspect
-      # ratio to the camera, and the camera encodes that aspect ratio into the
-      # image metadata. If we want to know what size our _pixel buffer_ will be,
-      # and how to _read_ the pixel data (stride/interleaving) - we need the
-      # pixel buffer dimensions. If we want to know what aspect and dimensions
-      # our file is going to have _once displayed_ and _once pixels have been
-      # brought to the right orientation_ we need to work with **display dimensions**
-      # which can be remarkably different from the pixel buffer dimensions.
-      @exif_width = scanner.width
-      @exif_height = scanner.height
+    # If we could not find the magic Exif\0 string at the start of the marker,
+    # seek to the start of the next marker and return
+    unless maybe_exif_magic_str == EXIF_MAGIC_STRING
+      safe_skip(@buf, app1_frame_content_length - EXIF_MAGIC_STRING.bytesize)
+      return
     end
+
+    # ...and only then read the marker contents and parse it as EXIF
+    exif_data = safe_read(@buf, app1_frame_content_length - EXIF_MAGIC_STRING.bytesize)
+
+    FormatParser::Measurometer.add_distribution_value('format_parser.JPEGParser.bytes_sent_to_exif_parser', exif_data.bytesize)
+    scanner = FormatParser::EXIFParser.new(StringIO.new(exif_data))
+    scanner.scan_image_tiff
+
+    @exif_output = scanner.exif_data
+    @orientation = scanner.orientation unless scanner.orientation.nil?
+    @intrinsics[:exif_pixel_x_dimension] = @exif_output.pixel_x_dimension
+    @intrinsics[:exif_pixel_y_dimension] = @exif_output.pixel_y_dimension
+    # Save these two for later, when we decide to provide display width /
+    # display height in addition to pixel buffer width / height. These two
+    # are _different concepts_. Imagine you have an image shot with a camera
+    # in portrait orientation, and the camera has an anamorphic lens. That
+    # anamorpohic lens is a smart lens, and therefore transmits pixel aspect
+    # ratio to the camera, and the camera encodes that aspect ratio into the
+    # image metadata. If we want to know what size our _pixel buffer_ will be,
+    # and how to _read_ the pixel data (stride/interleaving) - we need the
+    # pixel buffer dimensions. If we want to know what aspect and dimensions
+    # our file is going to have _once displayed_ and _once pixels have been
+    # brought to the right orientation_ we need to work with **display dimensions**
+    # which can be remarkably different from the pixel buffer dimensions.
+    @exif_width = scanner.width
+    @exif_height = scanner.height
   rescue EXIFR::MalformedTIFF
     # Not a JPEG or the Exif headers contain invalid data, or
     # an APP1 marker was detected in a file that is not a JPEG
