@@ -50,6 +50,7 @@ describe FormatParser::JPEGParser do
   end
 
   it 'reads an example with many APP1 markers at the beginning of which none are EXIF' do
+    skip 'Pending clearance to use image file'
     fixture_path = fixtures_dir + '/JPEG/UNVIEWABLE_many_APP1_markers_before_SOS.jpg'
     io = FormatParser::ReadLimiter.new(File.open(fixture_path, 'rb'))
 

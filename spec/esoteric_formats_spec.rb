@@ -15,6 +15,7 @@ describe 'Parsing esoteric files and files causing ambiguous detection' do
   end
 
   it 'returns a result for JPEG file that causes many reads due to too many APP1 markers' do
+    skip 'Pending clearance to use image file'
     jpeg_path = fixtures_dir + '/JPEG/UNVIEWABLE_many_APP1_markers_before_SOS.jpg'
     result = FormatParser.parse(File.open(jpeg_path, 'rb'))
     expect(result).not_to be_nil

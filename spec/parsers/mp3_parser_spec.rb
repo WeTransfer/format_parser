@@ -46,6 +46,8 @@ describe FormatParser::MP3Parser do
   end
 
   it 'avoids returning a result when the parsed duration is infinite' do
+    skip 'Pending clearance to use image file'
+
     fpath = fixtures_dir + '/JPEG/UNVIEWABLE_many_APP1_markers_before_SOS.jpg'
     parsed = subject.call(File.open(fpath, 'rb'))
 
