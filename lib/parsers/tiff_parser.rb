@@ -1,5 +1,6 @@
 class FormatParser::TIFFParser
   include FormatParser::IOUtils
+  include FormatParser::ExifFlipDimensions
 
   MAGIC_LE = [0x49, 0x49, 0x2A, 0x0].pack('C4')
   MAGIC_BE = [0x4D, 0x4D, 0x0, 0x2A].pack('C4')
@@ -18,11 +19,14 @@ class FormatParser::TIFFParser
     scanner.scan_image_tiff
     return unless scanner.exif_data
 
+    w = scanner.exif_data.image_width
+    h = scanner.exif_data.image_length
     FormatParser::Image.new(
       format: :tif,
-      width_px: scanner.exif_data.image_width,
-      height_px: scanner.exif_data.image_length,
-      # might be nil if EXIF metadata wasn't found
+      width_px: w, 
+      height_px: h,
+      display_width_px: rotated?(scanner.orientation) ? h : w,
+      display_height_px: rotated?(scanner.orientation) ? w : h,
       orientation: scanner.orientation
     )
   rescue EXIFR::MalformedTIFF

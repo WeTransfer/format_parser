@@ -15,6 +15,7 @@ module FormatParser
   require_relative 'remote_io'
   require_relative 'io_constraint'
   require_relative 'care'
+  require_relative 'exif_flip_dimensions'
 
   # Is used to manage access to the shared array of parser constructors, which might
   # potentially be mutated from different threads. The mutex won't be hit too often

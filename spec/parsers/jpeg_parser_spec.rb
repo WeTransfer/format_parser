@@ -26,6 +26,8 @@ describe FormatParser::JPEGParser do
       expect(parsed.orientation).to be_kind_of(Symbol)
       expect(parsed.width_px).to be > 0
       expect(parsed.height_px).to be > 0
+      expect(parsed.display_width_px).to eq(1240)
+      expect(parsed.display_height_px).to eq(1754)
     end
 
     bottom_left_path = fixtures_dir + '/exif-orientation-testimages/jpg/bottom_left.jpg'
@@ -33,12 +35,16 @@ describe FormatParser::JPEGParser do
     expect(parsed.orientation).to eq(:bottom_left)
     expect(parsed.width_px).to eq(1240)
     expect(parsed.height_px).to eq(1754)
+    expect(parsed.display_width_px).to eq(1240)
+    expect(parsed.display_height_px).to eq(1754)
 
     top_right_path = fixtures_dir + '/exif-orientation-testimages/jpg/right_bottom.jpg'
     parsed = subject.call(File.open(top_right_path, 'rb'))
     expect(parsed.orientation).to eq(:right_bottom)
     expect(parsed.width_px).to eq(1754)
     expect(parsed.height_px).to eq(1240)
+    expect(parsed.display_width_px).to eq(1240)
+    expect(parsed.display_height_px).to eq(1754)
   end
 
   it 'gives true pixel dimensions priority over pixel dimensions in EXIF tags' do

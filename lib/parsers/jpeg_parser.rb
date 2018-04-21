@@ -1,5 +1,6 @@
 class FormatParser::JPEGParser
   include FormatParser::IOUtils
+  include FormatParser::ExifFlipDimensions
 
   class InvalidStructure < StandardError
   end
@@ -66,13 +67,22 @@ class FormatParser::JPEGParser
 
     # Return at the earliest possible opportunity
     if @width && @height
-      return  FormatParser::Image.new(
+      result = FormatParser::Image.new(
         format: :jpg,
         width_px: @width,
         height_px: @height,
+        display_width_px: @width,
+        display_height_px: @height,
         orientation: @orientation,
         intrinsics: @intrinsics,
       )
+
+      if rotated?(@orientation)
+        result.display_width_px = result.height_px
+        result.display_height_px = result.width_px
+      end
+
+      return result
     end
 
     nil # We could not parse anything
