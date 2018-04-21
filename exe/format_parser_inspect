@@ -36,7 +36,7 @@ return_values = ARGV.map do |path_or_url|
     {
       source_path_or_url: path_or_url,
       options: options,
-      result: result_or_results,
+      result: single_result,
     }
   end
 end
