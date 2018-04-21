@@ -141,6 +141,8 @@ module FormatParser
     end
 
     amount == 1 ? results.first : results
+  ensure
+    cached_io.clear if cached_io
   end
 
   def self.execute_parser_and_capture_expected_exceptions(parser, limited_io)
