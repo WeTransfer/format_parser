@@ -49,19 +49,6 @@ describe FormatParser::JPEGParser do
     expect(result.intrinsics).to eq(exif_pixel_x_dimension: 8214, exif_pixel_y_dimension: 5476)
   end
 
-  it 'reads an example with many APP1 markers at the beginning of which none are EXIF' do
-    fixture_path = fixtures_dir + '/JPEG/UNVIEWABLE_many_APP1_markers_before_SOS.jpg'
-    io = FormatParser::ReadLimiter.new(File.open(fixture_path, 'rb'))
-
-    result = subject.call(io)
-
-    expect(result).not_to be_nil
-    expect(result.width_px).to eq(1920)
-    expect(result.height_px).to eq(1200)
-
-    expect(io.reads).to be_within(1024).of(1349)
-  end
-
   it 'does not continue parsing for inordinate amount of time if the file contains no 0xFF bytes' do
     # Create a large fuzzed input that consists of any bytes except 0xFF,
     # so that the marker detector has nothing to latch on to

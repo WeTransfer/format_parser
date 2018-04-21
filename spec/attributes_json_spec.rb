@@ -27,21 +27,6 @@ describe FormatParser::AttributesJSON do
     end
   end
 
-  it 'converts Float::INFINITY to nil' do
-    anon_class = Class.new do
-      include FormatParser::AttributesJSON
-      attr_accessor :some_infinity
-      def some_infinity
-        Float::INFINITY
-      end
-    end
-    instance = anon_class.new
-    output = JSON.dump(instance)
-    readback = JSON.parse(output, symbolize_names: true)
-    expect(readback).to have_key(:some_infinity)
-    expect(readback[:some_infinity]).to be_nil
-  end
-
   it 'provides a default implementation of to_json as well' do
     anon_class = Class.new do
       include FormatParser::AttributesJSON
