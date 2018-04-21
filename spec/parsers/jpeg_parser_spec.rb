@@ -75,14 +75,21 @@ describe FormatParser::JPEGParser do
     # Yes, assertions on a private method - but we want to ensure we do not read more
     # single bytes than the restriction stipulates we may. At the same time we check that
     # the method does indeed, get triggered
-    expect(subject).to receive(:read_char).at_least(100).times.at_most(1024).times.and_call_original
+    allow(subject).to receive(:read_char).and_call_original
     result = subject.call(StringIO.new(no_markers))
     expect(result).to be_nil
+    expect(subject).to have_received(:read_char).at_most(1026).times
   end
 
   it 'does not return a result for a Keynote document' do
     key_path = fixtures_dir + '/JPEG/keynote_recognized_as_jpeg.key'
     result = subject.call(File.open(key_path, 'rb'))
     expect(result).to be_nil
+  end
+
+  it 'parses the the marker structure correctly when marker bytes cannot be read in groups of 2' do
+    kitten_path = fixtures_dir + '/JPEG/off-cadence-markers.jpg'
+    result = subject.call(File.open(kitten_path, 'rb'))
+    expect(result).not_to be_nil
   end
 end

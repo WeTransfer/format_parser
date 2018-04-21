@@ -10,7 +10,7 @@ class FormatParser::JPEGParser
   SOS_MARKER  = 0xDA  # start of stream
   APP1_MARKER = 0xE1  # maybe EXIF
   EXIF_MAGIC_STRING = "Exif\0\0".b
-  MAX_GETBYTE_CALLS_WHEN_LOOKING_FOR_MARKER = 1023
+  MUST_FIND_NEXT_MARKER_WITHIN_BYTES = 1024
 
   def call(io)
     @buf = FormatParser::IOConstraint.new(io)
@@ -85,11 +85,12 @@ class FormatParser::JPEGParser
   # read for inordinate amount of time should we encounter a file where we _do_ have a SOI
   # marker at the start and then no markers for a _very_ long time (happened with some PSDs)
   def read_next_marker
-    max_two_byte_reads = MAX_GETBYTE_CALLS_WHEN_LOOKING_FOR_MARKER / 2
-    max_two_byte_reads.times do
-      previous = read_char
-      current = read_char
-      return current if previous == 0xFF && current != 0xFF
+    # We need to find a sequence of two bytes - the first one is 0xFF, the other is anything but 0xFF
+    a = read_char
+    (MUST_FIND_NEXT_MARKER_WITHIN_BYTES - 1).times do
+      b = read_char
+      return b if a == 0xFF && b != 0xFF # Caught the marker
+      a = b # Shift the tuple one byte forward
     end
     nil # Nothing found
   end
