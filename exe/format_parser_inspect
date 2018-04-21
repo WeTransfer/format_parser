@@ -6,15 +6,15 @@ require 'optparse'
 
 options = {results: :first}
 OptionParser.new do |opts|
-  opts.banner = "Usage: format_parser_inspect --first my_file.jpg"
-  opts.on("-a", "--all", "Return all results instead of just the first one") do |v|
+  opts.banner = 'Usage: format_parser_inspect --first my_file.jpg'
+  opts.on('-a', '--all', 'Return all results instead of just the first one') do |_v|
     options[:results] = :all
   end
-  opts.on("--natures[=NATURES]", "Only scan specific natures (comma-separated: image, audio)", Array) do |v|
-    options[:natures] = v.map {|e| e.strip.downcase.to_sym }
+  opts.on('--natures[=NATURES]', 'Only scan specific natures (comma-separated: image, audio)', Array) do |v|
+    options[:natures] = v.map { |e| e.strip.downcase.to_sym }
   end
-  opts.on("--formats[=FORMATS]", "Only scan specific formats (comma-separated: jpg, tif)", Array) do |v|
-    options[:formats] = v.map {|e| e.strip.downcase.to_sym }
+  opts.on('--formats[=FORMATS]', 'Only scan specific formats (comma-separated: jpg, tif)', Array) do |v|
+    options[:formats] = v.map { |e| e.strip.downcase.to_sym }
   end
 end.parse!
 
@@ -24,7 +24,7 @@ return_values = ARGV.map do |path_or_url|
   result_or_results = FormatParser.public_send(method_name, path_or_url, **options)
   if options[:results] != :first
     did_detect = true if result_or_results.any?
-    result_map = {
+    {
       source_path_or_url: path_or_url,
       options: options,
       ambiguous: result_or_results.length > 1,
@@ -33,7 +33,7 @@ return_values = ARGV.map do |path_or_url|
   else
     single_result = FormatParser.public_send(method_name, path_or_url, **options)
     did_detect = true if single_result
-    result_map = {
+    {
       source_path_or_url: path_or_url,
       options: options,
       result: result_or_results,
