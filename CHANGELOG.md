@@ -1,3 +1,4 @@
+## 0.9.4
 * Fix a TIFF parsing regression introduced in 0.3.1 that led to all TIFFs being incorrectly parsed
 
 ## 0.9.3
