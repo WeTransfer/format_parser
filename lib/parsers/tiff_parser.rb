@@ -1,70 +1,37 @@
 class FormatParser::TIFFParser
   include FormatParser::IOUtils
 
-  LITTLE_ENDIAN_TIFF_HEADER_BYTES = [0x49, 0x49, 0x2A, 0x0]
-  BIG_ENDIAN_TIFF_HEADER_BYTES = [0x4D, 0x4D, 0x0, 0x2A]
-  WIDTH_TAG  = 0x100
-  HEIGHT_TAG = 0x101
+  MAGIC_LE = [0x49, 0x49, 0x2A, 0x0].pack('C4')
+  MAGIC_BE = [0x4D, 0x4D, 0x0, 0x2A].pack('C4')
 
   def call(io)
     io = FormatParser::IOConstraint.new(io)
-    magic_bytes = safe_read(io, 4).unpack('C4')
-    endianness = scan_tiff_endianness(magic_bytes)
-    return if !endianness || cr2_check(io)
 
-    w, h = read_tiff_by_endianness(io, endianness)
+    return unless [MAGIC_LE, MAGIC_BE].include?(safe_read(io, 4))
+    io.seek(io.pos + 2) # Skip over the offset of the IFD, EXIFR will re-read it anyway
+    return if cr2?(io)
+
+    # The TIFF scanner in EXIFR is plenty good enough,
+    # so why don't we use it? It does all the right skips
+    # in all the right places.
     scanner = FormatParser::EXIFParser.new(io)
     scanner.scan_image_tiff
+    return unless scanner.exif_data
+
     FormatParser::Image.new(
       format: :tif,
-      width_px: w,
-      height_px: h,
+      width_px: scanner.exif_data.image_width,
+      height_px: scanner.exif_data.image_length,
       # might be nil if EXIF metadata wasn't found
       orientation: scanner.orientation
     )
+  rescue EXIFR::MalformedTIFF
+    nil
   end
 
-  # TIFFs can be either big or little endian, so we check here
-  # and set our unpack method argument to suit.
-  def scan_tiff_endianness(magic_bytes)
-    if magic_bytes == LITTLE_ENDIAN_TIFF_HEADER_BYTES
-      'v'
-    elsif magic_bytes == BIG_ENDIAN_TIFF_HEADER_BYTES
-      'n'
-    end
-  end
-
-  # The TIFF format stores metadata in a flexible set of information fields
-  # called tags, which are stored in a header referred to as the IFD or
-  # Image File Directory. It is not necessarily in the same place in every image,
-  # so we need to do some work to scan through it and find the tags we need.
-  # For more information the TIFF wikipedia page is a reasonable place to start:
-  # https://en.wikipedia.org/wiki/TIFF
-  def scan_ifd(cache, offset, endianness)
-    entry_count = safe_read(cache, 4).unpack(endianness)[0]
-    entry_count.times do |i|
-      cache.seek(offset + 2 + (12 * i))
-      tag = safe_read(cache, 4).unpack(endianness)[0]
-      if tag == WIDTH_TAG
-        @width = safe_read(cache, 4).unpack(endianness.upcase)[0]
-      elsif tag == HEIGHT_TAG
-        @height = safe_read(cache, 4).unpack(endianness.upcase)[0]
-      end
-    end
-  end
-
-  def read_tiff_by_endianness(io, endianness)
-    io.seek(4)
-    offset = safe_read(io, 4).unpack(endianness.upcase)[0]
-    io.seek(offset)
-    scan_ifd(io, offset, endianness)
-    [@width, @height]
-  end
-
-  def cr2_check(io)
+  def cr2?(io)
     io.seek(8)
-    cr2_check_bytes = safe_read(io, 2)
-    cr2_check_bytes == 'CR'
+    safe_read(io, 2) == 'CR'
   end
 
   FormatParser.register_parser self, natures: :image, formats: :tif

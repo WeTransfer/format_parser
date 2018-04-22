@@ -136,6 +136,10 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 ### M4A
 - fixture.m4a was created by one of the project maintainers and is MIT licensed
 
+### TIFF
+- `Shinbutsureijoushuincho.tiff` is obtained from Wikimedia Commons and is Creative Commons licensed
+- `IMG_9266_*.tif` and all it's variations were created by the project maintainers
+
 ### ZIP
 - The .zip fixture files have been created by the project maintainers
 
