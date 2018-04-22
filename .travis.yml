@@ -1,13 +1,7 @@
 rvm:
-- 2.3.0
-- 2.4.2
-- 2.5.0
-- jruby-9.0
+- jruby-9.1.9.0
 sudo: false
 cache: bundler
-matrix:
-  allow_failures:
-    - rvm: jruby-9.0
 script:
   - bundle exec rubocop
   - bundle exec rspec
