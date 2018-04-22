@@ -118,6 +118,12 @@ class FormatParser::JPEGParser
     # does under the hood.
     app1_frame_content_length = read_short - 2
 
+    # If there is certainly not enough data in this APP1 to begin with, bail out.
+    # For the sake of the argument assume that a usable EXIF marker would contain
+    # at least 2 bytes of data - not exact science, but it can help us
+    # avoid reading _anything_ from the APP1 marker body if it's too small anyway
+    return if app1_frame_content_length < (EXIF_MAGIC_STRING.bytesize + 2)
+
     # Peek whether the contents of the marker starts with Exif\0
     maybe_exif_magic_str = safe_read(@buf, EXIF_MAGIC_STRING.bytesize)
 
