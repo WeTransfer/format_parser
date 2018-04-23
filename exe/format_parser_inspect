@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+
+require_relative '../lib/format_parser'
+require 'json'
+require 'optparse'
+
+options = {results: :first}
+OptionParser.new do |opts|
+  opts.banner = 'Usage: format_parser_inspect --first my_file.jpg'
+  opts.on('-a', '--all', 'Return all results instead of just the first one') do |_v|
+    options[:results] = :all
+  end
+  opts.on('--natures[=NATURES]', 'Only scan specific natures (comma-separated: image, audio)', Array) do |v|
+    options[:natures] = v.map { |e| e.strip.downcase.to_sym }
+  end
+  opts.on('--formats[=FORMATS]', 'Only scan specific formats (comma-separated: jpg, tif)', Array) do |v|
+    options[:formats] = v.map { |e| e.strip.downcase.to_sym }
+  end
+end.parse!
+
+did_detect = false
+return_values = ARGV.map do |path_or_url|
+  method_name = path_or_url =~ /^http(s?)\:\/\// ? :parse_http : :parse_file_at
+  result_or_results = FormatParser.public_send(method_name, path_or_url, **options)
+  if options[:results] != :first
+    did_detect = true if result_or_results.any?
+    {
+      source_path_or_url: path_or_url,
+      options: options,
+      ambiguous: result_or_results.length > 1,
+      results: result_or_results,
+    }
+  else
+    did_detect = true if result_or_results
+    {
+      source_path_or_url: path_or_url,
+      options: options,
+      result: result_or_results,
+    }
+  end
+end
+
+puts JSON.pretty_generate(return_values)
+did_detect ? exit(0) : exit(1)
