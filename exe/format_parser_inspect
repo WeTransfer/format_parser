@@ -6,7 +6,7 @@ require 'optparse'
 
 options = {results: :first}
 OptionParser.new do |opts|
-  opts.banner = 'Usage: format_parser_inspect --first my_file.jpg'
+  opts.banner = 'Usage: format_parser_inspect --all my_file.jpg my_other_file.png'
   opts.on('-a', '--all', 'Return all results instead of just the first one') do |_v|
     options[:results] = :all
   end
