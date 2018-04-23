@@ -1,3 +1,8 @@
+## 0.10.0
+* Adds the `format_parser_inspect` binary for parsing a file from the commandline
+  and returning results in JSON
+* Adds the `FormatParser.parse_at(path)` convenience method
+
 ## 0.9.4
 * Fix a TIFF parsing regression introduced in 0.3.1 that led to all TIFFs being incorrectly parsed
 
