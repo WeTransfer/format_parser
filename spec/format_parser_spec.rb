@@ -14,7 +14,7 @@ describe FormatParser do
 
     it 'uses the passed ReadLimitsConfig and applies limits in it' do
       conf = FormatParser::ReadLimitsConfig.new(16)
-      d = StringIO.new(Random.new.bytes(64*1024))
+      d = StringIO.new(Random.new.bytes(64 * 1024))
       expect(FormatParser.parse(d, limits_config: conf)).to be_nil
     end
 
