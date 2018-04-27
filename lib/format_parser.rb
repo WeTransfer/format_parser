@@ -98,23 +98,17 @@ module FormatParser
   #   is ambiguous. The default is `:first` which returns the first matching result. Other
   #   possible values are `:all` to get all possible results and an Integer to return
   #   at most N results.
+  # @param limits_config[ReadLimitsConfig] the configuration object for various read/cache limits. The default
+  #   one should be good for most cases.
   # @return [Array<Result>, Result, nil] either an Array of results, a single parsing result or `nil`if
   #   no useful metadata could be recovered from the file
-  def self.parse(io, natures: @parsers_per_nature.keys, formats: @parsers_per_format.keys, results: :first)
-    # We need to apply various limits so that parsers do not over-read, do not cause too many HTTP
-    # requests to be dispatched and so on. These should be _balanced_ with one another- for example,
-    # we cannot tell a parser that it is limited to reading 1024 bytes while at the same time
-    # limiting the size of the cache pages it may slurp in to less than that amount, since
-    # it can quickly become frustrating. The limits configurator computes these limits
-    # for us, in a fairly balanced way, based on one setting.
-    limit_config = FormatParser::ReadLimitsConfig.new(MAX_BYTES_READ_PER_PARSER)
-
+  def self.parse(io, natures: @parsers_per_nature.keys, formats: @parsers_per_format.keys, results: :first, limits_config: default_limits_config)
     # Limit the number of cached _pages_ we may fetch. This allows us to limit the number
     # of page faults (page cache misses) a parser may incur
-    read_limiter_under_cache = FormatParser::ReadLimiter.new(io, max_reads: limit_config.max_pagefaults_per_parser)
+    read_limiter_under_cache = FormatParser::ReadLimiter.new(io, max_reads: limits_config.max_pagefaults_per_parser)
 
     # Then configure a layer of caching on top of that
-    cached_io = Care::IOWrapper.new(read_limiter_under_cache, page_size: limit_config.cache_page_size)
+    cached_io = Care::IOWrapper.new(read_limiter_under_cache, page_size: limits_config.cache_page_size)
 
     # How many results has the user asked for? Used to determinate whether an array
     # is returned or not.
@@ -133,7 +127,12 @@ module FormatParser
     parsers = parsers_for(natures, formats)
 
     # Limit how many operations the parser can perform
-    limited_io = ReadLimiter.new(cached_io, max_bytes: limit_config.max_read_bytes_per_parser, max_reads: limit_config.max_reads_per_parser, max_seeks: limit_config.max_seeks_per_parser)
+    limited_io = ReadLimiter.new(
+      cached_io,
+      max_bytes: limits_config.max_read_bytes_per_parser,
+      max_reads: limits_config.max_reads_per_parser,
+      max_seeks: limits_config.max_seeks_per_parser
+    )
 
     results = parsers.lazy.map do |parser|
       # Reset all the read limits, per parser
@@ -155,6 +154,21 @@ module FormatParser
     amount == 1 ? results.first : results
   ensure
     cached_io.clear if cached_io
+  end
+
+  # We need to apply various limits so that parsers do not over-read, do not cause too many HTTP
+  # requests to be dispatched and so on. These should be _balanced_ with one another- for example,
+  # we cannot tell a parser that it is limited to reading 1024 bytes while at the same time
+  # limiting the size of the cache pages it may slurp in to less than that amount, since
+  # it can quickly become frustrating. The limits configurator computes these limits
+  # for us, in a fairly balanced way, based on one setting.
+  #
+  # This method returns a ReadLimitsConfig object preset from the `MAX_BYTES_READ_PER_PARSER`
+  # default.
+  #
+  # @return [ReadLimitsConfig]
+  def self.default_limits_config
+    FormatParser::ReadLimitsConfig.new(MAX_BYTES_READ_PER_PARSER)
   end
 
   def self.execute_parser_and_capture_expected_exceptions(parser, limited_io)

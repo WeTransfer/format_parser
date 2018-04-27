@@ -1,3 +1,9 @@
+# We need to apply various limits so that parsers do not over-read, do not cause too many HTTP
+# requests to be dispatched and so on. These should be _balanced_ with one another- for example,
+# we cannot tell a parser that it is limited to reading 1024 bytes while at the same time
+# limiting the size of the cache pages it may slurp in to less than that amount, since
+# it can quickly become frustrating. ReadLimitsConfig computes these limits
+# for us, in a fairly balanced way, based on one setting.
 class FormatParser::ReadLimitsConfig
   MAX_PAGE_FAULTS = 16
 

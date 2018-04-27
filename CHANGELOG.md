@@ -1,3 +1,5 @@
+* Adds `limits_config` option to `FormatParser.parse()` for tweaking buffers and read limits externally
+
 ## 0.10.0
 * Adds the `format_parser_inspect` binary for parsing a file from the commandline
   and returning results in JSON
