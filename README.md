@@ -122,6 +122,9 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 ### FDX
 - fixture.fdx was created by one of the project maintainers and is MIT licensed
 
+### DPX
+- DPX files were created by one of the project maintainers and may be used with the library for the purposes of testing
+
 ### MOOV
 - bmff.mp4 is borrowed from the [bmff](https://github.com/zuku/bmff) project
 - Test_Circular MOV files were created by one of the project maintainers and are MIT licensed
