@@ -42,6 +42,21 @@ describe FormatParser::AttributesJSON do
     expect(readback[:some_infinity]).to be_nil
   end
 
+  it 'converts NaN to nil' do
+    anon_class = Class.new do
+      include FormatParser::AttributesJSON
+      attr_accessor :some_nan
+      def some_nan
+        (1.0 / 0.0).to_f
+      end
+    end
+    instance = anon_class.new
+    output = JSON.dump(instance)
+    readback = JSON.parse(output, symbolize_names: true)
+    expect(readback).to have_key(:some_nan)
+    expect(readback[:some_nan]).to be_nil
+  end
+
   it 'provides a default implementation of to_json as well' do
     anon_class = Class.new do
       include FormatParser::AttributesJSON
