@@ -50,9 +50,13 @@ describe FormatParser::JPEGParser do
   it 'gives true pixel dimensions priority over pixel dimensions in EXIF tags' do
     jpeg_path = fixtures_dir + '/JPEG/divergent_pixel_dimensions_exif.jpg'
     result = subject.call(File.open(jpeg_path, 'rb'))
+
     expect(result.width_px).to eq(1920)
     expect(result.height_px).to eq(1280)
-    expect(result.intrinsics).to eq(exif_pixel_x_dimension: 8214, exif_pixel_y_dimension: 5476)
+
+    exif = result.intrinsics.fetch(:exif)
+    expect(exif.pixel_x_dimension).to eq(8214)
+    expect(exif.pixel_y_dimension).to eq(5476)
   end
 
   it 'reads an example with many APP1 markers at the beginning of which none are EXIF' do

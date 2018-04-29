@@ -1,6 +1,6 @@
 class FormatParser::TIFFParser
   include FormatParser::IOUtils
-  include FormatParser::ExifFlipDimensions
+  include FormatParser::EXIFParser
 
   MAGIC_LE = [0x49, 0x49, 0x2A, 0x0].pack('C4')
   MAGIC_BE = [0x4D, 0x4D, 0x0, 0x2A].pack('C4')
@@ -15,19 +15,20 @@ class FormatParser::TIFFParser
     # The TIFF scanner in EXIFR is plenty good enough,
     # so why don't we use it? It does all the right skips
     # in all the right places.
-    scanner = FormatParser::EXIFParser.new(io)
-    scanner.scan_image_tiff
-    return unless scanner.exif_data
+    exif_data = exif_from_tiff_io(io)
+    return unless exif_data
 
-    w = scanner.exif_data.image_width
-    h = scanner.exif_data.image_length
+    w = exif_data.image_width
+    h = exif_data.image_length
+
     FormatParser::Image.new(
       format: :tif,
-      width_px: w, 
+      width_px: w,
       height_px: h,
-      display_width_px: rotated?(scanner.orientation) ? h : w,
-      display_height_px: rotated?(scanner.orientation) ? w : h,
-      orientation: scanner.orientation
+      display_width_px: exif_data.rotated? ? h : w,
+      display_height_px: exif_data.rotated? ? w : h,
+      orientation: exif_data.orientation,
+      intrinsics: {exif: exif_data},
     )
   rescue EXIFR::MalformedTIFF
     nil

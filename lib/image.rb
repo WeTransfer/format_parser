@@ -64,14 +64,14 @@ module FormatParser
     # If the display width/height are not specified, the sizes of the
     # pixel buffer will get returned instead (values of the `width_px`/`height_px`
     # attributes)
-    def display_width_px
+    def display_width_px # rubocop:disable Lint/DuplicateMethods
       @display_width_px || @width_px
     end
 
     # If the display width/height are not specified, the sizes of the
     # pixel buffer will get returned instead (values of the `width_px`/`height_px`
     # attributes)
-    def display_height_px
+    def display_height_px # rubocop:disable Lint/DuplicateMethods
       @display_height_px || @height_px
     end
 
