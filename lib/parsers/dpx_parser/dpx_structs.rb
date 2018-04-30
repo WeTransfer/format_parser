@@ -7,9 +7,10 @@ class FormatParser::DPXParser
     }
 
     class Capture < Struct.new(:pattern, :bytes)
+      include FormatParser::IOUtils
       def read_and_unpack(io)
         platform_byte_order_pattern = io.le? ? TO_LITTLE_ENDIAN.fetch(pattern, pattern) : pattern
-        io.read(bytes).unpack(platform_byte_order_pattern).first
+        safe_read(io, bytes).unpack(platform_byte_order_pattern).first
       end
     end
 

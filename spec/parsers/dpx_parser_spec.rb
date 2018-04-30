@@ -30,4 +30,11 @@ describe FormatParser::DPXParser do
 
     expect(parsed.display_width_px / parsed.display_height_px.to_f).to be_within(0.01).of(2.37)
   end
+
+  it 'does not explode on invalid inputs' do
+    invalid = StringIO.new('SDPX' + (' ' * 64))
+    expect {
+      subject.call(invalid)
+    }.to raise_error(FormatParser::IOUtils::InvalidRead)
+  end
 end
