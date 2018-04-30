@@ -35,7 +35,7 @@ and [dimensions,](https://github.com/sstephenson/dimensions) borrowing from them
 
 ## Basic usage
 
-Pass an IO object that responds to `read` and `seek` to `FormatParser` and the first confirmed match will be returned.
+Pass an IO object that responds to `read` and `seek` to `FormatParser.parse` and the first confirmed match will be returned.
 
 ```ruby
 match = FormatParser.parse(File.open("myimage.jpg", "rb"))
@@ -44,6 +44,14 @@ match.format        #=> :jpg
 match.display_width_px      #=> 320
 match.display_height_px     #=> 240
 match.orientation   #=> :top_left
+```
+
+You can also use `parse_http` passing a URL or `parse_file_at` passing a path:
+
+```ruby
+match = FormatParser.parse_http('https://upload.wikimedia.org/wikipedia/commons/b/b4/Mardin_1350660_1350692_33_images.jpg')
+match.nature        #=> :image
+match.format        #=> :jpg
 ```
 
 If you would rather receive all potential results from the gem, call the gem as follows:
