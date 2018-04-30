@@ -61,7 +61,7 @@ class FormatParser::JPEGParser
       end
     end
 
-    FormatParser::Measurometer.add_distribution_value('format_parser.JPEGParser.bytes_read_until_capture', @buf.pos)
+    Measurometer.add_distribution_value('format_parser.JPEGParser.bytes_read_until_capture', @buf.pos)
 
     # Return at the earliest possible opportunity
     if @width && @height
@@ -140,7 +140,7 @@ class FormatParser::JPEGParser
     # ...and only then read the marker contents and parse it as EXIF
     exif_data = safe_read(@buf, app1_frame_content_length - EXIF_MAGIC_STRING.bytesize)
 
-    FormatParser::Measurometer.add_distribution_value('format_parser.JPEGParser.bytes_sent_to_exif_parser', exif_data.bytesize)
+    Measurometer.add_distribution_value('format_parser.JPEGParser.bytes_sent_to_exif_parser', exif_data.bytesize)
 
     @exif_data = exif_from_tiff_io(StringIO.new(exif_data))
   rescue EXIFR::MalformedTIFF

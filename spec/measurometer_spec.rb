@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe FormatParser::Measurometer do
+describe Measurometer do
   RSpec::Matchers.define :include_counter_or_measurement_named do |named|
     match do |actual|
       actual.any? do |e|
@@ -40,6 +40,15 @@ describe FormatParser::Measurometer do
     described_class.drivers.delete(instrumenter)
     expect(described_class.drivers).not_to include(instrumenter)
 
+    # Legacy measurometer settings
+    # Instrument things interesting in the global sense
+    # instrument_instance_method(FormatParser::RemoteIO, :read, 'format_parser')
+    # instrument_instance_method(Care::Cache, :read_page, 'format_parser')
+    # 
+    # # Instrument more specific things on a per-parser basis
+    # instrument_instance_method(FormatParser::EXIFParser, :scan_image_tiff, 'format_parser')
+    # instrument_instance_method(FormatParser::MOOVParser::Decoder, :extract_atom_stream, 'format_parser.parsers.MOOVParser')
+  
     expect(instrumenter.counters).to include_counter_or_measurement_named('format_parser.detected_formats.zip')
     expect(instrumenter.counters).to include_counter_or_measurement_named('format_parser.parser.Care.page_reads_from_upsteam')
     expect(instrumenter.distributions).to include_counter_or_measurement_named('format_parser.ZIPParser.read_limiter.read_bytes')
