@@ -44,6 +44,7 @@ describe FormatParser::TIFFParser do
     expect(parsed).not_to be_nil
     expect(parsed.width_px).to eq(320)
     expect(parsed.height_px).to eq(240)
+    expect(parsed.intrinsics[:exif]).not_to be_nil
   end
 
   describe 'correctly extracts dimensions from various TIFF flavors of the same file' do

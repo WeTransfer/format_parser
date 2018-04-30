@@ -1,8 +1,31 @@
 require 'exifr/tiff'
 require 'delegate'
 
-class FormatParser::EXIFParser
-  include FormatParser::IOUtils
+module FormatParser::EXIFParser
+  ORIENTATIONS = [
+    :top_left,
+    :top_right,
+    :bottom_right,
+    :bottom_left,
+    :left_top,
+    :right_top,
+    :right_bottom,
+    :left_bottom
+  ]
+  ROTATED_ORIENTATIONS = ORIENTATIONS - [
+    :bottom_left,
+    :bottom_right,
+    :top_left,
+    :top_right
+  ]
+  module MethodsMethodFix
+    # Fix a little bug in EXIFR which breaks delegators
+    # https://github.com/remvee/exifr/pull/55
+    def methods(*)
+      super() # no args
+    end
+  end
+  EXIFR::TIFF.prepend(MethodsMethodFix)
 
   # EXIFR kindly requests the presence of a few more methods than what our IOConstraint
   # is willing to provide, but they can be derived from the available ones
@@ -30,47 +53,26 @@ class FormatParser::EXIFParser
     alias_method :getbyte, :readbyte
   end
 
+  class EXIFResult < SimpleDelegator
+    def rotated?
+      ROTATED_ORIENTATIONS.include?(orientation)
+    end
+
+    def to_json(*maybe_coder)
+      __getobj__.to_hash.to_json(*maybe_coder)
+    end
+
+    def orientation
+      value = __getobj__.orientation.to_i
+      ORIENTATIONS.fetch(value - 1)
+    end
+  end
+
   # Squash exifr's invalid date warning since we do not use that data.
-  logger = Logger.new(nil)
-  EXIFR.logger = logger
+  EXIFR.logger = Logger.new(nil)
 
-  attr_accessor :exif_data, :orientation, :width, :height
-
-  ORIENTATIONS = [
-    :top_left,
-    :top_right,
-    :bottom_right,
-    :bottom_left,
-    :left_top,
-    :right_top,
-    :right_bottom,
-    :left_bottom
-  ]
-
-  def initialize(io_blob_with_exif_data)
-    @exif_io = IOExt.new(io_blob_with_exif_data)
-    @exif_data = nil
-    @orientation = nil
-    @height = nil
-    @width = nil
-  end
-
-  def scan_image_tiff
-    raw_exif_data = EXIFR::TIFF.new(@exif_io)
-    # For things that we don't yet have a parser for
-    # we make the raw exif result available
-    @exif_data = raw_exif_data
-    @orientation = orientation_parser(raw_exif_data)
-    @width = @exif_data.width
-    @height = @exif_data.height
-  end
-
-  def orientation_parser(raw_exif_data)
-    value = raw_exif_data.orientation.to_i
-    @orientation = ORIENTATIONS[value - 1] if valid_orientation?(value)
-  end
-
-  def valid_orientation?(value)
-    (1..ORIENTATIONS.length).include?(value)
+  def exif_from_tiff_io(constrained_io)
+    raw_exif_data = EXIFR::TIFF.new(IOExt.new(constrained_io))
+    raw_exif_data ? EXIFResult.new(raw_exif_data) : nil
   end
 end

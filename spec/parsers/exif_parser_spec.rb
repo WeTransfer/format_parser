@@ -1,17 +1,19 @@
 require 'spec_helper'
 
 describe FormatParser::EXIFParser do
+  let(:subject) do
+    Object.new.tap { |o| o.extend FormatParser::EXIFParser }
+  end
+
   describe 'is able to correctly parse orientation for all the TIFF EXIF examples from FastImage' do
     Dir.glob(fixtures_dir + '/exif-orientation-testimages/tiff-*/*.tif').each do |tiff_path|
       filename = File.basename(tiff_path)
       it "is able to parse #{filename}" do
-        parser = FormatParser::EXIFParser.new(File.open(tiff_path, 'rb'))
-        parser.scan_image_tiff
-        expect(parser).not_to be_nil
-
-        expect(parser.orientation).to be_kind_of(Symbol)
+        result = subject.exif_from_tiff_io(File.open(tiff_path, 'rb'))
+        expect(result).not_to be_nil
+        expect(result.orientation).to be_kind_of(Symbol)
         # Filenames in this dir correspond with the orientation of the file
-        expect(filename.include?(parser.orientation.to_s)).to be true
+        expect(filename).to include(result.orientation.to_s)
       end
     end
   end

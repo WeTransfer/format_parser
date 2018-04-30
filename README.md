@@ -41,8 +41,8 @@ Pass an IO object that responds to `read` and `seek` to `FormatParser` and the f
 match = FormatParser.parse(File.open("myimage.jpg", "rb"))
 match.nature        #=> :image
 match.format        #=> :jpg
-match.width_px      #=> 320
-match.height_px     #=> 240
+match.display_width_px      #=> 320
+match.display_height_px     #=> 240
 match.orientation   #=> :top_left
 ```
 
@@ -121,6 +121,9 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 
 ### FDX
 - fixture.fdx was created by one of the project maintainers and is MIT licensed
+
+### DPX
+- DPX files were created by one of the project maintainers and may be used with the library for the purposes of testing
 
 ### MOOV
 - bmff.mp4 is borrowed from the [bmff](https://github.com/zuku/bmff) project

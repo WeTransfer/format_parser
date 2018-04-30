@@ -15,6 +15,24 @@ module FormatParser
     # Number of pixels vertically in the pixel buffer
     attr_accessor :height_px
 
+    # Image width when displayed and taking into account things like camera
+    # orientation tags and non-square pixels/anamorphicity. The dimensions
+    # used for display are always computed by _squashing_, not by _stretching_.
+    #
+    # If the display width/height are not specified, the sizes of the
+    # pixel buffer will get returned instead (values of the `width_px`/`height_px`
+    # attributes)
+    attr_accessor :display_width_px
+
+    # Image height when displayed and taking into account things like camera
+    # orientation tags and non-square pixels/anamorphicity. The dimensions
+    # used for display are always computed by _squashing_, not by _stretching_.
+    #
+    # If the display width/height are not specified, the sizes of the
+    # pixel buffer will get returned instead (values of the `width_px`/`height_px`
+    # attributes)
+    attr_accessor :display_height_px
+
     # Whether the file has multiple frames (relevant for image files and video)
     attr_accessor :has_multiple_frames
 
@@ -49,6 +67,8 @@ module FormatParser
     # Only permits assignments via defined accessors
     def initialize(**attributes)
       attributes.map { |(k, v)| public_send("#{k}=", v) }
+      @display_width_px ||= @width_px
+      @display_height_px ||= @height_px
     end
 
     def nature
