@@ -41,8 +41,8 @@ Pass an IO object that responds to `read` and `seek` to `FormatParser` and the f
 match = FormatParser.parse(File.open("myimage.jpg", "rb"))
 match.nature        #=> :image
 match.format        #=> :jpg
-match.width_px      #=> 320
-match.height_px     #=> 240
+match.display_width_px      #=> 320
+match.display_height_px     #=> 240
 match.orientation   #=> :top_left
 ```
 
