@@ -109,7 +109,6 @@ describe FormatParser::JPEGParser do
     # https://github.com/sdsykes/fastimage/issues/102
     pic_path = fixtures_dir + '/JPEG/orient_6.jpg'
     result = subject.call(File.open(pic_path, 'rb'))
-    raise result.inspect
     expect(result).not_to be_nil
     expect(result.width_px).to eq(2500)
     expect(result.display_width_px).to eq(1250) # The image is actually rotated
