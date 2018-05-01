@@ -17,6 +17,7 @@ class FormatParser::JPEGParser
     @buf = FormatParser::IOConstraint.new(io)
     @width             = nil
     @height            = nil
+    @exif_data         = nil
     scan
   end
 
@@ -119,6 +120,7 @@ class FormatParser::JPEGParser
     # the second time around. What we care about, rather, is the EXIF data only. So we will
     # pry it out of the APP1 frame and parse it as the TIFF segment - which is what EXIFR
     # does under the hood.
+    marker_length_at = @buf.pos
     app1_frame_content_length = read_short - 2
 
     # If there is certainly not enough data in this APP1 to begin with, bail out.
@@ -132,10 +134,7 @@ class FormatParser::JPEGParser
 
     # If we could not find the magic Exif\0 string at the start of the marker,
     # seek to the start of the next marker and return
-    unless maybe_exif_magic_str == EXIF_MAGIC_STRING
-      safe_skip(@buf, app1_frame_content_length - EXIF_MAGIC_STRING.bytesize)
-      return
-    end
+    return unless maybe_exif_magic_str == EXIF_MAGIC_STRING
 
     # ...and only then read the marker contents and parse it as EXIF
     exif_data = safe_read(@buf, app1_frame_content_length - EXIF_MAGIC_STRING.bytesize)
@@ -146,6 +145,10 @@ class FormatParser::JPEGParser
   rescue EXIFR::MalformedTIFF
     # Not a JPEG or the Exif headers contain invalid data, or
     # an APP1 marker was detected in a file that is not a JPEG
+  ensure
+    # Reposition the file pointer to where the next marker will begin,
+    # regardless whether we did find usable EXIF or not
+    @buf.seek(marker_length_at + 2 + app1_frame_content_length)
   end
 
   def read_frame
