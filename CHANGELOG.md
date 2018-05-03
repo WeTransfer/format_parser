@@ -1,5 +1,5 @@
-## Unreleased
-* Add support for Ruby 2.2.0
+## 0.12.1
+* Reinstate support for Ruby 2.2.0
 * Fix support for JRuby 9.0
 
 ## 0.12.0
