@@ -40,7 +40,7 @@ class FormatParser::ZIPParser
 
   def decode_filename(filename, likely_unicode:)
     filename.force_encoding(Encoding::UTF_8) if likely_unicode
-    filename.encode(Encoding::UTF_8, undefined: :replace, replace: UNICODE_REPLACEMENT_CHAR)
+    filename.encode(Encoding::UTF_8, undef: :replace, replace: UNICODE_REPLACEMENT_CHAR)
   end
 
   def decode_filename_of(zip_entry)

@@ -70,9 +70,9 @@ class FormatParser::JPEGParser
         format: :jpg,
         width_px: @width,
         height_px: @height,
-        display_width_px: @exif_data&.rotated? ? @height : @width,
-        display_height_px: @exif_data&.rotated? ? @width : @height,
-        orientation: @exif_data&.orientation,
+        display_width_px: @exif_data && @exif_data.rotated? ? @height : @width,
+        display_height_px: @exif_data && @exif_data.rotated? ? @width : @height,
+        orientation: @exif_data && @exif_data.orientation,
         intrinsics: {exif: @exif_data},
       )
 
