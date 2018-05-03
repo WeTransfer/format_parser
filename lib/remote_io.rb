@@ -4,14 +4,23 @@
 # tweaks using `Faraday.default_connection = ...` these will
 # take effect for these RemoteIO objects as well
 class FormatParser::RemoteIO
+  class UpstreamError < StandardError
+    # @return Integer
+    attr_reader :status_code
+    def initialize(status_code, message)
+      @status_code = status_code
+      super(message)
+    end
+  end
+
   # Represents a failure that might be retried
   # (like a 5xx response or a timeout)
-  class IntermittentFailure < StandardError
+  class IntermittentFailure < UpstreamError
   end
 
   # Represents a failure that should not be retried
   # (like a 4xx response or a DNS resolution error)
-  class InvalidRequest < StandardError
+  class InvalidRequest < UpstreamError
   end
 
   # @param uri[URI, String] the remote URL to obtain
@@ -76,7 +85,7 @@ class FormatParser::RemoteIO
       # Figure out of the server supports content ranges, if it doesn't we have no
       # business working with that server
       range_header = response.headers['Content-Range']
-      raise InvalidRequest, "No range support at #{@uri}" unless range_header
+      raise InvalidRequest.new(response.status, "No range support at #{@uri}") unless range_header
 
       # "Content-Range: bytes 0-0/307404381" is how the response header is structured
       size = range_header[/\/(\d+)$/, 1].to_i
@@ -95,10 +104,10 @@ class FormatParser::RemoteIO
       return
     when 500..599
       FormatParser::Measurometer.increment_counter('format_parser.RemoteIO.upstream50x_errors', 1)
-      raise IntermittentFailure, "Server at #{@uri} replied with a #{response.status} and we might want to retry"
+      raise IntermittentFailure.new(response.status, "Server at #{@uri} replied with a #{response.status} and we might want to retry")
     else
       FormatParser::Measurometer.increment_counter('format_parser.RemoteIO.invalid_request_errors', 1)
-      raise InvalidRequest, "Server at #{@uri} replied with a #{response.status} and refused our request"
+      raise InvalidRequest.new(response.status, "Server at #{@uri} replied with a #{response.status} and refused our request")
     end
   end
 end

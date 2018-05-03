@@ -1,3 +1,6 @@
+## 0.12.0
+* Relay upstream status from `RemoteIO` in the `status_code` attribute (returns an `Integer`)
+
 ## 0.11.0
 * Add `Image#display_width_px` and `Image#display_height_px` for EXIF/aspect corrected display dimensions, and provide
   those values from a few parsers already. Also make full EXIF data available for JPEG/TIFF in `intrinsics[:exif]`
