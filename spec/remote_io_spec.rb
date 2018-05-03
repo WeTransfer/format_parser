@@ -35,6 +35,27 @@ describe FormatParser::RemoteIO do
     expect { rio.read(100) }.to raise_error(/replied with a 403 and refused/)
   end
 
+  it 'returns nil on a 416 response' do
+    rio = described_class.new('https://images.invalid/img.jpg')
+
+    fake_resp = double(headers: {}, status: 416, body: 'You stepped off the ledge of the range')
+    expect(Faraday).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=100-199').and_return(fake_resp)
+
+    rio.seek(100)
+    expect(rio.read(100)).to be_nil
+  end
+
+  it 'sets the status_code of the exception on a 4xx response from upstream' do
+    rio = described_class.new('https://images.invalid/img.jpg')
+
+    fake_resp = double(headers: {}, status: 403, body: 'Please log in')
+    expect(Faraday).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=100-199').and_return(fake_resp)
+
+    rio.seek(100)
+    # rubocop: disable Lint/AmbiguousBlockAssociation
+    expect { rio.read(100) }.to raise_error { |e| expect(e.status_code).to eq(403) }
+  end
+
   it 'returns a nil when the range cannot be satisfied and the response is 416' do
     rio = described_class.new('https://images.invalid/img.jpg')
 
