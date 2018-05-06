@@ -1,3 +1,8 @@
+## 0.12.2
+* Make sure the `VERSION` constant is available in the loaded gem. Previously the constant would be made
+  available by Bundler when developing the library - since it loads the `.gemspec` which, in turn, requires the
+  version.rb file, but when used as a gem the version.rb file would not end up being loaded.
+
 ## 0.12.1
 * Reinstate support for Ruby 2.2.0
 * Fix support for JRuby 9.0

@@ -3,6 +3,7 @@ require 'set'
 # A pretty nimble module for parsing file metadata using partial reads. Contains all the
 # top-level methods of the library.
 module FormatParser
+  require_relative 'format_parser/version'
   require_relative 'attributes_json'
   require_relative 'image'
   require_relative 'audio'

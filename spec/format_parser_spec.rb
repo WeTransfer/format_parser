@@ -1,6 +1,10 @@
 require 'spec_helper'
 
 describe FormatParser do
+  it 'exposes VERSION' do
+    expect(FormatParser::VERSION).to be_kind_of(String)
+  end
+
   describe '.parse' do
     it 'returns nil when trying to parse an empty IO' do
       d = StringIO.new('')
