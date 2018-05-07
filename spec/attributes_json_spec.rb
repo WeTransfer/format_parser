@@ -103,7 +103,7 @@ describe FormatParser::AttributesJSON do
       id: 'TIT2',
       size: 37,
       flags: "\x00\x00",
-      struct: Struct.new(:key).new("Value"),
+      struct: Struct.new(:key).new('Value'),
       content: "\x01\xFF\xFEb\x00i\x00r\x00d\x00s\x00 \x005\x00 \x00m\x00o\x00r\x00e\x00 \x00c\x00o\x00m\x00p\x00".b
     }
     expect {
@@ -118,7 +118,7 @@ describe FormatParser::AttributesJSON do
 
     parsed_output = JSON.parse(output, symbolize_names: true)
 
-    expect(parsed_output[:evil][:struct]).to eq({:key=>"Value"})
+    expect(parsed_output[:evil][:struct]).to eq(key: 'Value')
     expect(parsed_output[:evil][:id]).to eq('TIT2')
     expect(parsed_output[:evil][:flags]).to be_kind_of(String)
   end
