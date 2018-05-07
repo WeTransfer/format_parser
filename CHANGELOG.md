@@ -1,3 +1,6 @@
+## Unreleased
+* Add support for the Ogg format
+
 ## 0.13.2
 * Handle BMP files with pixel array offsets larger than 54
 
