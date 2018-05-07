@@ -82,7 +82,6 @@ describe FormatParser::ZIPParser do
     expect(json_parsed_repr[:format]).to eq('zip')
     expect(json_parsed_repr[:entries]).to be_kind_of(Array)
     expect(json_parsed_repr[:entries].length).to eq(3)
-
     json_parsed_repr[:entries].each do |e|
       expect(e[:filename]).to be_kind_of(String)
       expect(e[:size]).to be_kind_of(Integer)

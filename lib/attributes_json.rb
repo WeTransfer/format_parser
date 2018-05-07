@@ -52,8 +52,10 @@ module FormatParser::AttributesJSON
       value.encode(Encoding::UTF_8, undef: :replace, replace: UNICODE_REPLACEMENT_CHAR)
     when Hash
       Hash[value.map { |k, v| [_sanitize_json_value(k, nesting + 1), _sanitize_json_value(v, nesting + 1)] }]
-    when Array, Enumerable
+    when Array
       value.map { |v| _sanitize_json_value(v, nesting + 1) }
+    when Struct
+      _sanitize_json_value(value.to_h, nesting + 1)
     else
       value
     end
