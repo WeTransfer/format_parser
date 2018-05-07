@@ -1,8 +1,8 @@
 require 'ks'
+require 'id3tag'
 
 class FormatParser::MP3Parser
-  require_relative 'mp3_parser/id3_v1'
-  require_relative 'mp3_parser/id3_v2'
+  require_relative 'mp3_parser/id3_extraction'
 
   class MPEGFrame < Ks.strict(:offset_in_file, :mpeg_id, :channels, :sample_rate, :frame_length, :frame_bitrate)
   end
@@ -26,21 +26,50 @@ class FormatParser::MP3Parser
   # For some edge cases
   ZIP_LOCAL_ENTRY_SIGNATURE = "PK\x03\x04\x14\x00".b
 
-  def call(io)
+  # Wraps the Tag object returned by ID3Tag in such
+  # a way that a usable JSON representation gets
+  # returned
+  class TagWrapper < SimpleDelegator
+    include FormatParser::AttributesJSON
+
+    MEMBERS = [:artist, :title, :album, :year, :track_nr, :genre, :comments, :unsychronized_transcription]
+
+    def self.new(wrapped)
+      wrapped ? super : nil
+    end
+
+    def to_h
+      tag = __getobj__
+      MEMBERS.each_with_object({}) do |k, h|
+        # ID3Tag sometimes raises when trying to find an unknown genre.
+        # If this guard is removed, it fails when trying to do a gsub on a nil,
+        # in /lib/id3tag/frames/v2/genre_frame/genre_parser_pre_24.rb:25:in `just_genres'
+        value = tag.public_send(k) rescue nil
+        h[k] = value if value
+      end
+    end
+
+    def as_json(*)
+      to_h
+    end
+  end
+
+  def call(raw_io)
+    io = FormatParser::IOConstraint.new(raw_io)
+
     # Special case: some ZIPs (Office documents) did detect as MP3s.
     # To avoid having that happen, we check for the PKZIP signature -
     # local entry header signature - at the very start of the file
     return if io.read(6) == ZIP_LOCAL_ENTRY_SIGNATURE
     io.seek(0)
 
-    # Read the last 128 bytes which might contain ID3v1
-    id3_v1 = ID3V1.attempt_id3_v1_extraction(io)
-    # Read the header bytes that might contain ID3v1
-    id3_v2 = ID3V2.attempt_id3_v2_extraction(io)
+    # Read all the ID3 tags (or at least attempt to)
+    id3v1 = ID3Extraction.attempt_id3_v1_extraction(io)
+    tags = [id3v1, ID3Extraction.attempt_id3_v2_extraction(io)].compact
 
     # Compute how many bytes are occupied by the actual MPEG frames
-    ignore_bytes_at_tail = id3_v1 ? 128 : 0
-    ignore_bytes_at_head = id3_v2 ? io.pos : 0
+    ignore_bytes_at_tail = id3v1 ? 128 : 0
+    ignore_bytes_at_head = io.pos
     bytes_used_by_frames = io.size - ignore_bytes_at_tail - ignore_bytes_at_tail
 
     io.seek(ignore_bytes_at_head)
@@ -53,17 +82,12 @@ class FormatParser::MP3Parser
 
     file_info = FormatParser::Audio.new(
       format: :mp3,
-      num_audio_channels: first_frame.channels,
-      audio_sample_rate_hz: first_frame.sample_rate,
       # media_duration_frames is omitted because the frames
       # in MPEG are not the same thing as in a movie file - they
       # do not tell anything of substance
-      intrinsics: {
-        id3_v1: id3_v1 ? id3_v1.to_h : nil,
-        id3_v2: id3_v2 ? id3_v2.map(&:to_h) : nil,
-        xing_header: maybe_xing_header.to_h,
-        initial_frames: initial_frames.map(&:to_h)
-      }
+      num_audio_channels: first_frame.channels,
+      audio_sample_rate_hz: first_frame.sample_rate,
+      intrinsics: blend_id3_tags_into_hash(*tags).merge(id3tags: tags)
     )
 
     if maybe_xing_header
@@ -242,6 +266,12 @@ class FormatParser::MP3Parser
     keys.inject(from) { |receiver, key_or_idx| receiver.fetch(key_or_idx) }
   rescue IndexError, NoMethodError
     raise InvalidDeepFetch, "Could not retrieve #{keys.inspect} from #{from.inspect}"
+  end
+
+  def blend_id3_tags_into_hash(*tags)
+    tags.each_with_object({}) do |tag, h|
+      h.merge!(TagWrapper.new(tag).to_h)
+    end
   end
 
   FormatParser.register_parser self, natures: :audio, formats: :mp3
