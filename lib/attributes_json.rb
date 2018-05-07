@@ -12,7 +12,7 @@
 #   the_foo.as_json #=> {:number_of_bars => 42}
 module FormatParser::AttributesJSON
   UNICODE_REPLACEMENT_CHAR = [0xFFFD].pack('U')
-  MAXIMUM_JSON_NESTING_WHEN_SANITIZING = 512
+  MAXIMUM_JSON_NESTING_WHEN_SANITIZING = 256
 
   # Implements a sane default `as_json` for an object
   # that accessors defined

@@ -122,4 +122,22 @@ describe FormatParser::AttributesJSON do
     expect(parsed_output[:evil][:id]).to eq('TIT2')
     expect(parsed_output[:evil][:flags]).to be_kind_of(String)
   end
+
+  it 'prevents traversals of data structures which are too deep with an exception' do
+    fractal_hash = {}
+    current = fractal_hash
+    1024.times do
+      current[:leaf] = {}
+      current = current[:leaf]
+    end
+
+    anon_class = Struct.new(:evil)
+    anon_class.include FormatParser::AttributesJSON
+
+    object_with_attributes_module = anon_class.new(fractal_hash)
+
+    expect {
+      JSON.pretty_generate(object_with_attributes_module)
+    }.to raise_error(/structure too deep/)
+  end
 end
