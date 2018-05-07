@@ -11,7 +11,6 @@
 #   the_foo.number_of_bars = 42
 #   the_foo.as_json #=> {:number_of_bars => 42}
 module FormatParser::AttributesJSON
-  UNICODE_REPLACEMENT_CHAR = [0xFFFD].pack('U')
   MAXIMUM_JSON_NESTING_WHEN_SANITIZING = 256
 
   # Implements a sane default `as_json` for an object
@@ -49,7 +48,7 @@ module FormatParser::AttributesJSON
     when Float::INFINITY
       nil
     when String
-      value.encode(Encoding::UTF_8, undef: :replace, replace: UNICODE_REPLACEMENT_CHAR)
+      FormatParser.string_to_lossy_utf8(value)
     when Hash
       Hash[value.map { |k, v| [_sanitize_json_value(k, nesting + 1), _sanitize_json_value(v, nesting + 1)] }]
     when Array

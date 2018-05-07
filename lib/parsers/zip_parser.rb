@@ -1,5 +1,4 @@
 class FormatParser::ZIPParser
-  UNICODE_REPLACEMENT_CHAR = [0xFFFD].pack('U')
   require_relative 'zip_parser/file_reader'
   require_relative 'zip_parser/office_formats'
 
@@ -40,7 +39,7 @@ class FormatParser::ZIPParser
 
   def decode_filename(filename, likely_unicode:)
     filename.force_encoding(Encoding::UTF_8) if likely_unicode
-    filename.encode(Encoding::UTF_8, undef: :replace, replace: UNICODE_REPLACEMENT_CHAR)
+    FormatParser.string_to_lossy_utf8(filename)
   end
 
   def decode_filename_of(zip_entry)
