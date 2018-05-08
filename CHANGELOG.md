@@ -1,3 +1,6 @@
+## 0.12.3
+* Make sure all strings going to the JSON representations of parse results are encoded as UTF-8 or escaped
+
 ## 0.12.2
 * Make sure the `VERSION` constant is available in the loaded gem. Previously the constant would be made
   available by Bundler when developing the library - since it loads the `.gemspec` which, in turn, requires the
