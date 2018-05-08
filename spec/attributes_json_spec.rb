@@ -97,4 +97,47 @@ describe FormatParser::AttributesJSON do
 
     expect(readback).to have_key(:nature)
   end
+
+  it 'converts purely-binary String objects deeply nested in the struct to escapes and question marks' do
+    nasty_hash = {
+      id: 'TIT2',
+      size: 37,
+      flags: "\x00\x00",
+      struct: Struct.new(:key).new('Value'),
+      content: "\x01\xFF\xFEb\x00i\x00r\x00d\x00s\x00 \x005\x00 \x00m\x00o\x00r\x00e\x00 \x00c\x00o\x00m\x00p\x00".b
+    }
+    expect {
+      JSON.pretty_generate(nasty_hash) # Should not raise an error
+    }.to raise_error(Encoding::UndefinedConversionError)
+
+    anon_class = Struct.new(:evil)
+    anon_class.include FormatParser::AttributesJSON
+
+    object_with_attributes_module = anon_class.new(nasty_hash)
+    output = JSON.pretty_generate(object_with_attributes_module)
+
+    parsed_output = JSON.parse(output, symbolize_names: true)
+
+    expect(parsed_output[:evil][:struct]).to eq(key: 'Value')
+    expect(parsed_output[:evil][:id]).to eq('TIT2')
+    expect(parsed_output[:evil][:flags]).to be_kind_of(String)
+  end
+
+  it 'prevents traversals of data structures which are too deep with an exception' do
+    fractal_hash = {}
+    current = fractal_hash
+    1024.times do
+      current[:leaf] = {}
+      current = current[:leaf]
+    end
+
+    anon_class = Struct.new(:evil)
+    anon_class.include FormatParser::AttributesJSON
+
+    object_with_attributes_module = anon_class.new(fractal_hash)
+
+    expect {
+      JSON.pretty_generate(object_with_attributes_module)
+    }.to raise_error(/structure too deep/)
+  end
 end
