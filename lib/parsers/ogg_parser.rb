@@ -1,6 +1,9 @@
 # https://xiph.org/vorbis/doc/Vorbis_I_spec.pdf
 # https://en.wikipedia.org/wiki/Ogg#Page_structure
 class FormatParser::OggParser
+  # The maximum size of an Ogg page is 65,307 bytes.
+  MAX_POSSIBLE_PAGE_SIZE = 65307
+
   def call(io)
     # The format consists of chunks of data each called an "Ogg page". Each page
     # begins with the characters, "OggS", to identify the file as Ogg format.
@@ -12,40 +15,18 @@ class FormatParser::OggParser
     # Each header packet begins with the same header fields.
     #   1) packet_type: 8 bit value (the identification header is type 1)
     #   2) the characters v','o','r','b','i','s' as six octets
-    packet_type, vorbis = io.read(7).unpack('Ca6')
+    packet_type, vorbis, _vorbis_version, channels, sample_rate = io.read(16).unpack('Ca6LCL')
     return unless packet_type == 1 && vorbis == 'vorbis'
 
-    _vorbis_version, channels, sample_rate = io.read(9).unpack('LCL')
+    # Read the last page of the audio in order to calculate the duration.
+    pos = io.size - MAX_POSSIBLE_PAGE_SIZE
+    pos = 0 if pos < 0
+    io.seek(pos)
+    page = io.read(MAX_POSSIBLE_PAGE_SIZE)
+    pos_of_the_last_page = page.rindex('OggS')
+    header = page[pos_of_the_last_page..pos_of_the_last_page + 13]
 
-    # granule_position of the last page is required to calculate the duration.
-    io.seek(0)
-    granule_position = 0
-
-    loop do
-      chunk = io.read(27)
-
-      _capture_pattern,
-      _version,
-      _header_type,
-      granule_position,
-      _bitstream_serial_number,
-      _page_sequence_number,
-      _checksum,
-      page_segments = chunk.unpack('a4CCQVVVC')
-
-      # page_segments is the number of segments the page contains. It is also
-      # the size of the segment_table in bytes.
-
-      segment_table = io.read(page_segments).unpack('C*')
-
-      # segment_table is a vector of 8-bit values, each indicating the
-      # length of the corresponding segment within the page body.
-
-      page_body_size = segment_table.inject(:+)
-      io.seek(io.pos + page_body_size)
-
-      break if io.pos == io.size
-    end
+    _capture_pattern, _version, _header_type, granule_position = header.unpack('a4CCQ')
 
     duration = granule_position / sample_rate.to_f
 
