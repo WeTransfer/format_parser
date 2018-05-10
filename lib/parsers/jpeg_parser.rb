@@ -42,12 +42,6 @@ class FormatParser::JPEGParser
 
     markers_start_at = @buf.pos
 
-    # Keynote files start with a series of _perfectly_ valid
-    # JPEG markers, probably for icon previews or QuickLook.
-    # We have to detect those and reject them earlier. We can
-    # make use of our magic ZIP reader to get there.
-    return if probably_keynote_zip?
-
     @buf.seek(markers_start_at)
 
     while marker = read_next_marker
@@ -163,11 +157,6 @@ class FormatParser::JPEGParser
   def skip_frame
     length = read_short - 2
     safe_skip(@buf, length)
-  end
-
-  def probably_keynote_zip?
-    reader = FormatParser::ZIPParser::FileReader.new
-    reader.zip?(@buf)
   end
 
   FormatParser.register_parser self, natures: :image, formats: :jpg

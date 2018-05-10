@@ -98,18 +98,4 @@ describe FormatParser::ZIPParser do
     expect(first_entry.filename).to eq('Li��nia Extreme//')
     expect(first_entry.type).to eq(:directory)
   end
-
-  describe 'FileReader#zip?' do
-    it 'correctly detects all the ZIP files as such' do
-      reader = described_class::FileReader.new
-      Dir.glob(fixtures_dir + '/ZIP/*.zip').each do |path|
-        expect(reader).to be_zip(File.open(path, 'rb'))
-      end
-
-      4.times do
-        blob = Random.new.bytes(1024)
-        expect(reader).not_to be_zip(StringIO.new(blob))
-      end
-    end
-  end
 end
