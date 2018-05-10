@@ -1,3 +1,7 @@
+## 0.13.0
+* Replace the homegrown ID3 parser with [id3tag](https://github.com/krists/id3tag) - this introduces id3tag
+  as a dependency in addition to `exifr`, but the gains are substantial.
+
 ## 0.12.4
 * Ensure JPEG recognition only runs when the JPEG SOI marker is detected **at the start** of file. Previously
   the JPEG parser would scan for the marker, sometimes finding it (appropriately) in places like... MP3 album
