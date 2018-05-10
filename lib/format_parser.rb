@@ -243,6 +243,11 @@ module FormatParser
     end
   end
 
+  def self.string_to_lossy_utf8(str)
+    replacement_char = [0xFFFD].pack('U')
+    str.encode(Encoding::UTF_8, undef: :replace, replace: replacement_char)
+  end
+
   Dir.glob(__dir__ + '/parsers/*.rb').sort.each do |parser_file|
     require parser_file
   end

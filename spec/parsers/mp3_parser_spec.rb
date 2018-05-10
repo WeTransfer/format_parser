@@ -29,6 +29,24 @@ describe FormatParser::MP3Parser do
     expect(parsed.media_duration_seconds).to be_within(0.1).of(0.81)
   end
 
+  it 'does not attempt to read ID3V2 tags that are too large' do
+    more_bytes_than_permitted = 3 * 1024 * 1024
+    gunk = Random.new.bytes(more_bytes_than_permitted)
+
+    large_syncsfe_size = [ID3Tag::SynchsafeInteger.encode(more_bytes_than_permitted)].pack('N')
+    prepped = StringIO.new(
+      'ID3' + "\x43\x00".b + "\x00".b + large_syncsfe_size + gunk
+    )
+
+    expect(ID3Tag).not_to receive(:read)
+
+    prepped.seek(0)
+    result = FormatParser::MP3Parser::ID3Extraction.attempt_id3_v2_extraction(prepped)
+
+    expect(result).to be_nil
+    expect(prepped.pos).to eq(3145738)
+  end
+
   it 'parses the Cassy MP3' do
     fpath = fixtures_dir + '/MP3/Cassy.mp3'
     parsed = subject.call(File.open(fpath, 'rb'))
@@ -39,10 +57,21 @@ describe FormatParser::MP3Parser do
     expect(parsed.format).to eq(:mp3)
     expect(parsed.num_audio_channels).to eq(2)
     expect(parsed.audio_sample_rate_hz).to eq(44100)
-    expect(parsed.intrinsics).not_to be_nil
     expect(parsed.media_duration_seconds).to be_within(0.1).of(1102.46)
 
     expect(parsed.intrinsics).not_to be_nil
+
+    i = parsed.intrinsics
+    expect(i[:artist]).to eq('WeTransfer Studios/GIlles Peterson')
+    expect(i[:title]).to eq('Cassy')
+    expect(i[:album]).to eq('The Psychology of DJing')
+    expect(i[:comments]).to eq('0')
+    expect(i[:id3tags]).not_to be_nil
+
+    expect(parsed.intrinsics).not_to be_nil
+
+    # Make sure we are good with our JSON representation as well
+    JSON.pretty_generate(parsed)
   end
 
   it 'avoids returning a result when the parsed duration is infinite' do
