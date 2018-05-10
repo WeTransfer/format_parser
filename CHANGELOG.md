@@ -1,3 +1,4 @@
+## 0.12.4
 * Ensure JPEG recognition only runs when the JPEG SOI marker is detected **at the start** of file. Previously
   the JPEG parser would scan for the marker, sometimes finding it (appropriately) in places like... MP3 album
   artwork inside ID3 tags. Or Keynote documents. Or whatnot - lots of things have JPEG thumbnails embedded.
