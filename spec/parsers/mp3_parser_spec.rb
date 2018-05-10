@@ -29,6 +29,24 @@ describe FormatParser::MP3Parser do
     expect(parsed.media_duration_seconds).to be_within(0.1).of(0.81)
   end
 
+  it 'does not attempt to read ID3V2 tags that are too large' do
+    more_bytes_than_permitted = 3 * 1024 * 1024
+    gunk = Random.new.bytes(more_bytes_than_permitted)
+
+    large_syncsfe_size = [ID3Tag::SynchsafeInteger.encode(more_bytes_than_permitted)].pack('N')
+    prepped = StringIO.new(
+      'ID3' + "\x43\x00".b + "\x00".b + large_syncsfe_size + gunk
+    )
+
+    expect(ID3Tag).not_to receive(:read)
+
+    prepped.seek(0)
+    result = FormatParser::MP3Parser::ID3Extraction.attempt_id3_v2_extraction(prepped)
+
+    expect(result).to be_nil
+    expect(prepped.pos).to eq(3145738)
+  end
+
   it 'parses the Cassy MP3' do
     fpath = fixtures_dir + '/MP3/Cassy.mp3'
     parsed = subject.call(File.open(fpath, 'rb'))

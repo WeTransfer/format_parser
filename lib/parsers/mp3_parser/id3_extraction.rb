@@ -1,6 +1,8 @@
 module FormatParser::MP3Parser::ID3Extraction
   ID3V1_TAG_SIZE_BYTES = 128
   ID3V2_TAG_VERSIONS = ["\x43\x00".b, "\x03\x00".b, "\x02\x00".b]
+  MAX_SIZE_FOR_ID3V2 = 1 * 1024 * 1024
+
   extend FormatParser::IOUtils
 
   def attempt_id3_v1_extraction(io)
@@ -23,6 +25,18 @@ module FormatParser::MP3Parser::ID3Extraction
     return unless ID3V2_TAG_VERSIONS.include?(header[:version])
 
     id3_tag_size = io.pos + header[:size]
+
+    # Here we got to pay attention. The tag size encoded in
+    # the ID3 header is a 4-byte unsigned int. Meaning it
+    # can hold values up to 256 MB. We do not want to read
+    # that much since we are pulling that data into memory -
+    # and it would also make the parser easily exploitable.
+    # We will set a "hard" limit beyound which we will simply
+    # refuse to read those tags at all.
+    if id3_tag_size > MAX_SIZE_FOR_ID3V2
+      io.seek(id3_tag_size) # For reading the frames
+      return
+    end
 
     io.seek(0)
     blob = safe_read(io, id3_tag_size)
