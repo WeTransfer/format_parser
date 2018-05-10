@@ -69,6 +69,9 @@ describe FormatParser::MP3Parser do
     expect(i[:id3tags]).not_to be_nil
 
     expect(parsed.intrinsics).not_to be_nil
+
+    # Make sure we are good with our JSON representation as well
+    JSON.pretty_generate(parsed)
   end
 
   it 'avoids returning a result when the parsed duration is infinite' do
