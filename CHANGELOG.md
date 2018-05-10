@@ -1,3 +1,6 @@
+## 0.13.1
+* Avoid ZIP checks in the JPEG parser which are no longer necessary
+
 ## 0.13.0
 * Replace the homegrown ID3 parser with [id3tag](https://github.com/krists/id3tag) - this introduces id3tag
   as a dependency in addition to `exifr`, but the gains are substantial.
