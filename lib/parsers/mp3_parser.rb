@@ -44,7 +44,7 @@ class FormatParser::MP3Parser
         # ID3Tag sometimes raises when trying to find an unknown genre.
         # If this guard is removed, it fails when trying to do a gsub on a nil,
         # in /lib/id3tag/frames/v2/genre_frame/genre_parser_pre_24.rb:25:in `just_genres'
-        value = tag.public_send(k) rescue nil
+        value = tag.public_send(k)
         h[k] = value if value
       end
     end
