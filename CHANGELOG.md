@@ -1,3 +1,7 @@
+* Ensure JPEG recognition only runs when the JPEG SOI marker is detected **at the start** of file. Previously
+  the JPEG parser would scan for the marker, sometimes finding it (appropriately) in places like... MP3 album
+  artwork inside ID3 tags. Or Keynote documents. Or whatnot - lots of things have JPEG thumbnails embedded.
+
 ## 0.12.3
 * Make sure all strings going to the JSON representations of parse results are encoded as UTF-8 or escaped
 
