@@ -14,6 +14,13 @@ describe 'Parsing esoteric files and files causing ambiguous detection' do
     expect(result.nature).to eq(:archive)
   end
 
+  it 'does not pick up JPG album art within an MP3 as a JPEG file' do
+    jpeg_path = fixtures_dir + '/MP3/ATC Fixture With Album Art.mp3'
+    results = FormatParser.parse(File.open(jpeg_path, 'rb'), results: :all)
+    expect(results).to be_one
+    expect(results.first.nature).to eq(:audio)
+  end
+
   it 'returns a result for JPEG file that causes many reads due to too many APP1 markers' do
     jpeg_path = fixtures_dir + '/JPEG/too_many_APP1_markers_surrogate.jpg'
     result = FormatParser.parse(File.open(jpeg_path, 'rb'))

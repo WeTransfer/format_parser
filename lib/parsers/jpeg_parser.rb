@@ -5,7 +5,7 @@ class FormatParser::JPEGParser
   class InvalidStructure < StandardError
   end
 
-  SOI_MARKER = 0xD8 # start of image
+  JPEG_SOI_MARKER_HEAD = [0xFF, 0xD8].pack('C2')
   SOF_MARKERS = [0xC0..0xC3, 0xC5..0xC7, 0xC9..0xCB, 0xCD..0xCF]
   EOI_MARKER  = 0xD9  # end of image
   SOS_MARKER  = 0xDA  # start of stream
@@ -32,9 +32,13 @@ class FormatParser::JPEGParser
   end
 
   def scan
-    # Return early if it is not a JPEG at all
-    signature = read_next_marker
-    return unless signature == SOI_MARKER
+    # Most JPEG images start with the 0xFF0xD8 SOI marker.
+    # We _can_ search for that marker, but we will then
+    # ambiguously capture things like JPEGs embedded in ID3
+    # tags of MP3s - these _are_ JPEGs but we care much
+    # more about the top-level "wrapper" file, not about
+    # it's bits and bobs
+    return unless safe_read(@buf, 2) == JPEG_SOI_MARKER_HEAD
 
     markers_start_at = @buf.pos
 
