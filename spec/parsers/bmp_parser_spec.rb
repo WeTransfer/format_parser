@@ -36,4 +36,34 @@ describe FormatParser::BMPParser do
     expect(parsed.intrinsics[:horizontal_resolution]).to eq(2835)
     expect(parsed.intrinsics[:data_order]).to eq(:inverse)
   end
+
+  it 'parses a BMP where the pixel array location is other than 54' do
+    bmp_path = fixtures_dir + '/BMP/offset_pixarray.bmp'
+    parsed = subject.call(File.open(bmp_path, 'rb'))
+
+    expect(parsed).not_to be_nil
+    expect(parsed.nature).to eq(:image)
+    expect(parsed.format).to eq(:bmp)
+    expect(parsed.color_mode).to eq(:rgb)
+
+    expect(parsed.width_px).to eq(200)
+    expect(parsed.height_px).to eq(200)
+
+    expect(parsed.intrinsics).not_to be_nil
+  end
+
+  it 'refuses to parse a BMP where the pixel array location is very large' do
+    junk_data = [
+      'BM',
+      123,
+      123,
+      123,
+      0xFFFF
+    ].pack('A2Vv2V')
+    not_bmp = StringIO.new(junk_data + Random.new.bytes(1024))
+
+    parsed = subject.call(not_bmp)
+
+    expect(parsed).to be_nil
+  end
 end

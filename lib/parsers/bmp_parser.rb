@@ -4,14 +4,17 @@ class FormatParser::BMPParser
   include FormatParser::IOUtils
 
   VALID_BMP = 'BM'
-  PIXEL_ARRAY_OFFSET = 54
+  PERMISSIBLE_PIXEL_ARRAY_LOCATIONS = 40..512
 
   def call(io)
     io = FormatParser::IOConstraint.new(io)
 
-    magic_number, _file_size, _reserved1, _reserved2, dib_header_location = safe_read(io, 14).unpack('A2Vv2V')
+    magic_number, _file_size, _reserved1, _reserved2, pix_array_location = safe_read(io, 14).unpack('A2Vv2V')
     return unless VALID_BMP == magic_number
-    return unless dib_header_location == PIXEL_ARRAY_OFFSET
+
+    # The number that gets unpacked can be fairly large, but in practice this offset cannot be too big -
+    # the DIB image header won't be that big anyway/
+    return unless PERMISSIBLE_PIXEL_ARRAY_LOCATIONS.cover?(pix_array_location)
 
     dib_header = safe_read(io, 40)
 
