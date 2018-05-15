@@ -26,6 +26,9 @@ class FormatParser::OggParser
     io.seek(pos)
     page = io.read(MAX_POSSIBLE_PAGE_SIZE)
     pos_of_the_last_page = page.rindex('OggS')
+
+    return if pos_of_the_last_page.nil?
+
     header = page[pos_of_the_last_page..pos_of_the_last_page + 13]
 
     _capture_pattern, _version, _header_type, granule_position = header.unpack('a4CCQ')
