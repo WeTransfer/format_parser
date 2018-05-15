@@ -1,13 +1,15 @@
 # https://xiph.org/vorbis/doc/Vorbis_I_spec.pdf
 # https://en.wikipedia.org/wiki/Ogg#Page_structure
 class FormatParser::OggParser
+  include FormatParser::IOUtils
+
   # The maximum size of an Ogg page is 65,307 bytes.
   MAX_POSSIBLE_PAGE_SIZE = 65307
 
   def call(io)
     # The format consists of chunks of data each called an "Ogg page". Each page
     # begins with the characters, "OggS", to identify the file as Ogg format.
-    capture_pattern = io.read(4)
+    capture_pattern = safe_read(io, 4)
     return unless capture_pattern == 'OggS'
 
     io.seek(28) # skip not important bytes
@@ -15,7 +17,7 @@ class FormatParser::OggParser
     # Each header packet begins with the same header fields.
     #   1) packet_type: 8 bit value (the identification header is type 1)
     #   2) the characters v','o','r','b','i','s' as six octets
-    packet_type, vorbis, _vorbis_version, channels, sample_rate = io.read(16).unpack('Ca6LCL')
+    packet_type, vorbis, _vorbis_version, channels, sample_rate = safe_read(io, 16).unpack('Ca6LCL')
     return unless packet_type == 1 && vorbis == 'vorbis'
 
     # Read the last page of the audio in order to calculate the duration.
