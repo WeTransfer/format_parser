@@ -82,6 +82,7 @@ class FormatParser::OggParser
     # started from the end.)
     return if checksum != calculate_checksum(real_page)
 
+    # TODO: https://github.com/WeTransfer/format_parser/pull/116#discussion_r188232967
     duration = granule_position / sample_rate.to_f
 
     FormatParser::Audio.new(
