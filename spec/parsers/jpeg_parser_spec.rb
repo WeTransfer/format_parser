@@ -104,4 +104,20 @@ describe FormatParser::JPEGParser do
     result = subject.call(File.open(kitten_path, 'rb'))
     expect(result).not_to be_nil
   end
+
+  it 'assigns correct orientation to the picture that has mutliple APP1 markers with EXIF tags' do
+    # https://github.com/sdsykes/fastimage/issues/102
+    # This case is peculiar in that (from what I could find)
+    # it is not really _defined_ which EXIF comment in the file should be considered
+    # the only one to be used, or whether they have to be "union'd" together, or tags
+    # coming later in the file should overwrite tags that occur earlier. From what I
+    # can observe the dimensions we are recovering here are correct and the rotation
+    # is correctly detected, but I am not entirely sure how FastImage needs to play
+    # it in this case.
+    pic_path = fixtures_dir + '/JPEG/orient_6.jpg'
+    result = subject.call(File.open(pic_path, 'rb'))
+    expect(result).not_to be_nil
+    expect(result.width_px).to eq(2500)
+    expect(result.display_width_px).to eq(1250) # The image is actually rotated
+  end
 end
