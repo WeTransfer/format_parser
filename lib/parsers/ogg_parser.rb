@@ -20,20 +20,40 @@ class FormatParser::OggParser
     packet_type, vorbis, _vorbis_version, channels, sample_rate = safe_read(io, 16).unpack('Ca6LCL')
     return unless packet_type == 1 && vorbis == 'vorbis'
 
-    # In order to calculate the audio duration we have to read the last Ogg page
-    # of the file. Unfortunately, we don't know where it starts. But we do know
-    # that max size of an Ogg page is 65307 bytes. So we read the last 65307
-    # bytes from the file and try to find the last page in this tail.
+    # In order to calculate the audio duration we have to read a
+    # granule_position of the last Ogg page of the file. Unfortunately, we don't
+    # know where the last page starts. But we do know that max size of an Ogg
+    # page is 65307 bytes. So we read the last 65307 bytes from the file and try
+    # to find the last page in this tail.
     pos = io.size - MAX_POSSIBLE_PAGE_SIZE
     pos = 0 if pos < 0
     io.seek(pos)
     tail = io.read(MAX_POSSIBLE_PAGE_SIZE)
+    granule_position = find_granule_position(tail)
+    return if granule_position.nil?
 
+    # TODO: https://github.com/WeTransfer/format_parser/pull/116#discussion_r188232967
+    duration = granule_position / sample_rate.to_f
+
+    FormatParser::Audio.new(
+      format: :ogg,
+      audio_sample_rate_hz: sample_rate,
+      num_audio_channels: channels,
+      media_duration_seconds: duration
+    )
+  end
+
+  private
+
+  # Returns granule_position of the last valid Ogg page contained in the given
+  # tail. Since the tail may contain multiple "OggS" entries the method searches
+  # them recursively starting from the end. The search stops when the first
+  # valid Oggs page is found.
+  def find_granule_position(tail)
     # The Ogg page always starts with "OggS".
     pos_of_the_last_page = tail.rindex('OggS')
 
-    # Return if for some reason the file contains garbage at the end and doesn't
-    # contain the magic bits.
+    # Return if for some reason the tail doesn't contain the magic bits.
     return if pos_of_the_last_page.nil?
 
     # Since the magic bits may occur inside the body of the page we have to
@@ -45,7 +65,7 @@ class FormatParser::OggParser
     # Read the Ogg page header excluding the segment table (in other words read
     # first 27 bytes).
     header = tail[pos_of_the_last_page...pos_of_the_last_page + 27]
-    return if header.size < 27
+    return find_granule_position(tail[0...pos_of_the_last_page]) if header.size < 27
 
     _capture_pattern,
     _version,
@@ -62,7 +82,7 @@ class FormatParser::OggParser
     # of the corresponding segment within the page body.
     pos_of_the_segment_table = pos_of_the_last_page + 27
     segment_table = tail[pos_of_the_segment_table...pos_of_the_segment_table + page_segments]
-    return if segment_table.size < page_segments
+    return find_granule_position(tail[0...pos_of_the_last_page]) if segment_table.size < page_segments
 
     # Calculate the size of the Ogg page.
     segments_size = segment_table.unpack('C*').sum
@@ -70,30 +90,17 @@ class FormatParser::OggParser
 
     # Retrieve a page from the tail.
     page = tail[pos_of_the_last_page...pos_of_the_last_page + page_size]
-    return if page.size < page_size
+    return find_granule_position(tail[0...pos_of_the_last_page]) if page.size < page_size
 
     # Compare the checksum. If this check fails it means one of the two:
     #   - the data is corrupted
     #   - the "OggS" capture pattern occures inside the body of the page and is
     #     not actually a magic string. Just coincidence.
-    #
-    # TODO: Instead of returning we should keep searching for the rest of the
-    # occurances of the magic bits ("OggS") till the first one. (Note, we
-    # started from the end.)
-    return if checksum != calculate_checksum(page)
+    return find_granule_position(tail[0...pos_of_the_last_page]) if checksum != calculate_checksum(page)
 
-    # TODO: https://github.com/WeTransfer/format_parser/pull/116#discussion_r188232967
-    duration = granule_position / sample_rate.to_f
-
-    FormatParser::Audio.new(
-      format: :ogg,
-      audio_sample_rate_hz: sample_rate,
-      num_audio_channels: channels,
-      media_duration_seconds: duration
-    )
+    granule_position
   end
 
-  private
 
   # Copied from https://github.com/anibali/ruby-ogg
   #
