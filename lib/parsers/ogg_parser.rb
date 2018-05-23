@@ -85,7 +85,7 @@ class FormatParser::OggParser
     return find_granule_position(tail[0...pos_of_the_last_page]) if segment_table.size < page_segments
 
     # Calculate the size of the Ogg page.
-    segments_size = segment_table.unpack('C*').sum
+    segments_size = segment_table.unpack('C*').inject(&:+)
     page_size = 27 + page_segments + segments_size
 
     # Retrieve a page from the tail.
