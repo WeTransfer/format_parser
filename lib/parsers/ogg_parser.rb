@@ -69,8 +69,8 @@ class FormatParser::OggParser
     page_size = 27 + page_segments + segments_size
 
     # Retrieve a page from the tail.
-    real_page = tail[pos_of_the_last_page...pos_of_the_last_page + page_size]
-    return if real_page.size < page_size
+    page = tail[pos_of_the_last_page...pos_of_the_last_page + page_size]
+    return if page.size < page_size
 
     # Compare the checksum. If this check fails it means one of the two:
     #   - the data is corrupted
@@ -80,7 +80,7 @@ class FormatParser::OggParser
     # TODO: Instead of returning we should keep searching for the rest of the
     # occurances of the magic bits ("OggS") till the first one. (Note, we
     # started from the end.)
-    return if checksum != calculate_checksum(real_page)
+    return if checksum != calculate_checksum(page)
 
     # TODO: https://github.com/WeTransfer/format_parser/pull/116#discussion_r188232967
     duration = granule_position / sample_rate.to_f
