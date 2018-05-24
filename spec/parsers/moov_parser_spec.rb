@@ -57,18 +57,11 @@ describe FormatParser::MOOVParser do
     end
   end
 
-  Dir.glob(fixtures_dir + '/MOOV/**/*.mp4').sort.each do |mp4_path|
-    it "is able to parse #{File.basename(mp4_path)}" do
-      result = subject.call(File.open(mp4_path, 'rb'))
+  Dir.glob(fixtures_dir + '/MOOV/**/*.*').sort.each do |moov_path|
+    it "detects #{File.basename(moov_path)}" do
+      result = subject.call(File.open(moov_path, 'rb'))
 
       expect(result).not_to be_nil
-      expect(result.nature).to eq(:video)
-      expect(result.width_px).to be > 0
-      expect(result.height_px).to be > 0
-      expect(result.media_duration_seconds).to be_kind_of(Float)
-      expect(result.media_duration_seconds).to be > 0
-
-      expect(result.intrinsics).not_to be_nil
     end
   end
 
@@ -104,4 +97,16 @@ describe FormatParser::MOOVParser do
     expect(result.width_px).to eq(160)
     expect(result.height_px).to eq(90)
   end
+
+  it 'parses an MP4 audio-only file and provides the necessary metadata' do
+    mov_path = fixtures_dir + '/MOOV/MP4/only-audio.mp4'
+
+    result = subject.call(File.open(mov_path, 'rb'))
+
+    expect(result).not_to be_nil
+    expect(result.nature).to eq(:audio)
+    expect(result.format).to eq(:m4a)
+    expect(result.media_duration_seconds).to be_within(0.01).of(6.919)
+  end
+
 end
