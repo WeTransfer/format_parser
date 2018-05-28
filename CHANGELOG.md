@@ -1,3 +1,6 @@
+## 0.13.5
+* Use the same TIFF parsing flow for CR2 files as it seems we are not very reliable _yet._ The CR2 parser will need some work.
+
 ## 0.13.4
 * Make sure JSON data never contains NaN, fix the test that was supposed to verify that but didn't
 * Forcibly UTF-8 sanitize all EXIF data when building JSON
