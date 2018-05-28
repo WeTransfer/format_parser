@@ -2,6 +2,8 @@ require 'ks'
 require 'id3tag'
 
 class FormatParser::MP3Parser
+  include FormatParser::IOUtils
+
   require_relative 'mp3_parser/id3_extraction'
 
   class MPEGFrame < Ks.strict(:offset_in_file, :mpeg_id, :channels, :sample_rate, :frame_length, :frame_bitrate)
@@ -59,11 +61,13 @@ class FormatParser::MP3Parser
 
     # Special case: some ZIPs (Office documents) did detect as MP3s.
     # To avoid having that happen, we check for the PKZIP signature -
-    # local entry header signature - at the very start of the file
-    return if io.read(6) == ZIP_LOCAL_ENTRY_SIGNATURE
-    io.seek(0)
+    # local entry header signature - at the very start of the file.
+    # If the file is too small safe_read will fail too and the parser
+    # will terminate here.
+    return if safe_read(io, 6) == ZIP_LOCAL_ENTRY_SIGNATURE
 
     # Read all the ID3 tags (or at least attempt to)
+    io.seek(0)
     id3v1 = ID3Extraction.attempt_id3_v1_extraction(io)
     tags = [id3v1, ID3Extraction.attempt_id3_v2_extraction(io)].compact
 

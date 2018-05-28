@@ -1,3 +1,8 @@
+## 0.13.3
+* Add a fixture to make sure all parsers can cope with an empty file when using `parse_http`
+* Terminate the ZIP parser early with empty input
+* Terminate the MP3 parser early with empty or too small input
+
 ## 0.13.2
 * Handle BMP files with pixel array offsets larger than 54
 
