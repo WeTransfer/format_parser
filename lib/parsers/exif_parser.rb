@@ -59,7 +59,9 @@ module FormatParser::EXIFParser
     end
 
     def to_json(*maybe_coder)
-      __getobj__.to_hash.to_json(*maybe_coder)
+      hash_representation = __getobj__.to_hash
+      sanitized = FormatParser::AttributesJSON._sanitize_json_value(hash_representation)
+      sanitized.to_json(*maybe_coder)
     end
 
     def orientation

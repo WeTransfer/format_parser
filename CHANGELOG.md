@@ -1,3 +1,6 @@
+## 0.13.4
+* Forcibly UTF-8 sanitize all EXIF data when building JSON
+
 ## 0.13.3
 * Add a fixture to make sure all parsers can cope with an empty file when using `parse_http`
 * Terminate the ZIP parser early with empty input

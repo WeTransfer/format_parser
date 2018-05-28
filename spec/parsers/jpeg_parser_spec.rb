@@ -120,4 +120,14 @@ describe FormatParser::JPEGParser do
     expect(result.width_px).to eq(2500)
     expect(result.display_width_px).to eq(1250) # The image is actually rotated
   end
+
+  it 'outputs EXIF with binary data in such a way that it can be JSON-serialized' do
+    pic_path = fixtures_dir + '/JPEG/exif-with-binary-bytes-in-fields.jpg'
+
+    result = subject.call(File.open(pic_path, 'rb'))
+    expect(result).not_to be_nil
+
+    serialized = JSON.pretty_generate(result)
+    expect(serialized).to be_kind_of(String)
+  end
 end

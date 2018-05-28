@@ -59,6 +59,7 @@ module FormatParser::AttributesJSON
       value
     end
   end
+  module_function :_sanitize_json_value
 
   # Implements to_json with sane defaults, with or without arguments
   def to_json(*maybe_generator_state)
