@@ -32,8 +32,8 @@ class FormatParser::OggParser
     granule_position = find_granule_position(tail)
     return if granule_position.nil?
 
-    # TODO: https://github.com/WeTransfer/format_parser/pull/116#discussion_r188232967
     duration = granule_position / sample_rate.to_f
+    return if duration == Float::INFINITY
 
     FormatParser::Audio.new(
       format: :ogg,
