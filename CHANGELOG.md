@@ -1,3 +1,7 @@
+## 0.13.6
+* Make all reads in the MOOV decoder strict - fail early if reads are improperly sized
+* Disable parsing for `udta` atoms in MP4/MOV since we do not have a good way of parsing them yet
+
 ## 0.13.5
 * Use the same TIFF parsing flow for CR2 files as it seems we are not very reliable _yet._ The CR2 parser will need some work.
 
