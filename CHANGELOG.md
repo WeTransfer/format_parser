@@ -1,4 +1,5 @@
 ## 0.13.4
+* Make sure JSON data never contains NaN, fix the test that was supposed to verify that but didn't
 * Forcibly UTF-8 sanitize all EXIF data when building JSON
 
 ## 0.13.3

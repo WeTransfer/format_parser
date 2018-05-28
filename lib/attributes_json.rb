@@ -45,8 +45,14 @@ module FormatParser::AttributesJSON
   def _sanitize_json_value(value, nesting = 0)
     raise ArgumentError, 'Nested JSON-ish structure too deep' if nesting > MAXIMUM_JSON_NESTING_WHEN_SANITIZING
     case value
-    when Float::INFINITY
-      nil
+    when Float
+      # Float::NAN cannot be case-matched as it is does not equal itself. Float::INIFINITY can,
+      # but it is easier to fold these two into a single case
+      if value.nan? || value.infinite?
+        nil
+      else
+        value
+      end
     when String
       FormatParser.string_to_lossy_utf8(value)
     when Hash
