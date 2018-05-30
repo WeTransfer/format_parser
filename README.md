@@ -107,6 +107,11 @@ Therefore we adapt the following approaches:
   is easier to verify and test, and we likely don't care about all the metadata anyway
 * Avoid using C libraries which are likely to contain buffer overflows/underflows - we stay memory safe
 
+## Acknowledgements
+
+We are incredibly grateful to Remco van't Veer for [exifr](https://github.com/remvee/exifr) and to
+Krists Ozols for [id3tag](https://github.com/krists/id3tag) that we are using for crucial tasks.
+
 ## Fixture Sources
 
 Unless specified otherwise in this section the fixture files are MIT licensed and from the FastImage and Dimensions projects.
