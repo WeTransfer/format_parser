@@ -35,7 +35,7 @@ and [dimensions,](https://github.com/sstephenson/dimensions) borrowing from them
 
 ## Basic usage
 
-Pass an IO object that responds to `read` and `seek` to `FormatParser.parse` and the first confirmed match will be returned.
+Pass an IO object that responds to `read`, `seek` and `size` to `FormatParser.parse` and the first confirmed match will be returned.
 
 ```ruby
 match = FormatParser.parse(File.open("myimage.jpg", "rb"))
