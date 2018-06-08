@@ -64,5 +64,9 @@ describe FormatParser::PDFParser do
     describe 'a multi page pdf file with content' do
       include_examples :behave_like_pdf, file: '10_pages.pdf', page_count: 10
     end
+
+    describe 'a linearized multi page pdf' do
+      include_examples :behave_like_pdf, file: 'book.pdf', page_count: 393
+    end
   end
 end
