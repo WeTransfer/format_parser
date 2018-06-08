@@ -14,8 +14,8 @@ class FormatParser::PDFParser
   # this. The only way of solving this correctly is by adding
   # different types of PDF's in the specs.
   #
-  COUNT_MARKERS = ['Count ']
-  EOF_MARKER    = '%EOF'
+  MARKERS = { page_count: 'Count ' }
+  MAX_BYTES_TO_READ = 1024
 
   def call(io)
     io = FormatParser::IOConstraint.new(io)
@@ -32,36 +32,52 @@ class FormatParser::PDFParser
 
   private
 
-  # Read ahead bytes until one of % or / is reached.
-  # A header in a PDF always starts with a /
-  # The % is to detect the EOF
+  # Private: Read ahead n bytes until all the MARKERS are found or the io is
+  # at the end.
+  # A header in a PDF always starts with a /. When a / is found in a
+  # serie of bytes the io rewinds until the beginning of the first character
+  # after that / and extracts the appropriate information.
   #
   def scan_for_attributes(io)
     result = {}
 
-    while read = safe_read(io, 1)
-      case read
-      when '%'
-        break if safe_read(io, EOF_MARKER.size) == EOF_MARKER
-      when '/'
-        find_page_count(io, result)
+    bytes_read = MAX_BYTES_TO_READ
+
+    while read = safe_read(io, bytes_read)
+      if pos = read.index('/')
+        io.seek(io.pos - read.size + pos + 1)
+
+        find_marker(io, result)
       end
+
+      left = io.size - io.pos
+      bytes_read = left > MAX_BYTES_TO_READ ? MAX_BYTES_TO_READ : left
+
+      break if stop_looking?(result) || bytes_read.zero?
     end
 
     result
   end
 
-  def find_page_count(io, result)
-    COUNT_MARKERS.each do |marker|
-      if safe_read(io, marker.size) == marker
-        result[:page_count] = read_numbers(io)
-      end
+  # Private: Checks if all the markers are already found.
+  #
+  # Returns a boolean
+  def stop_looking?(result)
+    MARKERS.keys.all? do |key|
+      result.has_key?(key)
     end
   end
 
-  # Read ahead bytes until no more numbers are found
-  # This assumes that the position of io starts at a
-  # number
+  # Private: Finds a marker from the hash of MARKERS and assign the appropriate
+  # attribute to result.
+  def find_marker(io, result)
+    MARKERS.each do |attr, marker|
+      result[attr] = read_numbers(io) if safe_read(io, marker.size) == marker
+    end
+  end
+
+  # Private: Read ahead bytes until no more numbers are found
+  # This assumes that the position of io starts at a number
   def read_numbers(io)
     numbers = ''
 
