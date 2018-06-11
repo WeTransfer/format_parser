@@ -1,3 +1,5 @@
+* Add support for the Ogg format
+
 ## 0.13.6
 * Make all reads in the MOOV decoder strict - fail early if reads are improperly sized
 * Disable parsing for `udta` atoms in MP4/MOV since we do not have a good way of parsing them yet
