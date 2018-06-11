@@ -95,10 +95,9 @@ module FormatParser
   # @param formats[Array] an array of file formats to scope the parsing to.
   #   For example `[:jpg, :tif]` will scope the parsing to TIFF and JPEG files.
   #   The default value is "all formats known to FormatParser"
-  # @param results[:first, :all, Integer] one of the values defining how many results to return if parsing
-  #   is ambiguous. The default is `:first` which returns the first matching result. Other
-  #   possible values are `:all` to get all possible results and an Integer to return
-  #   at most N results.
+  # @param results[:first, :all] one of the values defining how many results to return if parsing
+  #   is ambiguous. The default is `:first` which returns the first matching result. `:all` will return all results.
+  #   When using `:first` parsing will stop at the first successful match and other parsers won't run.
   # @param limits_config[ReadLimitsConfig] the configuration object for various read/cache limits. The default
   #   one should be good for most cases.
   # @return [Array<Result>, Result, nil] either an Array of results, a single parsing result or `nil`if
