@@ -3,7 +3,7 @@
 class FormatParser::OggParser
   include FormatParser::IOUtils
 
-  # The maximum size of an Ogg page is 65,307 bytes.
+  # Maximum size of an Ogg page
   MAX_POSSIBLE_PAGE_SIZE = 65307
 
   def call(io)
@@ -17,7 +17,7 @@ class FormatParser::OggParser
     # Each header packet begins with the same header fields.
     #   1) packet_type: 8 bit value (the identification header is type 1)
     #   2) the characters v','o','r','b','i','s' as six octets
-    packet_type, vorbis, _vorbis_version, channels, sample_rate = safe_read(io, 16).unpack('Ca6LCL')
+    packet_type, vorbis, _vorbis_version, channels, sample_rate = safe_read(io, 16).unpack('Ca6VCV')
     return unless packet_type == 1 && vorbis == 'vorbis'
 
     # In order to calculate the audio duration we have to read a
@@ -29,8 +29,10 @@ class FormatParser::OggParser
     pos = 0 if pos < 0
     io.seek(pos)
     tail = io.read(MAX_POSSIBLE_PAGE_SIZE)
-    granule_position = find_granule_position(tail)
-    return if granule_position.nil?
+    return unless tail
+
+    granule_position = find_last_granule_position(tail)
+    return unless granule_position
 
     duration = granule_position / sample_rate.to_f
     return if duration == Float::INFINITY
@@ -45,28 +47,50 @@ class FormatParser::OggParser
 
   private
 
+  def all_indices_of_substr_in_str(of_substring, in_string)
+    last_i = 0
+    found_at_indices = []
+    while last_i = in_string.index(of_substring, last_i)
+      found_at_indices << last_i
+      last_i += of_substring.bytesize
+    end
+    found_at_indices
+  end
+
   # Returns granule_position of the last valid Ogg page contained in the given
   # tail. Since the tail may contain multiple "OggS" entries the method searches
   # them recursively starting from the end. The search stops when the first
   # valid Oggs page is found.
-  def find_granule_position(tail)
-    # The Ogg page always starts with "OggS".
-    pos_of_the_last_page = tail.rindex('OggS')
+  #
+  # The granule position contains the offset of the page in terms of the
+  # number of samples from the start of file. So once we know that number
+  # we can estimate how long the file is. We _do_ need to add the number
+  # of samples the granule covers though
+  def find_last_granule_position(in_string)
+    # The Ogg page always starts with "OggS". Find all of them
+    # in the given tail, since we want to scan "tail to head" -
+    # starting with the last index and going down to the first
+    rev_indices = all_indices_of_substr_in_str('OggS', in_string).reverse
+    rev_indices.each do |idx|
+      if granule_pos = extract_granule_position_from_string_at(in_string, idx)
+        return granule_pos
+      end
+    end
+    nil # Nothing matched or the list of indices was empty
+  end
 
-    # Return if for some reason the tail doesn't contain the magic bits.
-    return if pos_of_the_last_page.nil?
-
-    # Since the magic bits may occur inside the body of the page we have to
-    # validate that what we found is actually an Ogg page by calculating the
-    # checksum. For this reason we have to read the entire page and calculate
-    # its checksum. In order to read the entire Ogg page we first have to read a
-    # part of its header to find out the size of the page.
+  # Since the magic bits may occur inside the body of the page we have to
+  # validate that what we found is actually an Ogg page by calculating the
+  # checksum. For this reason we have to read the entire page and calculate
+  # its checksum. In order to read the entire Ogg page we first have to read a
+  # part of its header to find out the size of the page.
+  def extract_granule_position_from_string_at(string, at)
+    header_size = 27
+    header_bytes = string.byteslice(at, header_size)
+    return unless header_bytes && header_bytes.bytesize == header_size
 
     # Read the Ogg page header excluding the segment table (in other words read
-    # first 27 bytes).
-    header = tail[pos_of_the_last_page...pos_of_the_last_page + 27]
-    return find_granule_position(tail[0...pos_of_the_last_page]) if header.size < 27
-
+    # first 27 bytes). See https://en.wikipedia.org/wiki/Ogg#Page_structure
     _capture_pattern,
     _version,
     _header_type,
@@ -74,45 +98,49 @@ class FormatParser::OggParser
     _bitstream_serial_number,
     _page_sequence_number,
     checksum,
-    page_segments = header.unpack('a4CCQVVVC')
+    num_bytes_page_segments = header_bytes.unpack('a4CCQ<VVVC')
 
     # Read the segment table part of the Ogg page header. Its size is stored in page_segments.
     #
     # The segment table is a vector of 8-bit values, each indicating the length
     # of the corresponding segment within the page body.
-    pos_of_the_segment_table = pos_of_the_last_page + 27
-    segment_table = tail[pos_of_the_segment_table...pos_of_the_segment_table + page_segments]
-    return find_granule_position(tail[0...pos_of_the_last_page]) if segment_table.size < page_segments
+    # If there are no segments in the segment table the page is certainly invalid
+    return if num_bytes_page_segments == 0
 
-    # Calculate the size of the Ogg page.
-    segments_size = segment_table.unpack('C*').inject(&:+)
-    page_size = 27 + page_segments + segments_size
+    # Read the segment table
+    segment_table_pos = at + header_size
+    segment_table = string.byteslice(segment_table_pos, num_bytes_page_segments)
+    return unless segment_table && segment_table.bytesize == num_bytes_page_segments
 
-    # Retrieve a page from the tail.
-    page = tail[pos_of_the_last_page...pos_of_the_last_page + page_size]
-    return find_granule_position(tail[0...pos_of_the_last_page]) if page.size < page_size
+    # Calculate the size of the Ogg page
+    num_bytes_used_for_segments = segment_table.unpack('C*').inject(&:+)
+    page_size = header_size + num_bytes_page_segments + num_bytes_used_for_segments
 
-    # Compare the checksum. If this check fails it means one of the two:
+    # Read the entire page now that we know how much we have to read
+    entire_page = string.byteslice(at, page_size)
+    return unless entire_page && entire_page.bytesize == page_size
+
+    # Compute and check the checksum. If this check fails it means one of the two:
     #   - the data is corrupted
     #   - the "OggS" capture pattern occures inside the body of the page and is
-    #     not actually a magic string. Just coincidence.
-    return find_granule_position(tail[0...pos_of_the_last_page]) if checksum != calculate_checksum(page)
+    #     we were scanning a random piece of content which was not an Ogg page
+    return unless checksum == calculate_checksum(entire_page)
 
+    # ...and only having gone through all these motions - return the granule position.
     granule_position
   end
 
-  # Copied from https://github.com/anibali/ruby-ogg
-  #
-  # For some reason Zlib.crc32 doesn't calculate the checksum properly. I am
-  # probably missing something. Maybe it is because Zlib.crc_table is not the
-  # same as CRC_LOOKUP.
+  # Calculate the CRC using the 0x04C11DB7 polynomial. We cannot use Zlib since
+  # it generates different checksums. Copied from https://github.com/anibali/ruby-ogg
   def calculate_checksum(data)
-    data = data.dup
-    data[22..25] = [0].pack('V')
     crc_reg = 0
-
-    data.unpack('C*').each do |byte|
-      crc_reg = (crc_reg << 8) ^ CRC_LOOKUP[((crc_reg >> 24) & 0xff) ^ byte]
+    data.each_byte.with_index do |byte, i|
+      # The checksum is calculated over _the entire page_ but with the
+      # placeholder for the checksum - the 4 bytes - zeroed out. The checksum
+      # is then substituted _into_ the page at that offset. So when we go
+      # over bytes at these offsets we will substitute them with 0s
+      b = (22..25).cover?(i) ? 0 : byte
+      crc_reg = (crc_reg << 8) ^ CRC_LOOKUP[((crc_reg >> 24) & 0xff) ^ b]
       crc_reg = crc_reg % 2**32
     end
 
