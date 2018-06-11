@@ -80,4 +80,10 @@ describe FormatParser::MP3Parser do
 
     expect(parsed).to be_nil
   end
+
+  it 'terminates early with an IOUtils error when the file is too small' do
+    expect {
+      subject.call(StringIO.new(''))
+    }.to raise_error(FormatParser::IOUtils::InvalidRead)
+  end
 end

@@ -2,6 +2,8 @@
 # read atoms and parse their data fields if applicable. Also contains
 # a few utility functions for finding atoms in a list etc.
 class FormatParser::MOOVParser::Decoder
+  include FormatParser::IOUtils
+
   class Atom < Struct.new(:at, :atom_size, :atom_type, :path, :children, :atom_fields)
     def to_s
       '%s (%s): %d bytes at offset %d' % [atom_type, path.join('.'), atom_size, at]
@@ -18,11 +20,13 @@ class FormatParser::MOOVParser::Decoder
     end
   end
 
-  # Atoms (boxes) that are known to only contain children, no data fields
-  KNOWN_BRANCH_ATOM_TYPES = %w(moov mdia trak clip edts minf dinf stbl udta meta)
+  # Atoms (boxes) that are known to only contain children, no data fields.
+  # Avoid including udta or udta.meta here since we do not have methods
+  # for dealing with them yet.
+  KNOWN_BRANCH_ATOM_TYPES = %w(moov mdia trak clip edts minf dinf stbl)
 
-  # Atoms (boxes) that are known to contain both leaves and data fields
-  KNOWN_BRANCH_AND_LEAF_ATOM_TYPES = %w(meta) # the udta.meta thing used by iTunes
+  # Mark that udta may contain both
+  KNOWN_BRANCH_AND_LEAF_ATOM_TYPES = [] # %w(udta) # the udta.meta thing used by iTunes
 
   # Limit how many atoms we scan in sequence, to prevent derailments
   MAX_ATOMS_AT_LEVEL = 128
@@ -169,16 +173,24 @@ class FormatParser::MOOVParser::Decoder
 
   def parse_hdlr_atom(io, atom_size)
     sub_io = StringIO.new(io.read(atom_size - 8))
-    {
-      version: read_byte_value(sub_io),
+    version = read_byte_value(sub_io)
+    base_fields = {
+      version: version,
       flags: read_bytes(sub_io, 3),
       component_type: read_bytes(sub_io, 4),
       component_subtype: read_bytes(sub_io, 4),
       component_manufacturer: read_bytes(sub_io, 4),
-      component_flags: read_bytes(sub_io, 4),
-      component_flags_mask: read_bytes(sub_io, 4),
-      component_name: sub_io.read,
     }
+    if version == 1
+      version1_fields = {
+        component_flags: read_bytes(sub_io, 4),
+        component_flags_mask: read_bytes(sub_io, 4),
+        component_name: sub_io.read,
+      }
+      base_fields.merge(version1_fields)
+    else
+      base_fields
+    end
   end
 
   def parse_meta_atom(io, atom_size)
@@ -217,11 +229,8 @@ class FormatParser::MOOVParser::Decoder
       # If atom_size is specified to be 1, it is larger than what fits into the
       # 4 bytes and we need to read it right after the atom type
       atom_size = read_64bit_uint(io) if atom_size == 1
-
-      # We are allowed to read what comes after
-      # the atom size and atom type, but not any more than that
-      size_of_atom_type_and_size = io.pos - atom_pos
-      atom_size_sans_header = atom_size - size_of_atom_type_and_size
+      atom_header_size = io.pos - atom_pos
+      atom_size_sans_header = atom_size - atom_header_size
 
       children, fields = if KNOWN_BRANCH_AND_LEAF_ATOM_TYPES.include?(atom_type)
         parse_atom_children_and_data_fields(io, atom_size_sans_header, atom_type, current_branch)
@@ -239,39 +248,39 @@ class FormatParser::MOOVParser::Decoder
   end
 
   def read_16bit_fixed_point(io)
-    _whole, _fraction = io.read(2).unpack('CC')
+    _whole, _fraction = safe_read(io, 2).unpack('CC')
   end
 
   def read_32bit_fixed_point(io)
-    _whole, _fraction = io.read(4).unpack('nn')
+    _whole, _fraction = safe_read(io, 4).unpack('nn')
   end
 
   def read_chars(io, n)
-    io.read(n)
+    safe_read(io, n)
   end
 
   def read_byte_value(io)
-    io.read(1).unpack('C').first
+    safe_read(io, 1).unpack('C').first
   end
 
   def read_bytes(io, n)
-    io.read(n)
+    safe_read(io, n)
   end
 
   def read_16bit_uint(io)
-    io.read(2).unpack('n').first
+    safe_read(io, 2).unpack('n').first
   end
 
   def read_32bit_uint(io)
-    io.read(4).unpack('N').first
+    safe_read(io, 4).unpack('N').first
   end
 
   def read_64bit_uint(io)
-    io.read(8).unpack('Q>').first
+    safe_read(io, 8).unpack('Q>').first
   end
 
   def read_binary_coded_decimal(io)
-    bcd_string = io.read(4)
+    bcd_string = safe_read(io, 4)
     [bcd_string].pack('H*').unpack('C*')
   end
 end

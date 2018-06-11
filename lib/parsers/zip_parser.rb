@@ -3,9 +3,11 @@ class FormatParser::ZIPParser
   require_relative 'zip_parser/office_formats'
 
   include OfficeFormats
+  include FormatParser::IOUtils
 
   def call(io)
     io = FormatParser::IOConstraint.new(io)
+    safe_read(io, 1) # Ensure the file is not empty
 
     reader = FileReader.new
     entries = reader.read_zip_structure(io: io)

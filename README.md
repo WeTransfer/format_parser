@@ -35,7 +35,7 @@ and [dimensions,](https://github.com/sstephenson/dimensions) borrowing from them
 
 ## Basic usage
 
-Pass an IO object that responds to `read` and `seek` to `FormatParser.parse` and the first confirmed match will be returned.
+Pass an IO object that responds to `read`, `seek` and `size` to `FormatParser.parse` and the first confirmed match will be returned.
 
 ```ruby
 match = FormatParser.parse(File.open("myimage.jpg", "rb"))
@@ -107,6 +107,11 @@ Therefore we adapt the following approaches:
   is easier to verify and test, and we likely don't care about all the metadata anyway
 * Avoid using C libraries which are likely to contain buffer overflows/underflows - we stay memory safe
 
+## Acknowledgements
+
+We are incredibly grateful to Remco van't Veer for [exifr](https://github.com/remvee/exifr) and to
+Krists Ozols for [id3tag](https://github.com/krists/id3tag) that we are using for crucial tasks.
+
 ## Fixture Sources
 
 Unless specified otherwise in this section the fixture files are MIT licensed and from the FastImage and Dimensions projects.
@@ -115,6 +120,7 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 - `divergent_pixel_dimensions_exif.jpg` is used with permission from LiveKom GmbH
 - `extended_reads.jpg` has kindly been made available by Raphaelle Pellerin for use exclusively with format_parser
 - `too_many_APP1_markers_surrogate.jpg` was created by the project maintainers
+* `orient_6.jpg` is used with permission from [Renaud Chaput](https://github.com/renchap)
 
 ### AIFF
 - fixture.aiff was created by one of the project maintainers and is MIT licensed

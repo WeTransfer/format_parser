@@ -47,7 +47,7 @@ describe FormatParser::AttributesJSON do
       include FormatParser::AttributesJSON
       attr_accessor :some_nan
       def some_nan
-        (1.0 / 0.0).to_f
+        Float::NAN
       end
     end
     instance = anon_class.new

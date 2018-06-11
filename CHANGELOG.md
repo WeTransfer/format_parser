@@ -1,5 +1,20 @@
-## Unreleased
 * Add support for the Ogg format
+
+## 0.13.6
+* Make all reads in the MOOV decoder strict - fail early if reads are improperly sized
+* Disable parsing for `udta` atoms in MP4/MOV since we do not have a good way of parsing them yet
+
+## 0.13.5
+* Use the same TIFF parsing flow for CR2 files as it seems we are not very reliable _yet._ The CR2 parser will need some work.
+
+## 0.13.4
+* Make sure JSON data never contains NaN, fix the test that was supposed to verify that but didn't
+* Forcibly UTF-8 sanitize all EXIF data when building JSON
+
+## 0.13.3
+* Add a fixture to make sure all parsers can cope with an empty file when using `parse_http`
+* Terminate the ZIP parser early with empty input
+* Terminate the MP3 parser early with empty or too small input
 
 ## 0.13.2
 * Handle BMP files with pixel array offsets larger than 54
