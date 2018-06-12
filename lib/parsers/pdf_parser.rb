@@ -34,7 +34,9 @@ class FormatParser::PDFParser
     # return unless xref_table.any?
     xref_table.each do |xref|
       io.seek(xref.offset)
-      $stderr.puts io.read(xref.length_limit).inspect
+      if xref.length_limit < 128
+        $stderr.puts io.read(xref.length_limit).inspect
+      end
     end
 
     raise "nope"
@@ -49,6 +51,7 @@ class FormatParser::PDFParser
     assumed_xref_table_size = 1024
     tail_pos = io.size - assumed_xref_table_size
     tail_pos = 0 if tail_pos < 0
+
     io.seek(tail_pos)
     tail = io.read(assumed_xref_table_size)
 
@@ -56,7 +59,7 @@ class FormatParser::PDFParser
     start_xref_index = tail.index('startxref')
     return unless start_xref_index
 
-    startxref = tail.byteslice(start_xref_index, 1024)[/\d+/]
+    startxref = tail.byteslice(start_xref_index, assumed_xref_table_size)[/\d+/]
     return unless startxref
 
     startxref.to_i
@@ -102,7 +105,7 @@ class FormatParser::PDFParser
     xref_table.each do |x|
       $stderr.puts x.inspect
     end
-    
+
     xref_table
   end
 
