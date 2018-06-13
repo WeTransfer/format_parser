@@ -28,6 +28,7 @@ class NuObjectParser
 #    RE[")"]         => :wrap,
 
     /\s+/           => :wrap_whitespace,
+    /./             => :garbage,
   }
 
   STRING_ESCAPES = {
@@ -111,6 +112,15 @@ class NuObjectParser
     [:dict, dict_items]
   end
 
+  def parse_hex_string(start_pattern)
+    str = @sc.scan(/<[0-9a-f]+>/i)
+    raise Malformed, "Malformed hex string at #{@sc.pos}" unless str
+
+    str << "0" unless str.size % 2 == 0
+    hex_str = str.scan(/../).map {|i| i.hex.chr}.join
+    [:hex_string, hex_str]
+  end
+
   def parse_string(start_pattern)
     rest_of_string = @sc.scan_until(/[^\\]\)/) # consume everything starting with ( and upto a non-escaped )
     raise Malformed, "String did not terminate (started at at #{@sc.pos})" unless rest_of_string
@@ -121,12 +131,20 @@ class NuObjectParser
 
   def parse_pdf_name(start_pattern)
     letters = ('a'..'z').to_a.join + ('A'..'Z').to_a.join + "/"
-    warn("Name parsing needs validation since start pattern is not the same as scan pattern")
-    [:name, @sc.scan(/\/[#{letters}\d]+/)]
+    name = @sc.scan(/\/[#{letters}\d]+/)
+    raise Malformed, "Expected a well-formed PDF name at #{@sc.pos} but could not recover any" unless name
+    [:name, name]
   end
-  
+
+  def garbage(*)
+    raise Malformed, "Expected a meaningful token at #{@sc.pos} but did not encounter one"
+  end
+
   def walk_scanner(halt_at_pattern)
-    until @sc.eos?
+    (@sc.string.bytesize - @sc.pos).times do
+      # Terminate if EOS reached
+      break if @sc.eos?
+
       # Terminate early
       if halt_at_pattern && halted = @sc.scan(halt_at_pattern)
         @token_stream << :terminator
@@ -151,7 +169,7 @@ end
 describe 'Object parser' do
   let(:fixture_paths) { Dir.glob(__dir__ + '/*.pdfobj').sort }
 
-  xit 'scans the extracted object definitions from the corpus' do
+  it 'scans the extracted object definitions from the corpus' do
     fixture_paths.each do |path|
       result = NuObjectParser.new.parse(File.read(path))
     end
@@ -243,6 +261,19 @@ describe 'Object parser' do
   it 'detects a truncated dictionary opener' do
     expect {
       NuObjectParser.new.parse('<</')
-    }.to raise_error(/did not terminate/)
+    }.to raise_error(/PDF name at 2/)
   end
+
+  it 'responds well to fuzzed input' do
+    random = Random.new(12345)
+    1024.times do
+      begin
+        result = NuObjectParser.new.parse(random.bytes(128))
+        expect(result).to be_kind_of(Array)
+      rescue NuObjectParser::Malformed
+        # Everything good, we failed as we should
+      end
+    end
+  end
+
 end
