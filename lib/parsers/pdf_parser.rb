@@ -14,7 +14,6 @@ class FormatParser::PDFParser
   # this. The only way of solving this correctly is by adding
   # different types of PDF's in the specs.
   #
-  COUNT_MARKERS = ['Count ']
   EOF_MARKER    = '%EOF'
 
   def call(io)
@@ -34,8 +33,24 @@ class FormatParser::PDFParser
     # return unless xref_table.any?
     xref_table.each do |xref|
       io.seek(xref.offset)
-      if xref.length_limit < 128
-        $stderr.puts io.read(xref.length_limit).inspect
+      # From here on out we need to proceed as follows. We need to buffer (preemptively)
+      # all the /Type/Pages objects for later. We also need to recover the
+      # /Type/Catalog object which will refer us to the right /Type /Pages object to use.
+      # It is a good idea to scan only once, and we also should be "economical" in reading these.
+      # All the objects we care about start with the object header ("45 0 obj" etc)
+      # and then must contain an arbitrary amount of whitespace (which we scientifically
+      # followed by the dictionary open brackets - "<<".
+      # Then we need to actually go in, read the object and parse the dictionary - luckily
+      # this is not that much trouble and we can read the entire object, since it is small.
+      # So let's get at it.
+      next if xref.length_limit > 1024 # Skip objects which are too large, they won't be headers anyway 
+
+      # Do a quickie detection reading just a tiny piece of the object
+      obj_header = safe_read(io, 32)
+      if obj_header.include?('/Type/Pages') || obj_header.include?('/Type/Catalog')
+        io.seek(xref.offset)
+        object_buf = io.read(xref.length_limit)
+        parse_object_with_dictionary(object_buf)
       end
     end
 
@@ -49,8 +64,7 @@ class FormatParser::PDFParser
   def locate_xref_table_offset(io)
     # Read the "tail" of the PDF and find the 'startxref' declaration
     assumed_xref_table_size = 1024
-    tail_pos = io.size - assumed_xref_table_size
-    tail_pos = 0 if tail_pos < 0
+    tail_pos = max(0, io.size - assumed_xref_table_size)
 
     io.seek(tail_pos)
     tail = io.read(assumed_xref_table_size)
@@ -66,6 +80,7 @@ class FormatParser::PDFParser
   end
 
   XRef = Struct.new(:idx, :offset, :generation_number, :entry_type, :length_limit)
+
   def parse_xref_table(io)
     xref_table = []
     starting_idx = 0
@@ -102,10 +117,6 @@ class FormatParser::PDFParser
       xref_a.length_limit = xref_b.offset - xref_a.offset
     end
 
-    xref_table.each do |x|
-      $stderr.puts x.inspect
-    end
-
     xref_table
   end
 
@@ -131,6 +142,18 @@ class FormatParser::PDFParser
       end
     end
     buf.string.strip
+  end
+
+  def min(*of_items)
+    of_items.sort.shift
+  end
+
+  def max(*of_items)
+    of_items.sort.pop
+  end
+
+  def parse_object_with_dictionary(str)
+    File.open(Digest::SHA1.hexdigest(str) + '.pdfobj', 'wb') {|f| f << str }
   end
 
   FormatParser.register_parser self, natures: :document, formats: :pdf
