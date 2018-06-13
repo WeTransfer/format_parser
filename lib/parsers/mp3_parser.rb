@@ -43,10 +43,7 @@ class FormatParser::MP3Parser
     def to_h
       tag = __getobj__
       MEMBERS.each_with_object({}) do |k, h|
-        # ID3Tag sometimes raises when trying to find an unknown genre.
-        # If this guard is removed, it fails when trying to do a gsub on a nil,
-        # in /lib/id3tag/frames/v2/genre_frame/genre_parser_pre_24.rb:25:in `just_genres'
-        value = tag.public_send(k) rescue nil
+        value = tag.public_send(k)
         h[k] = value if value
       end
     end
