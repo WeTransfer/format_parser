@@ -130,7 +130,7 @@ class NuObjectParser
     # is a valid string. Needs attention.
     rest_of_string = @sc.scan_until(/[^\\]\)/) # consume everything starting with ( and upto a non-escaped )
     raise Malformed, "String did not terminate (started at at #{@sc.pos})" unless rest_of_string
-    rest_of_string[1..-2].gsub (/\\([nrtbf()\\\n]|\d{1,3})?|\r\n?|\n\r/m) do |match|
+    rest_of_string[1..-2].gsub(/\\([nrtbf()\\\n]|\d{1,3})?|\r\n?|\n\r/m) do |match|
       STRING_ESCAPES[match] || ''
     end
   end
