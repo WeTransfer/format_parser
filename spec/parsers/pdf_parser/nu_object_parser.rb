@@ -65,11 +65,8 @@ class NuObjectParser
 
   def consume!(pattern, method_name)
     at = @sc.pos
-    unless @sc.check(pattern)
-      $stderr.puts " : #{pattern} -> #{method_name} @#{at}: will scan #{@sc.peek(8).inspect}..."
-      return false
-    end
-    $stderr.puts   "M: #{pattern} -> #{method_name} @#{at}: will scan #{@sc.peek(8).inspect}..."
+    return false unless @sc.check(pattern)
+    debug { "M: #{method_name} @#{at}: 8 chars after scan pointer #{@sc.peek(8).inspect}" }
     result = send(method_name, pattern)
     @token_stream << result unless result == [:whitespace, nil]
     true
@@ -148,5 +145,9 @@ class NuObjectParser
     @token_stream = []
     walk_scanner(_stop_at_pattern = nil)
     @token_stream
+  end
+
+  def debug
+    $stderr.puts(yield)
   end
 end
