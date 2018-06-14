@@ -83,6 +83,38 @@ describe 'Object parser' do
     )
   end
 
+  it 'handles names' do
+    names_str = %(
+      /Name1
+      /ASomewhatLongerName /A;Name_With-Various***Characters? /1.2
+      /$$
+      /@pattern
+      /.notdef
+      /Adobe#20Green
+      /PANTONE#205757#20CV
+      /paired#28#29parentheses
+      /The_Key_of_F#23_Minor
+      /A#42
+      /
+    )
+    result = NuObjectParser.new.parse(names_str)
+    expect(result).to eq([
+        [:name, "/Name1"],
+        [:name, "/ASomewhatLongerName"],
+        [:name, "/A;Name_With-Various***Characters?"],
+        [:name, "/1.2"],
+        [:name, "/$$"],
+        [:name, "/@pattern"],
+        [:name, "/.notdef"],
+        [:name, "/Adobe Green"],
+        [:name, "/PANTONE 5757 CV"],
+        [:name, "/paired()parentheses"],
+        [:name, "/The_Key_of_F#_Minor"],
+        [:name, "/AB"],
+        [:name, "/"]
+    ])
+  end
+
   it 'handles string escapes' do
     result = NuObjectParser.new.parse("(Foo \\(with some bars\\))")
     expect(result).to eq(
