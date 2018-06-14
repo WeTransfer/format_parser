@@ -15,21 +15,21 @@ class NuObjectParser
     printable_ascii.delete('/'.ord)
     printable_ascii.delete('\\'.ord)
     exact_char_class = printable_ascii.map(&:chr).join
-    
+
     /\/[#{exact_char_class}]{0,}/
   end
 
   STRATEGIES = {
-    RE["<<"] => :parse_dictionary,
-    RE["["]  => :parse_array,
-    RE["("]  => :parse_string,
-    RE["<"]  => :parse_hex_string,
+    RE['<<'] => :parse_dictionary,
+    RE['[']  => :parse_array,
+    RE['(']  => :parse_string,
+    RE['<']  => :parse_hex_string,
     /\d+ \d+ R/ => :parse_ref,
-    NAME_RE  => :parse_pdf_name,
+    NAME_RE => :parse_pdf_name,
 
-    RE["true"]  => :wrap,
-    RE["false"] => :wrap,
-    RE["null"]  => :wrap,
+    RE['true']  => :wrap,
+    RE['false'] => :wrap,
+    RE['null']  => :wrap,
 
     # 34.5 −3.62 +123.6 4. −.002 0.0 are all valid reals
     /(\-|\+?)(\d+)\.(\d+)/ => :wrap_real,
@@ -37,10 +37,10 @@ class NuObjectParser
     /(\-|\+?)\.(\d+)/ => :wrap_real,
     /\-?(\d+)/ => :wrap_int,
 
-    RE["obj"]       => :wrap,
-    RE["endobj"]    => :wrap,
-    RE["stream"]    => :wrap,
-    RE["endstream"] => :wrap,
+    RE['obj']       => :wrap,
+    RE['endobj']    => :wrap,
+    RE['stream']    => :wrap,
+    RE['endstream'] => :wrap,
 
     /\s+/           => :wrap_whitespace,
     /./             => :garbage,
@@ -51,21 +51,21 @@ class NuObjectParser
     "\r"   => "\n",
     "\n\r" => "\n",
     "\r\n" => "\n",
-    "\\n"  => "\n",
-    "\\r"  => "\r",
-    "\\t"  => "\t",
-    "\\b"  => "\b",
-    "\\f"  => "\f",
-    "\\("  => "(",
-    "\\)"  => ")",
-    "\\\\" => "\\",
-    "\\\n" => "",
+    '\\n'  => "\n",
+    '\\r'  => "\r",
+    '\\t'  => "\t",
+    '\\b'  => "\b",
+    '\\f'  => "\f",
+    '\\('  => '(',
+    '\\)'  => ')',
+    '\\\\' => '\\',
+    "\\\n" => '',
   }
 
   # Octal character escapes that look like \001 etc
-  0.upto(9)   { |n| STRING_ESCAPES["\\00" + n.to_s] = ("00"+n.to_s).oct.chr }
-  0.upto(99)  { |n| STRING_ESCAPES["\\0" + n.to_s]  = ("0"+n.to_s).oct.chr }
-  0.upto(377) { |n| STRING_ESCAPES["\\" + n.to_s]   = n.to_s.oct.chr }
+  0.upto(9)   { |n| STRING_ESCAPES['\\00' + n.to_s] = ('00' + n.to_s).oct.chr }
+  0.upto(99)  { |n| STRING_ESCAPES['\\0' + n.to_s]  = ('0' + n.to_s).oct.chr }
+  0.upto(377) { |n| STRING_ESCAPES['\\' + n.to_s]   = n.to_s.oct.chr }
 
   def wrap_real(pattern)
     [:real, @sc.scan(pattern).to_f]
@@ -100,8 +100,8 @@ class NuObjectParser
   def parse_array(start_pattern)
     @sc.scan(start_pattern) # consume [
     dict_open_at = @token_stream.length
-    walk_scanner(RE["]"])
-    raise Malformed, "Array did not terminate" unless @token_stream.pop == :terminator
+    walk_scanner(RE[']'])
+    raise Malformed, 'Array did not terminate' unless @token_stream.pop == :terminator
     array_items = @token_stream.pop(@token_stream.length - dict_open_at)
     [:array, array_items]
   end
@@ -109,36 +109,36 @@ class NuObjectParser
   def parse_dictionary(start_pattern)
     @sc.scan(start_pattern) # consume <<
     dict_open_at = @token_stream.length
-    walk_scanner(RE[">>"])
-    raise Malformed, "Dictionary did not terminate" unless @token_stream.pop == :terminator
+    walk_scanner(RE['>>'])
+    raise Malformed, 'Dictionary did not terminate' unless @token_stream.pop == :terminator
     dict_items = @token_stream.pop(@token_stream.length - dict_open_at)
     [:dict, dict_items]
   end
 
-  def parse_hex_string(start_pattern)
+  def parse_hex_string(_start_pattern)
     str = @sc.scan(/<[0-9a-f]+>/i)
     raise Malformed, "Malformed hex string at #{@sc.pos}" unless str
 
-    str << "0" unless str.bytesize % 2 == 0
-    hex_str = str.scan(/../).map {|i| i.hex.chr}.join
+    str << '0' unless str.bytesize.even?
+    hex_str = str.scan(/../).map { |i| i.hex.chr }.join
     [:hex_string, hex_str]
   end
 
-  def parse_string(start_pattern)
+  def parse_string(_start_pattern)
     # This is murder. PDF allows paired braces to be put into a string literal
     # without any escaping. This means that "(Horrible file format (with a cherry on top))"
     # is a valid string. Needs attention.
     rest_of_string = @sc.scan_until(/[^\\]\)/) # consume everything starting with ( and upto a non-escaped )
     raise Malformed, "String did not terminate (started at at #{@sc.pos})" unless rest_of_string
     rest_of_string[1..-2].gsub (/\\([nrtbf()\\\n]|\d{1,3})?|\r\n?|\n\r/m) do |match|
-      STRING_ESCAPES[match] || ""
+      STRING_ESCAPES[match] || ''
     end
   end
 
   def parse_pdf_name(start_pattern)
     name = @sc.scan(start_pattern)
     # Replace #023 hex codes with the corresponding chars
-    name_sans_escapes = name.gsub(/\#([\da-fA-F]{1,2})/) do |hex_code|
+    name_sans_escapes = name.gsub(/\#([\da-fA-F]{1,2})/) do |_hex_code|
       $1.to_i(16).chr
     end
     [:name, name_sans_escapes]
@@ -181,6 +181,6 @@ class NuObjectParser
   end
 
   def debug
-    $stderr.puts(yield)
+    warn(yield)
   end
 end
