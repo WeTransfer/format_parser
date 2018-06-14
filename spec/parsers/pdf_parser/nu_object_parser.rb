@@ -123,6 +123,11 @@ class NuObjectParser
   end
 
   def walk_scanner(halt_at_pattern)
+    # Limit the iterations to AT MOST (!) once per
+    # remaining byte to parse. This ensures we won't
+    # have parsing enter an infinite loop where we expect
+    # the string scanner to have advanced at least a byte forward
+    # but it would sit on the same offset indifinitely.
     (@sc.string.bytesize - @sc.pos).times do
       # Terminate if EOS reached
       break if @sc.eos?
@@ -134,6 +139,8 @@ class NuObjectParser
       end
 
       # Walk through STRATEGIES and stop iterating on first non-false call to consume!
+      # STRATEGIES are arranged by order of specificity, so for most iterations
+      # somethign meaningful should be hit relatively quickly
       STRATEGIES.find do |pattern, method_name|
         consume!(pattern, method_name)
       end
