@@ -13,13 +13,14 @@ describe FormatParser::PDFParser do
   shared_examples :behave_like_pdf do |hash|
     let(:pdf_file) { hash.fetch(:file) }
 
-    it 'acts as a pdf' do
+    it 'is recognized as PDF' do
       expect(parsed_pdf).not_to be_nil
       expect(parsed_pdf.nature).to eq(:document)
       expect(parsed_pdf.format).to eq(:pdf)
     end
 
     it 'has a correct page count' do
+      expect(parsed_pdf).not_to be_nil
       expect(parsed_pdf.page_count).to eq(hash.fetch(:page_count))
     end
   end
