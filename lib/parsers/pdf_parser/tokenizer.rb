@@ -1,4 +1,4 @@
-class NuObjectParser
+class FormatParser::PDFParser::Tokenizer
   Malformed = Class.new(RuntimeError)
   RE = ->(str) { /#{Regexp.escape(str)}/ }
 
@@ -23,7 +23,7 @@ class NuObjectParser
     RE['<<'] => :parse_dictionary,
     RE['[']  => :parse_array,
     RE['(']  => :parse_string,
-    RE['<']  => :parse_hex_string,
+    /<[0-9a-f]+>/i  => :parse_hex_string,
     /\d+ \d+ R/ => :parse_ref,
     NAME_RE => :parse_pdf_name,
 
@@ -37,42 +37,24 @@ class NuObjectParser
     /(\-|\+?)\.(\d+)/ => :wrap_real,
     /\-?(\d+)/ => :wrap_int,
 
-    RE['obj']       => :wrap,
-    RE['endobj']    => :wrap,
-    RE['stream']    => :wrap,
-    RE['endstream'] => :wrap,
+    RE['obj']       => :wrap_lit,
+    # Use dirty trick to stop parsing if we encounter anything binary. This does not
+    # prevent us from reading ahead into the stream, but it does allow is to abort
+    # quicker
+    RE['endobj']    => :abort,
+    RE['stream']    => :abort,
+    RE['endstream'] => :abort,
 
     /\s+/           => :wrap_whitespace,
     /./             => :garbage,
   }
 
-  # Permitted character escapes. There aren't _that_ many so we can use a table
-  STRING_ESCAPES = {
-    "\r"   => "\n",
-    "\n\r" => "\n",
-    "\r\n" => "\n",
-    '\\n'  => "\n",
-    '\\r'  => "\r",
-    '\\t'  => "\t",
-    '\\b'  => "\b",
-    '\\f'  => "\f",
-    '\\('  => '(',
-    '\\)'  => ')',
-    '\\\\' => '\\',
-    "\\\n" => '',
-  }
-
-  # Octal character escapes that look like \001 etc
-  0.upto(9)   { |n| STRING_ESCAPES['\\00' + n.to_s] = ('00' + n.to_s).oct.chr }
-  0.upto(99)  { |n| STRING_ESCAPES['\\0' + n.to_s]  = ('0' + n.to_s).oct.chr }
-  0.upto(377) { |n| STRING_ESCAPES['\\' + n.to_s]   = n.to_s.oct.chr }
-
   def wrap_real(pattern)
-    [:real, @sc.scan(pattern).to_f]
+    [:real, @sc.scan(pattern)]
   end
 
   def wrap_int(pattern)
-    [:int, @sc.scan(pattern).to_i]
+    [:int, @sc.scan(pattern)]
   end
 
   def wrap_whitespace(pattern)
@@ -115,13 +97,8 @@ class NuObjectParser
     [:dict, dict_items]
   end
 
-  def parse_hex_string(_start_pattern)
-    str = @sc.scan(/<[0-9a-f]+>/i)
-    raise Malformed, "Malformed hex string at #{@sc.pos}" unless str
-
-    str << '0' unless str.bytesize.even?
-    hex_str = str.scan(/../).map { |i| i.hex.chr }.join
-    [:hex_string, hex_str]
+  def parse_hex_string(start_pattern)
+    [:hex_string, @sc.scan(start_pattern)]
   end
 
   def parse_string(opening_brace_pattern)
@@ -132,6 +109,7 @@ class NuObjectParser
     str = ""
     count = 1
     bytes_remaining_to_scan.times do
+      # Terminate if EOS reached or once we encountered the outermost closing brace
       break if @sc.eos? || count == 0
 
       byte = @sc.scan(/./)
@@ -150,19 +128,12 @@ class NuObjectParser
       end
       break if count == 0
     end
-    unescaped = str.gsub(/\\([nrtbf()\\\n]|\d{1,3})?|\r\n?|\n\r/m) do |match|
-      STRING_ESCAPES[match] || ''
-    end
-    [:str, unescaped]
+    raise Malformed, "String did not terminate at #{@sc.pos}" if count > 0
+    [:str, str]
   end
 
   def parse_pdf_name(start_pattern)
-    name = @sc.scan(start_pattern)
-    # Replace #023 hex codes with the corresponding chars
-    name_sans_escapes = name.gsub(/\#([\da-fA-F]{1,2})/) do |_hex_code|
-      $1.to_i(16).chr
-    end
-    [:name, name_sans_escapes]
+    [:name, @sc.scan(start_pattern)]
   end
 
   def garbage(*)
@@ -198,47 +169,24 @@ class NuObjectParser
     end
   end
 
-  def tokenize(str)
-    @sc = StringScanner.new(str)
+  # Dirty thing we use to stop parsing as soon as we encounter a "stream", "xstream"
+  def abort(pattern)
+    str = @sc.scan(pattern)
+    debug { "X: Aborting tokenization at #{str.inspect} @#{@sc.pos}" }
+    throw :_abort_
+  end
+
+  def tokenize(str, verbose: false)
+    @verbose = verbose
+    @sc = StringScanner.new(str.force_encoding(Encoding::BINARY))
     @token_stream = []
-    walk_scanner(_stop_at_pattern = nil)
+    catch :_abort_ do
+      walk_scanner(_stop_at_pattern = nil)
+    end
     @token_stream
   end
 
-  class PDFRef < Struct.new(:object_id, :object_gen)
-    def initialize(str)
-      super(*str.scan(/(\d+) (\d+) R/).first)
-    end
-  end
-
-  class PDFName < Struct.new(:name)
-  end
-
-  def parse(str)
-    ast = tokenize(str)
-    unwrap_token = ->(token) {
-      if token.length == 2 && token.first.is_a?(Symbol)
-        token_type, token_value = token
-        case token_type
-        when :dict
-          unwrapped_values = token_value.map(&unwrap_token)
-          keys, values = unwrapped_values.partition.with_index {|_, i| i % 2 == 0 }
-          Hash[keys.zip(values)]
-        when :array
-          token_value.map(&unwrap_token)
-        when :name
-          PDFName.new(token_value)
-        when :lit
-          {:true => true, :false => false, :null => nil}.fetch(token_value)
-        end
-      else
-        token
-      end
-    }
-    unwrap_token.(ast)
-  end
-
   def debug
-    warn(yield)
+    warn(yield) if @verbose
   end
 end

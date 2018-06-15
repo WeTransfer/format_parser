@@ -1,12 +1,19 @@
 require 'spec_helper'
-require_relative 'nu_object_parser'
 
-describe 'Object parser' do
+describe FormatParser::PDFParser::Tokenizer do
+  def tokenize(str)
+    FormatParser::PDFParser::Tokenizer.new.tokenize(str)
+  end
+
+  def tokenize_file_at(at_path)
+    FormatParser::PDFParser::Tokenizer.new.tokenize(File.read(at_path))
+  end
+
   describe 'with extracted objects from corpus' do
     fixture_paths = Dir.glob(__dir__ + '/*.pdfobj').sort
     fixture_paths.each do |path|
       it "scans #{File.basename(path)}" do
-        result = NuObjectParser.new.parse(File.read(path))
+        result = tokenize_file_at(path)
         require 'pp'
         pp result
       end
@@ -14,9 +21,7 @@ describe 'Object parser' do
   end
 
   it 'scans the example object from the PDF presentation' do
-    obj = File.read(__dir__ + '/example_a.pdfobj')
-    parser = NuObjectParser.new
-    result = parser.parse(obj)
+    result = tokenize_file_at(__dir__ + '/example_a.pdfobj')
     expect(result).to eq(
       [
         [
@@ -42,51 +47,51 @@ describe 'Object parser' do
   end
 
   it 'scans a simple dictionary with strings and ints as values' do
-    result = NuObjectParser.new.parse('<</Name (Jim) /Age 25>>')
+    result = tokenize('<</Name (Jim) /Age 25>>')
     expect(result).to eq(
-      [[:dict, [[:name, '/Name'], 'Jim', [:name, '/Age'], [:int, 25]]]]
+      [[:dict, [[:name, "/Name"], [:str, "Jim"], [:name, "/Age"], [:int, "25"]]]]
     )
   end
 
   it 'scans a simple dictionary with arbitrary whitespace' do
-    result = NuObjectParser.new.parse('<<
+    result = tokenize('<<
       /Name
         (Jim)
       /Age
         25>>')
     expect(result).to eq(
-      [[:dict, [[:name, '/Name'], 'Jim', [:name, '/Age'], [:int, 25]]]]
+      [[:dict, [[:name, "/Name"], [:str, "Jim"], [:name, "/Age"], [:int, "25"]]]]
     )
   end
 
   it 'parses all kinds of reals' do
-    result = NuObjectParser.new.parse('34.5 -3.62 +123.6 4. -.002 0.0')
+    result = tokenize('34.5 -3.62 +123.6 4. -.002 0.0')
     expect(result).to eq(
-      [[:real, 34.5], [:real, -3.62], [:real, 123.6], [:real, 4.0], [:real, -0.002], [:real, 0.0]]
+      [[:real, "34.5"], [:real, "-3.62"], [:real, "+123.6"], [:real, "4."], [:real, "-.002"], [:real, "0.0"]]
     )
   end
 
   it 'parses an array of integers' do
-    result = NuObjectParser.new.parse('[1 2 3 4]')
+    result = tokenize('[1 2 3 4]')
     expect(result).to eq(
-      [[:array, [[:int, 1], [:int, 2], [:int, 3], [:int, 4]]]]
+      [[:array, [[:int, "1"], [:int, "2"], [:int, "3"], [:int, "4"]]]]
     )
   end
 
   it 'scans an array of integers with one object ref in the middle' do
-    result = NuObjectParser.new.parse('[1 20 00 R 3]')
+    result = tokenize('[1 20 00 R 3]')
     expect(result).to eq(
-      [[:array, [[:int, 1], [:ref, '20 00 R'], [:int, 3]]]]
+      [[:array, [[:int, "1"], [:ref, "20 00 R"], [:int, "3"]]]]
     )
   end
 
   it 'scans an array of names' do
-    result = NuObjectParser.new.parse('[ /Type /Color /Medium/Rare ]')
+    result = tokenize('[ /Type /Color /Medium/Rare ]')
     expect(result).to eq(
       [[:array, [[:name, '/Type'], [:name, '/Color'], [:name, '/Medium'], [:name, '/Rare']]]]
     )
 
-    result = NuObjectParser.new.parse('[/Type/Color/Medium/Rare]')
+    result = tokenize('[/Type/Color/Medium/Rare]')
     expect(result).to eq(
       [[:array, [[:name, '/Type'], [:name, '/Color'], [:name, '/Medium'], [:name, '/Rare']]]]
     )
@@ -106,72 +111,67 @@ describe 'Object parser' do
       /A#42
       /
     )
-    result = NuObjectParser.new.parse(names_str)
+    result = tokenize(names_str)
     expect(result).to eq([
-      [:name, '/Name1'],
-      [:name, '/ASomewhatLongerName'],
-      [:name, '/A;Name_With-Various***Characters?'],
-      [:name, '/1.2'],
-      [:name, '/$$'],
-      [:name, '/@pattern'],
-      [:name, '/.notdef'],
-      [:name, '/Adobe Green'],
-      [:name, '/PANTONE 5757 CV'],
-      [:name, '/paired()parentheses'],
-      [:name, '/The_Key_of_F#_Minor'],
-      [:name, '/AB'],
-      [:name, '/']
+      [:name, "/Name1"],
+      [:name, "/ASomewhatLongerName"],
+      [:name, "/A;Name_With-Various***Characters?"],
+      [:name, "/1.2"],
+      [:name, "/$$"],
+      [:name, "/@pattern"],
+      [:name, "/.notdef"],
+      [:name, "/Adobe#20Green"],
+      [:name, "/PANTONE#205757#20CV"],
+      [:name, "/paired#28#29parentheses"],
+      [:name, "/The_Key_of_F#23_Minor"],
+      [:name, "/A#42"],
+      [:name, "/"]
     ])
   end
 
   it 'handles paired braces and strings escapes' do
-    result = NuObjectParser.new.parse('
+    result = tokenize('
       (Foo \\(with some bars\\))
       (Foo () bar and (baz))
       (Foo (with some bars))
       (((())))
     ')
     expect(result).to eq(
-      [
-        [:str, "Foo (with some bars)"],
-        [:str, "Foo () bar and (baz)"],
-        [:str, "Foo (with some bars)"],
-        [:str, "((()))"]
-      ]
+      [[:str, "Foo \\(with some bars\\)"], [:str, "Foo () bar and (baz)"], [:str, "Foo (with some bars)"], [:str, "((()))"]]
     )
   end
 
   it 'detects an unterminated string' do
     expect {
-      NuObjectParser.new.parse('(Hello there')
+      tokenize('(Hello there')
     }.to raise_error(/did not terminate/)
   end
 
   it 'detects an unterminated array' do
     expect {
-      NuObjectParser.new.parse('[')
+      tokenize('[')
     }.to raise_error(/did not terminate/)
   end
 
   it 'detects an unterminated dictionary' do
     expect {
-      NuObjectParser.new.parse('<< /Ohai')
+      tokenize('<< /Ohai')
     }.to raise_error(/did not terminate/)
   end
 
   it 'detects a truncated dictionary opener' do
     expect {
-      NuObjectParser.new.parse('<</')
-    }.to raise_error(/PDF name at 2/)
+      tokenize('<</')
+    }.to raise_error(/Dictionary did not terminate/)
   end
 
   it 'responds well to fuzzed input' do
     random = Random.new(12345)
     1024.times do
       begin
-        result = NuObjectParser.new.parse(random.bytes(128))
+        result = tokenize(random.bytes(128))
         expect(result).to be_kind_of(Array)
-      rescue NuObjectParser::Malformed
+      rescue FormatParser::PDFParser::Tokenizer::Malformed
         # Everything good, we failed as we should
       end
     end

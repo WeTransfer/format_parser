@@ -1,4 +1,6 @@
 class FormatParser::PDFParser
+  require_relative 'pdf_parser/tokenizer'
+  require_relative 'pdf_parser/transformer'
   include FormatParser::IOUtils
 
   # First 9 bytes of a PDF should be in this format, according to:
@@ -50,7 +52,7 @@ class FormatParser::PDFParser
       next unless obj_header.include?('/Type/Pages') || obj_header.include?('/Type/Catalog')
       io.seek(xref.offset)
       object_buf = io.read(xref.length_limit)
-      parse_object_with_dictionary(object_buf)
+      parse_pdf_object(object_buf)
     end
 
     raise 'nope'
@@ -130,17 +132,18 @@ class FormatParser::PDFParser
     end
   end
 
-  def read_until_linebreak(io, char_limit: 32)
+  def read_until_delimiter(io, delimiter:, char_limit: 32)
     buf = StringIO.new(''.b)
     char_limit.times do
       char = safe_read(io, 1).force_encoding(Encoding::BINARY)
-      if char == "\n"
-        break
-      else
-        buf << char
-      end
+      buf << char
+      break if buf.string.end_with?(delimiter)
     end
     buf.string.strip
+  end
+
+  def read_until_linebreak(io, char_limit: 32)
+    read_until_delimiter(io, delimiter: "\n", char_limit: char_limit)
   end
 
   def min(*of_items)
@@ -151,8 +154,10 @@ class FormatParser::PDFParser
     of_items.sort.pop
   end
 
-  def parse_object_with_dictionary(str)
-    File.open(Digest::SHA1.hexdigest(str) + '.pdfobj', 'wb') { |f| f << str }
+  def parse_pdf_object(str)
+    token_stream = Tokenizer.new.tokenize(str)
+    tree = Transformer.new.transform(token_stream)
+    $stderr.puts tree.inspect
   end
 
   FormatParser.register_parser self, natures: :document, formats: :pdf
