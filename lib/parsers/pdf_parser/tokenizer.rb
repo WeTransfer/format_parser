@@ -1,3 +1,5 @@
+require 'strscan'
+
 class FormatParser::PDFParser::Tokenizer
   Malformed = Class.new(RuntimeError)
   RE = ->(str) { /#{Regexp.escape(str)}/ }
