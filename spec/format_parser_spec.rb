@@ -5,6 +5,10 @@ describe FormatParser do
     expect(FormatParser::VERSION).to be_kind_of(String)
   end
 
+  it 'exposes the Measurometer constant' do
+    expect(FormatParser::Measurometer).to be_kind_of(Module)
+  end
+
   describe '.parse' do
     it 'returns nil when trying to parse an empty IO' do
       d = StringIO.new('')

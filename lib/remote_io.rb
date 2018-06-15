@@ -60,7 +60,7 @@ class FormatParser::RemoteIO
   # @return [String] the read bytes
   def read(n_bytes)
     http_range = (@pos..(@pos + n_bytes - 1))
-    maybe_size, maybe_body = request_range(http_range)
+    maybe_size, maybe_body = Measurometer.instrument('format_parser.RemoteIO.read') { request_range(http_range) }
     if maybe_size && maybe_body
       @remote_size = maybe_size
       @pos += maybe_body.bytesize
@@ -103,10 +103,10 @@ class FormatParser::RemoteIO
       # cannot hint size with this response - at lease not when working with S3
       return
     when 500..599
-      FormatParser::Measurometer.increment_counter('format_parser.RemoteIO.upstream50x_errors', 1)
+      Measurometer.increment_counter('format_parser.RemoteIO.upstream50x_errors', 1)
       raise IntermittentFailure.new(response.status, "Server at #{@uri} replied with a #{response.status} and we might want to retry")
     else
-      FormatParser::Measurometer.increment_counter('format_parser.RemoteIO.invalid_request_errors', 1)
+      Measurometer.increment_counter('format_parser.RemoteIO.invalid_request_errors', 1)
       raise InvalidRequest.new(response.status, "Server at #{@uri} replied with a #{response.status} and refused our request")
     end
   end

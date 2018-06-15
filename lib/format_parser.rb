@@ -1,4 +1,5 @@
 require 'set'
+require 'measurometer'
 
 # A pretty nimble module for parsing file metadata using partial reads. Contains all the
 # top-level methods of the library.
@@ -16,6 +17,10 @@ module FormatParser
   require_relative 'remote_io'
   require_relative 'io_constraint'
   require_relative 'care'
+
+  # Define Measurometer in the internal namespace as well
+  # so that we stay compatible for the applications that use it
+  const_set(:Measurometer, ::Measurometer)
 
   # Is used to manage access to the shared array of parser constructors, which might
   # potentially be mutated from different threads. The mutex won't be hit too often
@@ -250,7 +255,4 @@ module FormatParser
   Dir.glob(__dir__ + '/parsers/*.rb').sort.each do |parser_file|
     require parser_file
   end
-  # The Measurometer latches itself onto existing classes, so load it after
-  # we have loaded all the parsers
-  require_relative 'measurometer'
 end

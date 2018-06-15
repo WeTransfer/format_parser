@@ -77,9 +77,9 @@ class FormatParser::ReadLimiter
   #   `format_parser.TIFF.read_limiter.num_seeks` and so forth
   # @return void
   def send_metrics(prefix)
-    FormatParser::Measurometer.add_distribution_value('format_parser.%s.read_limiter.num_seeks' % prefix, @seeks)
-    FormatParser::Measurometer.add_distribution_value('format_parser.%s.read_limiter.num_reads' % prefix, @reads)
-    FormatParser::Measurometer.add_distribution_value('format_parser.%s.read_limiter.read_bytes' % prefix, @bytes)
+    Measurometer.add_distribution_value('format_parser.%s.read_limiter.num_seeks' % prefix, @seeks)
+    Measurometer.add_distribution_value('format_parser.%s.read_limiter.num_reads' % prefix, @reads)
+    Measurometer.add_distribution_value('format_parser.%s.read_limiter.read_bytes' % prefix, @bytes)
   end
 
   # Resets all the recorded call counters so that the object can be reused for the next parser,

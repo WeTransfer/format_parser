@@ -41,4 +41,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'pry', '~> 0.11'
   spec.add_development_dependency 'yard', '~> 0.9'
   spec.add_development_dependency 'wetransfer_style', '0.5.0'
+  spec.add_development_dependency 'measurometer', '~> 1'
 end

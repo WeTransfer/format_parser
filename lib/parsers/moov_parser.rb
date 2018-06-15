@@ -27,7 +27,9 @@ class FormatParser::MOOVParser
     # size that gets parsed just before.
     max_read_offset = 0xFFFFFFFF
     decoder = Decoder.new
-    atom_tree = decoder.extract_atom_stream(io, max_read_offset)
+    atom_tree = Measurometer.instrument('format_parser.Decoder.extract_atom_stream') do
+      decoder.extract_atom_stream(io, max_read_offset)
+    end
 
     ftyp_atom = decoder.find_first_atom_by_path(atom_tree, 'ftyp')
     file_type = ftyp_atom.field_value(:major_brand)

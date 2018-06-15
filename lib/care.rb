@@ -173,10 +173,10 @@ class Care
     # @param io[IO] the IO to read from
     # @param page_i[Integer] which page (zero-based) to read
     def read_page(io, page_i)
-      FormatParser::Measurometer.increment_counter('format_parser.parser.Care.page_reads_from_upsteam', 1)
+      Measurometer.increment_counter('format_parser.parser.Care.page_reads_from_upsteam', 1)
 
       io.seek(page_i * @page_size)
-      read_result = io.read(@page_size)
+      read_result = Measurometer.instrument('format_parser.Care.read_page') { io.read(@page_size) }
       if read_result.nil?
         # If the read went past the end of the IO the read result will be nil,
         # so we know our IO is exhausted here

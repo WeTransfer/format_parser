@@ -1,3 +1,4 @@
+* Use Measurometer provided by the [measurometer gem](https://rubygems.org/gems/measurometer)
 * Add support for the Ogg format
 
 ## 0.13.6
