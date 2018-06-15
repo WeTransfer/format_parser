@@ -14,7 +14,7 @@ class FormatParser::PDFParser
   # this. The only way of solving this correctly is by adding
   # different types of PDF's in the specs.
   #
-  EOF_MARKER    = '%EOF'
+  EOF_MARKER = '%EOF'
 
   def call(io)
     io = FormatParser::IOConstraint.new(io)
@@ -22,7 +22,7 @@ class FormatParser::PDFParser
     return unless safe_read(io, 9) =~ PDF_MARKER
 
     io.seek(io.size - 5)
-#    return unless safe_read(io, 5) == '%%EOF'
+    #    return unless safe_read(io, 5) == '%%EOF'
 
     xref_offset = locate_xref_table_offset(io)
     return unless xref_offset
@@ -43,18 +43,17 @@ class FormatParser::PDFParser
       # Then we need to actually go in, read the object and parse the dictionary - luckily
       # this is not that much trouble and we can read the entire object, since it is small.
       # So let's get at it.
-      next if xref.length_limit > 1024 # Skip objects which are too large, they won't be headers anyway 
+      next if xref.length_limit > 1024 # Skip objects which are too large, they won't be headers anyway
 
       # Do a quickie detection reading just a tiny piece of the object
       obj_header = safe_read(io, 32)
-      if obj_header.include?('/Type/Pages') || obj_header.include?('/Type/Catalog')
-        io.seek(xref.offset)
-        object_buf = io.read(xref.length_limit)
-        parse_object_with_dictionary(object_buf)
-      end
+      next unless obj_header.include?('/Type/Pages') || obj_header.include?('/Type/Catalog')
+      io.seek(xref.offset)
+      object_buf = io.read(xref.length_limit)
+      parse_object_with_dictionary(object_buf)
     end
 
-    raise "nope"
+    raise 'nope'
     FormatParser::Document.new(
       format: :pdf,
       page_count: attributes[:page_count]
@@ -107,7 +106,7 @@ class FormatParser::PDFParser
     end
 
     # Reject all disabled objects
-    xref_table.reject! {|e| e.entry_type == 'f' }
+    xref_table.reject! { |e| e.entry_type == 'f' }
 
     # Sort sequentially in ascending offset in document order
     xref_table.sort_by!(&:offset)
@@ -153,7 +152,7 @@ class FormatParser::PDFParser
   end
 
   def parse_object_with_dictionary(str)
-    File.open(Digest::SHA1.hexdigest(str) + '.pdfobj', 'wb') {|f| f << str }
+    File.open(Digest::SHA1.hexdigest(str) + '.pdfobj', 'wb') { |f| f << str }
   end
 
   FormatParser.register_parser self, natures: :document, formats: :pdf

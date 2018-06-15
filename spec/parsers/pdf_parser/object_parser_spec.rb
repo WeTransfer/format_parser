@@ -25,7 +25,12 @@ describe 'Object parser' do
               :dict, [
                 [:name, '/Name'], 'Jim',
                 [:name, '/Age'], [:int, 39],
-                [:name, '/Children'], [:array, ['Heather', 'Timothy', 'Rebecca']]
+                [:name, '/Children'],
+                [:array, [
+                    [:str, 'Heather'],
+                    [:str, 'Timothy'],
+                    [:str, 'Rebecca']
+                ]]
               ]
             ],
             [:int, 22],
@@ -119,17 +124,20 @@ describe 'Object parser' do
     ])
   end
 
-  it 'handles string escapes' do
-    result = NuObjectParser.new.parse('(Foo \\(with some bars\\))')
+  it 'handles paired braces and strings escapes' do
+    result = NuObjectParser.new.parse('
+      (Foo \\(with some bars\\))
+      (Foo () bar and (baz))
+      (Foo (with some bars))
+      (((())))
+    ')
     expect(result).to eq(
-      ['Foo (with some bars)']
-    )
-  end
-
-  it 'handles paired braces in strings escapes' do
-    result = NuObjectParser.new.parse('(Foo () bar and (baz))')
-    expect(result).to eq(
-      ['Foo (with some bars)']
+      [
+        [:str, "Foo (with some bars)"],
+        [:str, "Foo () bar and (baz)"],
+        [:str, "Foo (with some bars)"],
+        [:str, "((()))"]
+      ]
     )
   end
 
