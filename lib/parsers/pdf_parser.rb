@@ -32,7 +32,8 @@ class FormatParser::PDFParser
     io.seek(xref_offset)
     xref_table = parse_xref_table(io)
 
-    # return unless xref_table.any?
+    return unless xref_table.any?
+
     xref_table.each do |xref|
       io.seek(xref.offset)
       # From here on out we need to proceed as follows. We need to buffer (preemptively)
@@ -45,14 +46,18 @@ class FormatParser::PDFParser
       # Then we need to actually go in, read the object and parse the dictionary - luckily
       # this is not that much trouble and we can read the entire object, since it is small.
       # So let's get at it.
-      next if xref.length_limit > 1024 # Skip objects which are too large, they won't be headers anyway
+      next if xref.length_limit > 1024 # Skip objects which are too large, they aren't what we are looking for anyway
 
-      # Do a quickie detection reading just a tiny piece of the object
-      obj_header = safe_read(io, 32)
-      next unless obj_header.include?('/Type/Pages') || obj_header.include?('/Type/Catalog')
+      # Do a quickie detection reading just a tiny piece of the object. Strictly speaking we need
+      # to parse the entire object (what if there are 9000 spaces between "/Type" and "/Pages" ?)
+      # but in practice we should be able to get away with just a few things here.
+      obj_header = safe_read(io, 64)
+      next unless obj_header.include?('/Pages') || obj_header.include?('/Catalog')
+
       io.seek(xref.offset)
+      # Reduce the length limit - we should read less of it if we can
       object_buf = io.read(xref.length_limit)
-      parse_pdf_object(object_buf)
+      extract_pdf_object_dictionary(object_buf)
     end
 
     raise 'nope'
@@ -154,10 +159,14 @@ class FormatParser::PDFParser
     of_items.sort.pop
   end
 
-  def parse_pdf_object(str)
+  def extract_pdf_object_dictionary(str)
     token_stream = Tokenizer.new.tokenize(str)
     tree = Transformer.new.transform(token_stream)
-    $stderr.puts tree.inspect
+    # Locate the first hash in the parse tree
+    first_hash = tree.find {|e| e.is_a?(Hash) }
+    $stderr.puts first_hash.inspect
+  rescue => e
+    # Malformed PDF object or our parser has failed somewhere
   end
 
   FormatParser.register_parser self, natures: :document, formats: :pdf
