@@ -32,10 +32,7 @@ class FormatParser::PDFParser
     io.seek(xref_offset)
     xref_table = parse_xref_table(io)
 
-    return unless xref_table.any?
-
     xref_table.each do |xref|
-      io.seek(xref.offset)
       # From here on out we need to proceed as follows. We need to buffer (preemptively)
       # all the /Type/Pages objects for later. We also need to recover the
       # /Type/Catalog object which will refer us to the right /Type /Pages object to use.
@@ -51,20 +48,23 @@ class FormatParser::PDFParser
       # Do a quickie detection reading just a tiny piece of the object. Strictly speaking we need
       # to parse the entire object (what if there are 9000 spaces between "/Type" and "/Pages" ?)
       # but in practice we should be able to get away with just a few things here.
-      obj_header = safe_read(io, 64)
-      next unless obj_header.include?('/Pages') || obj_header.include?('/Catalog')
-
       io.seek(xref.offset)
-      # Reduce the length limit - we should read less of it if we can
-      object_buf = io.read(xref.length_limit)
-      extract_pdf_object_dictionary(object_buf)
+      obj_header = io.read(64).to_s
+      next unless obj_header.include?('/Pages') || obj_header.include?('/Linearized')
+
+      # Seek to that object and read it whole, to the length limit or 1024 bytes whichever is lower
+      io.seek(xref.offset)
+      object_buf = io.read(min(1024, xref.length_limit))
+      dict = extract_pdf_object_dictionary(object_buf)
+      if dict['/Type'] == '/Pages' && dict['/Count']
+        return FormatParser::Document.new(format: :pdf, page_count: dict['/Count'])
+      elsif dict['/Linearized'] && dict['/N']
+        return FormatParser::Document.new(format: :pdf, page_count: dict['/N'])
+      end
     end
 
-    raise 'nope'
-    FormatParser::Document.new(
-      format: :pdf,
-      page_count: attributes[:page_count]
-    )
+    # We could not determine page count
+    FormatParser::Document.new(format: :pdf)
   end
 
   def locate_xref_table_offset(io)
@@ -140,9 +140,8 @@ class FormatParser::PDFParser
   def read_until_delimiter(io, delimiter:, char_limit: 32)
     buf = StringIO.new(''.b)
     char_limit.times do
-      char = safe_read(io, 1).force_encoding(Encoding::BINARY)
-      buf << char
-      break if buf.string.end_with?(delimiter)
+      buf << safe_read(io, 1).force_encoding(Encoding::BINARY)
+      break if buf.string.end_with?(delimiter) || buf.string.bytesize >= char_limit
     end
     buf.string.strip
   end
@@ -162,11 +161,13 @@ class FormatParser::PDFParser
   def extract_pdf_object_dictionary(str)
     token_stream = Tokenizer.new.tokenize(str)
     tree = Transformer.new.transform(token_stream)
-    # Locate the first hash in the parse tree
+    # Locate the first hash (dictionary) in the parse tree
     first_hash = tree.find {|e| e.is_a?(Hash) }
-    $stderr.puts first_hash.inspect
+    first_hash || {}
   rescue => e
+    $stderr.puts e
     # Malformed PDF object or our parser has failed somewhere
+    {}
   end
 
   FormatParser.register_parser self, natures: :document, formats: :pdf
