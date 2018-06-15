@@ -6,9 +6,6 @@ class FormatParser::PDFParser::Transformer
     end
   end
 
-  class PDFName < Struct.new(:name)
-  end
-
   # Permitted character escapes. There aren't _that_ many so we can use a table
   STRING_ESCAPES = {
     "\r"   => "\n",
