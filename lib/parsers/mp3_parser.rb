@@ -74,7 +74,7 @@ class FormatParser::MP3Parser
     # Compute how many bytes are occupied by the actual MPEG frames
     ignore_bytes_at_tail = id3v1 ? 128 : 0
     ignore_bytes_at_head = io.pos
-    bytes_used_by_frames = io.size - ignore_bytes_at_tail - ignore_bytes_at_tail
+    bytes_used_by_frames = io.size - ignore_bytes_at_head - ignore_bytes_at_tail
 
     io.seek(ignore_bytes_at_head)
 

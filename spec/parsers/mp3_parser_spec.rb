@@ -57,7 +57,7 @@ describe FormatParser::MP3Parser do
     expect(parsed.format).to eq(:mp3)
     expect(parsed.num_audio_channels).to eq(2)
     expect(parsed.audio_sample_rate_hz).to eq(44100)
-    expect(parsed.media_duration_seconds).to be_within(0.1).of(1102.46)
+    expect(parsed.media_duration_seconds).to be_within(0.1).of(1098.03)
 
     expect(parsed.intrinsics).not_to be_nil
 
