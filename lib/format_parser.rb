@@ -16,7 +16,7 @@ module FormatParser
   require_relative 'remote_io'
   require_relative 'io_constraint'
   require_relative 'care'
-  require_relative 'active_storage/railtie' if defined?(Rails)
+  require_relative 'active_storage/blob_analyzer'
 
   # Is used to manage access to the shared array of parser constructors, which might
   # potentially be mutated from different threads. The mutex won't be hit too often
