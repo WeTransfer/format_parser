@@ -1,5 +1,9 @@
+## 0.14.0
+* PDF: Reduce the PDF parser to the basic binary detection (PDF/not PDF) until we have a better/more robust PDF parser
+* MP3: Fix the byte length of MPEG frames calculation to correctly account for ID3V1 and ID3V2 instead of ID3V1 twice
+* MP3: Remove the workaround for `id3tag` choking on non-matching genre strings (bumps dependency on `id3tag`)
 * Use Measurometer provided by the [measurometer gem](https://rubygems.org/gems/measurometer)
-* Add support for the Ogg format
+* Ogg: Add support for the Ogg format
 
 ## 0.13.6
 * Make all reads in the MOOV decoder strict - fail early if reads are improperly sized
