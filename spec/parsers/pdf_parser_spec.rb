@@ -18,10 +18,6 @@ describe FormatParser::PDFParser do
       expect(parsed_pdf.nature).to eq(:document)
       expect(parsed_pdf.format).to eq(:pdf)
     end
-
-    it 'has a correct page count' do
-      expect(parsed_pdf.page_count).to eq(hash.fetch(:page_count))
-    end
   end
 
   describe 'a PDF file with a missing version header' do
@@ -44,25 +40,9 @@ describe FormatParser::PDFParser do
     pending 'does not parse succesfully'
   end
 
-  describe 'a PDF file with a missing COUNT_HEADER' do
-    let(:pdf_file) { 'missing_page_count.pdf' }
-
-    it 'does not return a page count' do
-      expect(parsed_pdf.page_count).to eq(nil)
-    end
-  end
-
   describe 'parses a PDF file' do
     describe 'a single page file' do
-      include_examples :behave_like_pdf, file: '1_page.pdf', page_count: 1
-    end
-
-    describe 'a multi page pdf file' do
-      include_examples :behave_like_pdf, file: '2_pages.pdf', page_count: 2
-    end
-
-    describe 'a multi page pdf file with content' do
-      include_examples :behave_like_pdf, file: '10_pages.pdf', page_count: 10
+      include_examples :behave_like_pdf, file: '1_page.pdf'
     end
   end
 end
