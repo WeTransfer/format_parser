@@ -3,7 +3,6 @@ require 'spec_helper'
 describe FormatParser::ActiveStorage::BlobAnalyzer do
   let(:blob_service) { double }
   let(:blob) { double(key: 'blob_key', service: blob_service) }
-  # let(:blob) { double(download: Random.new.bytes(512 * 1024)) }
   let(:analyzer) { described_class.new(blob) }
 
   describe 'self.accept?' do
