@@ -1,3 +1,5 @@
+require_relative 'blob_io'
+
 # An analyzer class that can be hooked to ActiveStorage
 # In order to enable FormatParser to do the blob anaysis instead of ActiveStorage built-in analyzers
 # such as https://github.com/rails/rails/blob/master/activestorage/lib/active_storage/analyzer/image_analyzer.rb
@@ -16,8 +18,7 @@ module FormatParser
       end
 
       def initialize(blob)
-        @blob = blob
-        @io = StringIO.new(blob.download)
+        @io = BlobIO.new(blob)
       end
 
       def metadata

@@ -1,7 +1,9 @@
 require 'spec_helper'
 
 describe FormatParser::ActiveStorage::BlobAnalyzer do
-  let(:blob) { double(download: Random.new.bytes(512 * 1024)) }
+  let(:blob_service) { double }
+  let(:blob) { double(key: 'blob_key', service: blob_service) }
+  # let(:blob) { double(download: Random.new.bytes(512 * 1024)) }
   let(:analyzer) { described_class.new(blob) }
 
   describe 'self.accept?' do
@@ -12,13 +14,15 @@ describe FormatParser::ActiveStorage::BlobAnalyzer do
 
   describe '#metadata' do
     it 'should call FormatParser#parse' do
-      expect(FormatParser).to receive(:parse).with(instance_of(StringIO))
+      expect(FormatParser).to receive(:parse).with(instance_of(FormatParser::ActiveStorage::BlobIO))
 
       analyzer.metadata
     end
 
     context 'when parsing an IO no parser can make sense of' do
-      let(:blob) { double(download: Random.new.bytes(1)) }
+      before do
+        allow(blob_service).to receive(:download_chunk) { Random.new.bytes(1) }
+      end
 
       subject { analyzer.metadata }
 
@@ -26,8 +30,11 @@ describe FormatParser::ActiveStorage::BlobAnalyzer do
     end
 
     context 'when parsing an IO recognised by parsers' do
-      let(:fixture_path) { fixtures_dir + '/JPEG/too_many_APP1_markers_surrogate.jpg' }
-      let(:blob) { double(download: File.open(fixture_path, 'rb').read) }
+      let(:fixture_path) { fixtures_dir + '/test.png' }
+
+      before do
+        allow(blob_service).to receive(:download_chunk) { File.open(fixture_path, 'rb').read }
+      end
 
       subject { analyzer.metadata }
 
