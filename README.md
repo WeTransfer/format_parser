@@ -113,6 +113,18 @@ Therefore we adapt the following approaches:
 We are incredibly grateful to Remco van't Veer for [exifr](https://github.com/remvee/exifr) and to
 Krists Ozols for [id3tag](https://github.com/krists/id3tag) that we are using for crucial tasks.
 
+## ActiveStorage integration
+ActiveStorage by default has it's own analyzers to do files analysis, to make `FormatParser` do the analysis instead, simply add the following to `config/application.rb` in your Rails app:
+
+```ruby
+class Application < Rails::Application
+  .
+  .
+
+  config.active_storage.analyzers.prepend FormatParser::ActiveStorage::BlobAnalyzer
+end
+```
+
 ## Fixture Sources
 
 Unless specified otherwise in this section the fixture files are MIT licensed and from the FastImage and Dimensions projects.
