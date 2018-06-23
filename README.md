@@ -123,6 +123,9 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 - `too_many_APP1_markers_surrogate.jpg` was created by the project maintainers
 * `orient_6.jpg` is used with permission from [Renaud Chaput](https://github.com/renchap)
 
+### ARW
+- `DSC04944.ARW` was created and donated by Andrei Okonechnikov [@okonet](https://github.com/okonet)
+
 ### AIFF
 - fixture.aiff was created by one of the project maintainers and is MIT licensed
 
