@@ -1,3 +1,7 @@
+## 0.14.1
+* Care caching: Clear pages more deliberately instead of relegating them to GC
+* JPEG: Clear the EXIF buffer explicitly
+
 ## 0.14.0
 * PDF: Reduce the PDF parser to the basic binary detection (PDF/not PDF) until we have a better/more robust PDF parser
 * MP3: Fix the byte length of MPEG frames calculation to correctly account for ID3V1 and ID3V2 instead of ID3V1 twice
