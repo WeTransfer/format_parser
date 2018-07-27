@@ -134,12 +134,13 @@ class FormatParser::JPEGParser
     # seek to the start of the next marker and return
     return unless maybe_exif_magic_str == EXIF_MAGIC_STRING
 
-    # ...and only then read the marker contents and parse it as EXIF
-    exif_data = safe_read(@buf, app1_frame_content_length - EXIF_MAGIC_STRING.bytesize)
+    # ...and only then read the marker contents and parse it as EXIF.
+    # Use StringIO.new instead of #write - https://github.com/aws/aws-sdk-ruby/issues/785#issuecomment-95456838
+    exif_buf = StringIO.new(safe_read(@buf, app1_frame_content_length - EXIF_MAGIC_STRING.bytesize))
 
-    Measurometer.add_distribution_value('format_parser.JPEGParser.bytes_sent_to_exif_parser', exif_data.bytesize)
+    Measurometer.add_distribution_value('format_parser.JPEGParser.bytes_sent_to_exif_parser', exif_buf.size)
 
-    @exif_data = exif_from_tiff_io(StringIO.new(exif_data))
+    @exif_data = exif_from_tiff_io(exif_buf)
   rescue EXIFR::MalformedTIFF
     # Not a JPEG or the Exif headers contain invalid data, or
     # an APP1 marker was detected in a file that is not a JPEG
@@ -147,6 +148,9 @@ class FormatParser::JPEGParser
     # Reposition the file pointer to where the next marker will begin,
     # regardless whether we did find usable EXIF or not
     @buf.seek(marker_length_at + 2 + app1_frame_content_length)
+
+    # Make sure to explicitly clear the EXIF buffers since they can be large
+    exif_buf.truncate(0) if exif_buf
   end
 
   def read_frame

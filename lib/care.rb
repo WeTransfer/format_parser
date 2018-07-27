@@ -137,6 +137,7 @@ class Care
     #
     # @return void
     def clear
+      @pages.map { |maybe_page_str| maybe_page_str.clear if maybe_page_str.respond_to?(:clear) }
       @pages.clear
     end
 
