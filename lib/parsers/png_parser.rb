@@ -70,5 +70,5 @@ class FormatParser::PNGParser
     )
   end
 
-  FormatParser.register_parser self, natures: :image, formats: :png
+  FormatParser.register_parser self, natures: :image, formats: :png, priority: 1
 end

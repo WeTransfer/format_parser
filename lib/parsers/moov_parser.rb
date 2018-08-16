@@ -83,5 +83,5 @@ class FormatParser::MOOVParser
     maybe_atom_size >= minimum_ftyp_atom_size && maybe_ftyp_atom_signature == 'ftyp'
   end
 
-  FormatParser.register_parser self, natures: :video, formats: FTYP_MAP.values
+  FormatParser.register_parser self, natures: :video, formats: FTYP_MAP.values, priority: 1
 end

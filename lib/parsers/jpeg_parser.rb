@@ -163,5 +163,5 @@ class FormatParser::JPEGParser
     safe_skip(@buf, length)
   end
 
-  FormatParser.register_parser self, natures: :image, formats: :jpg
+  FormatParser.register_parser self, natures: :image, formats: :jpg, priority: 0
 end
