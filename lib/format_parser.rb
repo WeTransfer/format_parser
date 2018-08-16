@@ -37,6 +37,11 @@ module FormatParser
   # @param callable_or_responding_to_new[#call, #new] an object that either responds to #new or to #call
   # @param formats[Array<Symbol>] file formats that the parser provides
   # @param natures[Array<Symbol>] file natures that the parser provides
+  # @param priority[Integer] whether the parser has to be applied first or later. Parsers that offer the safest
+  #   detection and have the most popular file formats should get a lower priority (0 or 1), the default
+  #   priority is 99. Before parsing parsers get sorted according to their priority value ascending, so parsers
+  #   with a lower priority value will be applied first, and if a single result is requested, will also return
+  #   first.
   # @return void
   def self.register_parser(callable_or_responding_to_new, formats:, natures:, priority: LEAST_PRIORITY)
     parser_provided_formats = Array(formats)
