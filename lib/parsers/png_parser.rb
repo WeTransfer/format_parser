@@ -70,5 +70,6 @@ class FormatParser::PNGParser
     )
   end
 
+  # Give it priority 1 since priority 0 is reserved for JPEG, our most popular
   FormatParser.register_parser self, natures: :image, formats: :png, priority: 1
 end

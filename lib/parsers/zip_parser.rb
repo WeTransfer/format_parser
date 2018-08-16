@@ -54,5 +54,5 @@ class FormatParser::ZIPParser
     end
   end
 
-  FormatParser.register_parser self, natures: [:archive, :document], formats: :zip
+  FormatParser.register_parser self, natures: [:archive, :document], formats: :zip, priority: 2
 end
