@@ -72,6 +72,13 @@ describe 'Fetching data from HTTP remotes' do
     end
   end
 
+  it 'correctly detects a PNG as a PNG without falling back to another filetype due to exhausted reads' do
+    remote_png_url = 'http://localhost:9399/PNG/' + URI.escape('Simulator Screen Shot - iPhone SE - 2018-08-14 at 13.25.53.png')
+    file_information = FormatParser.parse_http(remote_png_url)
+    expect(file_information).not_to be_nil
+    expect(file_information.format).to eq(:png)
+  end
+
   describe 'when parsing remote fixtures' do
     Dir.glob(fixtures_dir + '/**/*.*').sort.each do |fixture_path|
       filename = File.basename(fixture_path)
