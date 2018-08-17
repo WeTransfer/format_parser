@@ -93,6 +93,14 @@ describe FormatParser do
       FormatParser.deregister_parser(exploit)
     end
 
+    it 'correctly detects a PNG as a PNG without falling back to another filetype' do
+      File.open(fixtures_dir + '/PNG/simulator_screenie.png', 'rb') do |file|
+        file_information = FormatParser.parse(file)
+        expect(file_information).not_to be_nil
+        expect(file_information.format).to eq(:png)
+      end
+    end
+
     describe 'when multiple results are requested' do
       let(:blob) { StringIO.new(Random.new.bytes(512 * 1024)) }
       let(:audio) { FormatParser::Audio.new(format: :aiff, num_audio_channels: 1) }
