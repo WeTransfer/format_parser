@@ -73,7 +73,7 @@ describe 'Fetching data from HTTP remotes' do
   end
 
   it 'correctly detects a PNG as a PNG without falling back to another filetype due to exhausted reads' do
-    remote_png_url = 'http://localhost:9399/PNG/' + URI.escape('Simulator Screen Shot - iPhone SE - 2018-08-14 at 13.25.53.png')
+    remote_png_url = 'http://localhost:9399/PNG/simulator_screenie.png'
     file_information = FormatParser.parse_http(remote_png_url)
     expect(file_information).not_to be_nil
     expect(file_information.format).to eq(:png)
