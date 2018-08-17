@@ -275,5 +275,5 @@ class FormatParser::MP3Parser
     end
   end
 
-  FormatParser.register_parser self, natures: :audio, formats: :mp3
+  FormatParser.register_parser self, natures: :audio, formats: :mp3, priority: 99
 end

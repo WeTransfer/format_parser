@@ -28,14 +28,22 @@ module FormatParser
   PARSER_MUX = Mutex.new
   MAX_BYTES_READ_PER_PARSER = 1024 * 1024 * 2
 
+  # The value will ensure the parser having it will be applied to the file last.
+  LEAST_PRIORITY = 99
+
   # Register a parser object to be used to perform file format detection. Each parser FormatParser
   # provides out of the box registers itself using this method.
   #
   # @param callable_or_responding_to_new[#call, #new] an object that either responds to #new or to #call
   # @param formats[Array<Symbol>] file formats that the parser provides
   # @param natures[Array<Symbol>] file natures that the parser provides
+  # @param priority[Integer] whether the parser has to be applied first or later. Parsers that offer the safest
+  #   detection and have the most popular file formats should get a lower priority (0 or 1), the default
+  #   priority is 99. Before parsing parsers get sorted according to their priority value ascending, so parsers
+  #   with a lower priority value will be applied first, and if a single result is requested, will also return
+  #   first.
   # @return void
-  def self.register_parser(callable_or_responding_to_new, formats:, natures:)
+  def self.register_parser(callable_or_responding_to_new, formats:, natures:, priority: LEAST_PRIORITY)
     parser_provided_formats = Array(formats)
     parser_provided_natures = Array(natures)
     PARSER_MUX.synchronize do
@@ -51,6 +59,8 @@ module FormatParser
         @parsers_per_format[provided_format] ||= Set.new
         @parsers_per_format[provided_format] << callable_or_responding_to_new
       end
+      @parser_priorities ||= {}
+      @parser_priorities[callable_or_responding_to_new] = priority
     end
   end
 
@@ -65,6 +75,7 @@ module FormatParser
       (@parsers || []).delete(callable_or_responding_to_new)
       (@parsers_per_nature || {}).values.map { |e| e.delete(callable_or_responding_to_new) }
       (@parsers_per_format || {}).values.map { |e| e.delete(callable_or_responding_to_new) }
+      (@parser_priorities || {}).delete(callable_or_responding_to_new)
     end
   end
 
@@ -229,7 +240,13 @@ module FormatParser
       raise ArgumentError, "No parsers provide both natures #{desired_natures.inspect} and formats #{desired_formats.inspect}"
     end
 
-    factories.map { |callable_or_class| instantiate_parser(callable_or_class) }
+    # Order the parsers according to their priority value. The ones having a lower
+    # value will sort higher and will be applied sooner
+    factories_in_order_of_priority = factories.to_a.sort do |parser_factory_a, parser_factory_b|
+      @parser_priorities[parser_factory_a] <=> @parser_priorities[parser_factory_b]
+    end
+
+    factories_in_order_of_priority.map { |callable_or_class| instantiate_parser(callable_or_class) }
   end
 
   # Instantiates a parser object (an object that responds to `#call`) from a given class

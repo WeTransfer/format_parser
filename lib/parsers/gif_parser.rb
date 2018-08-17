@@ -44,5 +44,5 @@ class FormatParser::GIFParser
     )
   end
 
-  FormatParser.register_parser self, natures: :image, formats: :gif
+  FormatParser.register_parser self, natures: :image, formats: :gif, priority: 0
 end

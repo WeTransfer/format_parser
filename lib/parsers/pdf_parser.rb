@@ -17,5 +17,5 @@ class FormatParser::PDFParser
     FormatParser::Document.new(format: :pdf)
   end
 
-  FormatParser.register_parser self, natures: :document, formats: :pdf
+  FormatParser.register_parser self, natures: :document, formats: :pdf, priority: 1
 end

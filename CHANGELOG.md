@@ -1,3 +1,7 @@
+## 0.15.0
+* Allow setting `:priority` when registering a parser, to make sure certain parsers are applied earlier - depending
+  on detection confidence and file format popularity at WT.
+
 ## 0.14.1
 * Care caching: Clear pages more deliberately instead of relegating them to GC
 * JPEG: Clear the EXIF buffer explicitly

@@ -34,6 +34,36 @@ describe FormatParser do
       end
     end
 
+    it 'triggers parsers in a certain order that corresponds to the parser priorities' do
+      file_contents = StringIO.new('a' * 4096)
+
+      parsers_called_order = []
+      expect_any_instance_of(FormatParser::PNGParser).to receive(:call) { |instance|
+        parsers_called_order << instance.class
+        nil
+      }
+      expect_any_instance_of(FormatParser::MP3Parser).to receive(:call) { |instance|
+        parsers_called_order << instance.class
+        nil
+      }
+      expect_any_instance_of(FormatParser::ZIPParser).to receive(:call) { |instance|
+        parsers_called_order << instance.class
+        nil
+      }
+
+      FormatParser.parse(file_contents)
+
+      png_parser_idx = parsers_called_order.index(FormatParser::PNGParser)
+      mp3_parser_idx = parsers_called_order.index(FormatParser::MP3Parser)
+      zip_parser_idx = parsers_called_order.index(FormatParser::ZIPParser)
+
+      # The PNG parser should have been applied first
+      expect(png_parser_idx).to be < zip_parser_idx
+      # ...and the ZIP parser second (MP3 is the most omnivorous since there
+      # is no clear header or footer in the file
+      expect(mp3_parser_idx).to be > zip_parser_idx
+    end
+
     it "returns either a valid result or a nil for all fuzzed inputs at seed #{RSpec.configuration.seed}" do
       r = Random.new(RSpec.configuration.seed)
       1024.times do
@@ -61,6 +91,14 @@ describe FormatParser do
       expect(result).to be_nil
 
       FormatParser.deregister_parser(exploit)
+    end
+
+    it 'correctly detects a PNG as a PNG without falling back to another filetype' do
+      File.open(fixtures_dir + '/PNG/simulator_screenie.png', 'rb') do |file|
+        file_information = FormatParser.parse(file)
+        expect(file_information).not_to be_nil
+        expect(file_information.format).to eq(:png)
+      end
     end
 
     describe 'when multiple results are requested' do
