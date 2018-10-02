@@ -81,6 +81,8 @@ class FormatParser::MP3Parser
 
     first_frame = initial_frames.first
 
+    id3tags_hash = blend_id3_tags_into_hash(*tags)
+
     file_info = FormatParser::Audio.new(
       format: :mp3,
       # media_duration_frames is omitted because the frames
@@ -88,7 +90,10 @@ class FormatParser::MP3Parser
       # do not tell anything of substance
       num_audio_channels: first_frame.channels,
       audio_sample_rate_hz: first_frame.sample_rate,
-      intrinsics: blend_id3_tags_into_hash(*tags).merge(id3tags: tags)
+      title: id3tags_hash[:title],
+      album: id3tags_hash[:album],
+      artist: id3tags_hash[:artist],
+      intrinsics: id3tags_hash.merge(id3tags: tags)
     )
 
     if maybe_xing_header

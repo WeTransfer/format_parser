@@ -4,6 +4,15 @@ module FormatParser
 
     NATURE = :audio
 
+    # Title of the audio
+    attr_accessor :title
+
+    # Album of the audio
+    attr_accessor :album
+
+    # Artist of the audio
+    attr_accessor :artist
+
     # Type of the file (e.g :mp3)
     attr_accessor :format
 
