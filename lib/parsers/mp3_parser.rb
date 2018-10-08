@@ -90,11 +90,14 @@ class FormatParser::MP3Parser
       # do not tell anything of substance
       num_audio_channels: first_frame.channels,
       audio_sample_rate_hz: first_frame.sample_rate,
-      title: id3tags_hash[:title],
-      album: id3tags_hash[:album],
-      artist: id3tags_hash[:artist],
       intrinsics: id3tags_hash.merge(id3tags: tags)
     )
+
+    extra_file_attirbutes = fetch_extra_attributes_from_id3_tags(id3tags_hash)
+
+    extra_file_attirbutes.each do |name, value|
+      file_info.send(:"#{name}=", value)
+    end
 
     if maybe_xing_header
       duration = maybe_xing_header.frames * SAMPLES_PER_FRAME / first_frame.sample_rate.to_f
@@ -278,6 +281,16 @@ class FormatParser::MP3Parser
     tags.each_with_object({}) do |tag, h|
       h.merge!(TagWrapper.new(tag).to_h)
     end
+  end
+
+  def fetch_extra_attributes_from_id3_tags(id3tags_hash)
+    attrs = {}
+
+    attrs[:title] = FormatParser.string_to_lossy_utf8(id3tags_hash[:title]) unless id3tags_hash[:title].empty?
+    attrs[:album] = FormatParser.string_to_lossy_utf8(id3tags_hash[:album]) unless id3tags_hash[:album].empty?
+    attrs[:artist] = FormatParser.string_to_lossy_utf8(id3tags_hash[:artist]) unless id3tags_hash[:artist].empty?
+
+    attrs
   end
 
   FormatParser.register_parser self, natures: :audio, formats: :mp3, priority: 99
