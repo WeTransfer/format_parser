@@ -15,6 +15,30 @@ describe FormatParser::MP3Parser do
     expect(parsed.media_duration_seconds).to be_within(0.1).of(0.836)
   end
 
+  describe 'title/artist/album attributes' do
+    let(:parsed) { subject.call(File.open(fpath, 'rb')) }
+
+    context 'when exist in id3 tags' do
+      let(:fpath) { fixtures_dir + '/MP3/Cassy.mp3' }
+
+      it 'set the attributes' do
+        expect(parsed.artist).to eq('WeTransfer Studios/GIlles Peterson')
+        expect(parsed.title).to eq('Cassy')
+        expect(parsed.album).to eq('The Psychology of DJing')
+      end
+    end
+
+    context 'when do not exist in id3 tags' do
+      let(:fpath) { fixtures_dir + '/MP3/atc_fixture_vbr.mp3' }
+
+      it 'set attributes with nil' do
+        expect(parsed.title).to be_nil
+        expect(parsed.artist).to be_nil
+        expect(parsed.album).to be_nil
+      end
+    end
+  end
+
   it 'decodes and estimates duration for a CBR MP3' do
     fpath = fixtures_dir + '/MP3/atc_fixture_cbr.mp3'
     parsed = subject.call(File.open(fpath, 'rb'))
