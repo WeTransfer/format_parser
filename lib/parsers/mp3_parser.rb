@@ -286,9 +286,9 @@ class FormatParser::MP3Parser
   def fetch_extra_attributes_from_id3_tags(id3tags_hash)
     attrs = {}
 
-    attrs[:title] = FormatParser.string_to_lossy_utf8(id3tags_hash[:title]) unless id3tags_hash[:title].empty?
-    attrs[:album] = FormatParser.string_to_lossy_utf8(id3tags_hash[:album]) unless id3tags_hash[:album].empty?
-    attrs[:artist] = FormatParser.string_to_lossy_utf8(id3tags_hash[:artist]) unless id3tags_hash[:artist].empty?
+    attrs[:title] = FormatParser.string_to_lossy_utf8(id3tags_hash[:title]) unless id3tags_hash[:title].to_s.empty?
+    attrs[:album] = FormatParser.string_to_lossy_utf8(id3tags_hash[:album]) unless id3tags_hash[:album].to_s.empty?
+    attrs[:artist] = FormatParser.string_to_lossy_utf8(id3tags_hash[:artist]) unless id3tags_hash[:artist].to_s.empty?
 
     attrs
   end
