@@ -11,6 +11,10 @@ class FormatParser::MOOVParser
     'm4a ' => :m4a,
   }
 
+  def self.likely_match?(filename)
+    filename =~ /\.(mov|m4a|ma4|mp4|aac)$/i
+  end
+
   def call(io)
     return unless matches_moov_definition?(io)
 

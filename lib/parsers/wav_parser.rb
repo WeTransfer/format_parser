@@ -1,6 +1,10 @@
 class FormatParser::WAVParser
   include FormatParser::IOUtils
 
+  def self.likely_match?(filename)
+    filename =~ /\.wav$/i
+  end
+
   def call(io)
     # Read the RIFF header. Chunk descriptor should be RIFF, the size should
     # contain the size of the entire file in bytes minus 8 bytes for the

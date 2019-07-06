@@ -1,6 +1,10 @@
 class FormatParser::FDXParser
   include FormatParser::IOUtils
 
+  def self.likely_match?(filename)
+    filename =~ /\.fdx$/i
+  end
+
   def call(io)
     return unless xml_check(io)
     file_and_document_type = safe_read(io, 100)

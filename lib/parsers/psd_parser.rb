@@ -3,6 +3,10 @@ class FormatParser::PSDParser
 
   PSD_HEADER = [0x38, 0x42, 0x50, 0x53]
 
+  def self.likely_match?(filename)
+    filename =~ /\.psd$/i # Maybe also PSB at some point
+  end
+
   def call(io)
     io = FormatParser::IOConstraint.new(io)
     magic_bytes = safe_read(io, 4).unpack('C4')

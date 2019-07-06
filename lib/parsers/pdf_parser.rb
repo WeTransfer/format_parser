@@ -9,6 +9,10 @@ class FormatParser::PDFParser
   #
   PDF_MARKER = /%PDF-1\.[0-8]{1}/
 
+  def self.likely_match?(filename)
+    filename =~ /\.(pdf|ai)$/i
+  end
+
   def call(io)
     io = FormatParser::IOConstraint.new(io)
 

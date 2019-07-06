@@ -5,6 +5,10 @@ class FormatParser::ZIPParser
   include OfficeFormats
   include FormatParser::IOUtils
 
+  def self.likely_match?(filename)
+    filename =~ /\.(zip|docx|keynote|numbers|pptx|xlsx)$/i
+  end
+
   def call(io)
     io = FormatParser::IOConstraint.new(io)
     safe_read(io, 1) # Ensure the file is not empty
