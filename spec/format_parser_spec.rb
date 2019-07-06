@@ -139,7 +139,7 @@ describe FormatParser do
 
     it 'passes keyword arguments to parse()' do
       path = fixtures_dir + '/WAV/c_M1F1-Alaw-AFsp.wav'
-      expect(FormatParser).to receive(:parse).with(an_instance_of(File), foo: :bar)
+      expect(FormatParser).to receive(:parse).with(an_instance_of(File), filename_hint: 'c_M1F1-Alaw-AFsp.wav', foo: :bar)
       FormatParser.parse_file_at(path, foo: :bar)
     end
   end
@@ -164,6 +164,14 @@ describe FormatParser do
     it 'omits parsers not matching nature' do
       image_parsers = FormatParser.parsers_for([:image], [:tif, :jpg, :aiff, :mp3])
       expect(image_parsers.length).to eq(2)
+    end
+
+    it 'returns an array with the ZIPParser first if the filename_hint is for a ZIP file' do
+      prioritized_parsers = FormatParser.parsers_for([:archive, :document, :image, :audio], [:tif, :jpg, :zip, :docx, :mp3, :aiff], nil)
+      expect(prioritized_parsers.first).not_to be_kind_of(FormatParser::ZIPParser)
+
+      prioritized_parsers = FormatParser.parsers_for([:archive, :document, :image, :audio], [:tif, :jpg, :zip, :docx, :mp3, :aiff], 'a-file.zip')
+      expect(prioritized_parsers.first).to be_kind_of(FormatParser::ZIPParser)
     end
   end
 
