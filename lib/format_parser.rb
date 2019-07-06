@@ -257,7 +257,7 @@ module FormatParser
 
 
     # If there is one parser that is more likely to match, place it first
-    if first_match = factories_in_order_of_priority.find {|f| f.respond_to?(:likely_match?) && f.likely_match?(filename_hint) }
+    if first_match = factories_in_order_of_priority.find { |f| f.respond_to?(:likely_match?) && f.likely_match?(filename_hint) }
       factories_in_order_of_priority.delete(first_match)
       factories_in_order_of_priority.unshift(first_match)
     end
