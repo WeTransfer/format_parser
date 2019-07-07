@@ -94,6 +94,7 @@ module FormatParser
 
   # Parses the file at the given `path` and returns the results as if it were any IO
   # given to `.parse`. The accepted keyword arguments are the same as the ones for `parse`.
+  # The file path will be used to provide the `filename_hint` to `.parse()`.
   #
   # @param path[String] the path to the file to parse on the local filesystem
   # @param kwargs the keyword arguments to be delegated to `.parse`
@@ -119,10 +120,10 @@ module FormatParser
   #   When using `:first` parsing will stop at the first successful match and other parsers won't run.
   # @param limits_config[ReadLimitsConfig] the configuration object for various read/cache limits. The default
   #   one should be good for most cases.
-  # @param filename_hint[String?] the filename. If provided, the first parsers that will be applied are
-  #   going to be the ones which match this filename extension and are therefore more
-  #   likely to match. This way we can "rearrange" our format popularity list just
-  #   for this file.
+  # @param filename_hint[String?] the filename. If provided, the first parser applied will be the
+  #   one that responds `true` to `likely_match?` with that filename as an argument. This way
+  #   we can optimize the order of application of parsers and start with the one that is more likely
+  #   to match.
   # @return [Array<Result>, Result, nil] either an Array of results, a single parsing result or `nil`if
   #   no useful metadata could be recovered from the file
   def self.parse(io, natures: @parsers_per_nature.keys, formats: @parsers_per_format.keys, results: :first, limits_config: default_limits_config, filename_hint: nil)
