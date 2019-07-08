@@ -1,3 +1,14 @@
+## 0.16.0
+* Add `filename_hint` keyword argument to `FormatParser.parse`. This can hint the library to apply
+  the parser that will likely match for this filename first, and the other parsers later. This helps
+  avoiding extra work when parsing less-popular file formats, and can be optionally used if the caller
+  knows the filename of the original file. Note that the filename is only that: a **hint,** it helps
+  apply parsers more efficiently but does not specify the actual format of the file that is going to
+  be detected.
+
+## 0.15.1
+* Relax the "ks" dependency version since we do not need the constraint to be so strict
+
 ## 0.15.0
 * Allow setting `:priority` when registering a parser, to make sure certain parsers are applied earlier - depending
   on detection confidence and file format popularity at WT.
