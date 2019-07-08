@@ -15,8 +15,8 @@ class FormatParser::PNGParser
     6 => true,
   }
 
-  def chunk_length_and_type(io)
-    safe_read(io, 8).unpack('Na4')
+  def self.likely_match?(filename)
+    filename =~ /\.png$/i
   end
 
   def call(io)
@@ -68,6 +68,10 @@ class FormatParser::PNGParser
       has_multiple_frames: has_animation,
       num_animation_or_video_frames: num_frames,
     )
+  end
+
+  def chunk_length_and_type(io)
+    safe_read(io, 8).unpack('Na4')
   end
 
   # Give it priority 1 since priority 0 is reserved for JPEG, our most popular

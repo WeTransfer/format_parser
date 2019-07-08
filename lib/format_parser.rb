@@ -86,18 +86,22 @@ module FormatParser
   # @param kwargs the keyword arguments to be delegated to `.parse`
   # @see {.parse}
   def self.parse_http(url, **kwargs)
+    # Do not extract the filename, since the URL
+    # can really be "anything". But if the caller
+    # provides filename_hint it will be carried over
     parse(RemoteIO.new(url), **kwargs)
   end
 
   # Parses the file at the given `path` and returns the results as if it were any IO
   # given to `.parse`. The accepted keyword arguments are the same as the ones for `parse`.
+  # The file path will be used to provide the `filename_hint` to `.parse()`.
   #
   # @param path[String] the path to the file to parse on the local filesystem
   # @param kwargs the keyword arguments to be delegated to `.parse`
   # @see {.parse}
   def self.parse_file_at(path, **kwargs)
     File.open(path, 'rb') do |io|
-      parse(io, **kwargs)
+      parse(io, filename_hint: File.basename(path), **kwargs)
     end
   end
 
@@ -116,9 +120,13 @@ module FormatParser
   #   When using `:first` parsing will stop at the first successful match and other parsers won't run.
   # @param limits_config[ReadLimitsConfig] the configuration object for various read/cache limits. The default
   #   one should be good for most cases.
+  # @param filename_hint[String?] the filename. If provided, the first parser applied will be the
+  #   one that responds `true` to `likely_match?` with that filename as an argument. This way
+  #   we can optimize the order of application of parsers and start with the one that is more likely
+  #   to match.
   # @return [Array<Result>, Result, nil] either an Array of results, a single parsing result or `nil`if
   #   no useful metadata could be recovered from the file
-  def self.parse(io, natures: @parsers_per_nature.keys, formats: @parsers_per_format.keys, results: :first, limits_config: default_limits_config)
+  def self.parse(io, natures: @parsers_per_nature.keys, formats: @parsers_per_format.keys, results: :first, limits_config: default_limits_config, filename_hint: nil)
     # Limit the number of cached _pages_ we may fetch. This allows us to limit the number
     # of page faults (page cache misses) a parser may incur
     read_limiter_under_cache = FormatParser::ReadLimiter.new(io, max_reads: limits_config.max_pagefaults_per_parser)
@@ -140,7 +148,7 @@ module FormatParser
     # Always instantiate parsers fresh for each input, since they might
     # contain instance variables which otherwise would have to be reset
     # between invocations, and would complicate threading situations
-    parsers = parsers_for(natures, formats)
+    parsers = parsers_for(natures, formats, filename_hint)
 
     # Limit how many operations the parser can perform
     limited_io = ReadLimiter.new(
@@ -225,9 +233,11 @@ module FormatParser
   #
   # @param desired_natures[Array] which natures should be considered (like `[:image, :archive]`)
   # @param desired_formats[Array] which formats should be considered (like `[:tif, :jpg]`)
+  # @param filename_hint[String?] the filename hint for the file. If provided,
+  #     the parser that likely matches this filename will be applied first.
   # @return [Array<#call>] an array of callable parsers
   # @raise ArgumentError when there are no parsers satisfying the constraint
-  def self.parsers_for(desired_natures, desired_formats)
+  def self.parsers_for(desired_natures, desired_formats, filename_hint = nil)
     assemble_parser_set = ->(hash_of_sets, keys_of_interest) {
       hash_of_sets.values_at(*keys_of_interest).compact.inject(&:+) || Set.new
     }
@@ -244,6 +254,12 @@ module FormatParser
     # value will sort higher and will be applied sooner
     factories_in_order_of_priority = factories.to_a.sort do |parser_factory_a, parser_factory_b|
       @parser_priorities[parser_factory_a] <=> @parser_priorities[parser_factory_b]
+    end
+
+    # If there is one parser that is more likely to match, place it first
+    if first_match = factories_in_order_of_priority.find { |f| f.respond_to?(:likely_match?) && f.likely_match?(filename_hint) }
+      factories_in_order_of_priority.delete(first_match)
+      factories_in_order_of_priority.unshift(first_match)
     end
 
     factories_in_order_of_priority.map { |callable_or_class| instantiate_parser(callable_or_class) }

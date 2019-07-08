@@ -18,6 +18,10 @@ class FormatParser::AIFFParser
     'ANNO',
   ]
 
+  def self.likely_match?(filename)
+    filename =~ /\.aiff?$/i
+  end
+
   def call(io)
     io = FormatParser::IOConstraint.new(io)
     form_chunk_type, chunk_size = safe_read(io, 8).unpack('a4N')

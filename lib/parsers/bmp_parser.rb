@@ -6,6 +6,10 @@ class FormatParser::BMPParser
   VALID_BMP = 'BM'
   PERMISSIBLE_PIXEL_ARRAY_LOCATIONS = 40..512
 
+  def self.likely_match?(filename)
+    filename =~ /\.bmp$/i
+  end
+
   def call(io)
     io = FormatParser::IOConstraint.new(io)
 

@@ -4,6 +4,10 @@ class FormatParser::GIFParser
   HEADERS = ['GIF87a', 'GIF89a'].map(&:b)
   NETSCAPE_AND_AUTHENTICATION_CODE = 'NETSCAPE2.0'
 
+  def self.likely_match?(filename)
+    filename =~ /\.gif$/i
+  end
+
   def call(io)
     io = FormatParser::IOConstraint.new(io)
     header = safe_read(io, 6)

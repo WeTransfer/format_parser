@@ -5,6 +5,10 @@ class FormatParser::TIFFParser
   MAGIC_LE = [0x49, 0x49, 0x2A, 0x0].pack('C4')
   MAGIC_BE = [0x4D, 0x4D, 0x0, 0x2A].pack('C4')
 
+  def self.likely_match?(filename)
+    filename =~ /\.tiff?$/i
+  end
+
   def call(io)
     io = FormatParser::IOConstraint.new(io)
 

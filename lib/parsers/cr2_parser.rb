@@ -7,6 +7,10 @@ class FormatParser::CR2Parser
   TIFF_HEADER = [0x49, 0x49, 0x2a, 0x00]
   CR2_HEADER  = [0x43, 0x52, 0x02, 0x00]
 
+  def self.likely_match?(filename)
+    filename =~ /\.cr2$/i
+  end
+
   def call(io)
     io = FormatParser::IOConstraint.new(io)
 

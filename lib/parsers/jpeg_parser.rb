@@ -13,6 +13,10 @@ class FormatParser::JPEGParser
   EXIF_MAGIC_STRING = "Exif\0\0".b
   MUST_FIND_NEXT_MARKER_WITHIN_BYTES = 1024
 
+  def self.likely_match?(filename)
+    filename =~ /\.jpe?g$/i
+  end
+
   def call(io)
     @buf = FormatParser::IOConstraint.new(io)
     @width             = nil

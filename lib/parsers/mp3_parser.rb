@@ -53,6 +53,10 @@ class FormatParser::MP3Parser
     end
   end
 
+  def self.likely_match?(filename)
+    filename =~ /\.mp3$/i
+  end
+
   def call(raw_io)
     io = FormatParser::IOConstraint.new(raw_io)
 

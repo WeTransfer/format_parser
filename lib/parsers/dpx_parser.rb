@@ -19,6 +19,10 @@ class FormatParser::DPXParser
 
   private_constant :ByteOrderHintIO
 
+  def self.likely_match?(filename)
+    filename =~ /\.dpx$/i
+  end
+
   def call(io)
     io = FormatParser::IOConstraint.new(io)
     magic = safe_read(io, 4)

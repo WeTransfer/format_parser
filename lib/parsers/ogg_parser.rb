@@ -6,6 +6,10 @@ class FormatParser::OggParser
   # Maximum size of an Ogg page
   MAX_POSSIBLE_PAGE_SIZE = 65307
 
+  def self.likely_match?(filename)
+    filename =~ /\.ogg$/i
+  end
+
   def call(io)
     # The format consists of chunks of data each called an "Ogg page". Each page
     # begins with the characters, "OggS", to identify the file as Ogg format.
