@@ -2,22 +2,17 @@ require 'exifr/tiff'
 require 'delegate'
 
 module FormatParser::EXIFParser
-  ORIENTATIONS = [
-    :top_left,
-    :top_right,
-    :bottom_right,
-    :bottom_left,
-    :left_top,
-    :right_top,
-    :right_bottom,
-    :left_bottom
-  ]
-  ROTATED_ORIENTATIONS = ORIENTATIONS - [
-    :bottom_left,
-    :bottom_right,
-    :top_left,
-    :top_right
-  ]
+  ORIENTATIONS = {
+    0 => :unknown, # Non-rotated
+    1 => :top_left, # Non-rotated
+    2 => :top_right, # Non-rotated
+    3 => :bottom_right, # Non-rotated
+    4 => :bottom_left, # Non-rotated
+    5 => :left_top,
+    6 => :right_top,
+    7 => :right_bottom,
+    8 => :left_bottom
+  }
 
   # EXIFR kindly requests the presence of a few more methods than what our IOConstraint
   # is willing to provide, but they can be derived from the available ones
@@ -47,7 +42,7 @@ module FormatParser::EXIFParser
 
   class EXIFResult < SimpleDelegator
     def rotated?
-      ROTATED_ORIENTATIONS.include?(orientation)
+      __getobj__.orientation.to_i > 4
     end
 
     def to_json(*maybe_coder)
@@ -58,7 +53,7 @@ module FormatParser::EXIFParser
 
     def orientation
       value = __getobj__.orientation.to_i
-      ORIENTATIONS.fetch(value - 1)
+      ORIENTATIONS.fetch(value)
     end
   end
 
