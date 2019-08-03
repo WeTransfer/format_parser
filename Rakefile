@@ -2,6 +2,7 @@ require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
 require 'yard'
 require 'rubocop/rake_task'
+require 'parallel_tests/tasks'
 
 YARD::Rake::YardocTask.new(:doc) do |t|
   # The dash has to be between the two to "divide" the source files and
@@ -11,4 +12,5 @@ end
 
 RuboCop::RakeTask.new
 RSpec::Core::RakeTask.new(:spec)
-task default: [:spec, :rubocop]
+
+task default: ['parallel:spec', :rubocop]
