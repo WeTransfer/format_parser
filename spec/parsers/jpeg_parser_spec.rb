@@ -130,4 +130,31 @@ describe FormatParser::JPEGParser do
     serialized = JSON.pretty_generate(result)
     expect(serialized).to be_kind_of(String)
   end
+
+  it 'correctly recognizes various EXIF orientations' do
+    (0..4).each do |n|
+      path = fixtures_dir + "/exif-orientation-testimages/manipulated/Landscape_#{n}.jpg"
+      result = subject.call(File.open(path, 'rb'))
+      expect(result.display_width_px).to eq(1600)
+      expect(result.display_height_px).to eq(1200)
+    end
+    (5..8).each do |n|
+      path = fixtures_dir + "/exif-orientation-testimages/manipulated/Landscape_#{n}.jpg"
+      result = subject.call(File.open(path, 'rb'))
+      expect(result.display_width_px).to eq(1600)
+      expect(result.display_height_px).to eq(1200)
+    end
+    (0..4).each do |n|
+      path = fixtures_dir + "/exif-orientation-testimages/manipulated/Portrait_#{n}.jpg"
+      result = subject.call(File.open(path, 'rb'))
+      expect(result.display_width_px).to eq(1200)
+      expect(result.display_height_px).to eq(1600)
+    end
+    (5..8).each do |n|
+      path = fixtures_dir + "/exif-orientation-testimages/manipulated/Portrait_#{n}.jpg"
+      result = subject.call(File.open(path, 'rb'))
+      expect(result.display_width_px).to eq(1200)
+      expect(result.display_height_px).to eq(1600)
+    end
+  end
 end
