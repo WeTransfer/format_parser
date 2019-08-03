@@ -18,14 +18,6 @@ module FormatParser::EXIFParser
     :top_left,
     :top_right
   ]
-  module MethodsMethodFix
-    # Fix a little bug in EXIFR which breaks delegators
-    # https://github.com/remvee/exifr/pull/55
-    def methods(*)
-      super() # no args
-    end
-  end
-  EXIFR::TIFF.prepend(MethodsMethodFix)
 
   # EXIFR kindly requests the presence of a few more methods than what our IOConstraint
   # is willing to provide, but they can be derived from the available ones
