@@ -11,9 +11,9 @@ describe FormatParser::EXIFParser do
       it "is able to parse #{filename}" do
         result = subject.exif_from_tiff_io(File.open(tiff_path, 'rb'))
         expect(result).not_to be_nil
-        expect(result.orientation).to be_kind_of(Symbol)
+        expect(result.orientation_sym).to be_kind_of(Symbol)
         # Filenames in this dir correspond with the orientation of the file
-        expect(filename).to include(result.orientation.to_s)
+        expect(filename).to include(result.orientation_sym.to_s)
       end
     end
   end
