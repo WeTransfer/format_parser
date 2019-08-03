@@ -37,7 +37,7 @@ class FormatParser::CR2Parser
       height_px: h,
       display_width_px: exif_data.rotated? ? h : w,
       display_height_px: exif_data.rotated? ? w : h,
-      orientation: exif_data.orientation,
+      orientation: exif_data.orientation_sym,
       intrinsics: {exif: exif_data},
     )
   rescue EXIFR::MalformedTIFF

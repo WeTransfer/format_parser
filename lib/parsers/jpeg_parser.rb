@@ -21,7 +21,7 @@ class FormatParser::JPEGParser
     @buf = FormatParser::IOConstraint.new(io)
     @width             = nil
     @height            = nil
-    @exif_data         = nil
+    @exif_data_frames  = []
     scan
   end
 
@@ -66,16 +66,24 @@ class FormatParser::JPEGParser
 
     Measurometer.add_distribution_value('format_parser.JPEGParser.bytes_read_until_capture', @buf.pos)
 
+    # A single file might contain multiple EXIF data frames. In a JPEG this would
+    # manifest as multiple APP1 markers. The way different programs handle these
+    # differs, for us it makes the most sense to simply "flatten" them top-down.
+    # So we start with the first EXIF frame, and we then allow the APP1 markers
+    # that come later in the file to override the properties they _do_ specify.
+    flat_exif = FormatParser::EXIFParser::EXIFStack.new(@exif_data_frames)
+
     # Return at the earliest possible opportunity
     if @width && @height
+      dw, dh = flat_exif.rotated? ? [@height, @width] : [@width, @height]
       result = FormatParser::Image.new(
         format: :jpg,
         width_px: @width,
         height_px: @height,
-        display_width_px: @exif_data && @exif_data.rotated? ? @height : @width,
-        display_height_px: @exif_data && @exif_data.rotated? ? @width : @height,
-        orientation: @exif_data && @exif_data.orientation,
-        intrinsics: {exif: @exif_data},
+        display_width_px: dw,
+        display_height_px: dh,
+        orientation: flat_exif.orientation_sym,
+        intrinsics: {exif: flat_exif},
       )
 
       return result
@@ -144,7 +152,7 @@ class FormatParser::JPEGParser
 
     Measurometer.add_distribution_value('format_parser.JPEGParser.bytes_sent_to_exif_parser', exif_buf.size)
 
-    @exif_data = exif_from_tiff_io(exif_buf)
+    @exif_data_frames << exif_from_tiff_io(exif_buf)
   rescue EXIFR::MalformedTIFF
     # Not a JPEG or the Exif headers contain invalid data, or
     # an APP1 marker was detected in a file that is not a JPEG
