@@ -1,3 +1,9 @@
+## 0.16.1
+* All EXIF: Make sure the 0 orientation does not get silently treated as orientation 8, mislabling
+  images which are not rotated as being rotated (orientation changed)
+* All EXIF: Make sure the 0 orientation (`unknown`) is correctly passed and represented
+* JPEG: Make sure multiple EXIF tags in APP1 markers get handled correctly (via overlays)
+
 ## 0.16.0
 * Add `filename_hint` keyword argument to `FormatParser.parse`. This can hint the library to apply
   the parser that will likely match for this filename first, and the other parsers later. This helps
