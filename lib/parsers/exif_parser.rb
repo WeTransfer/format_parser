@@ -42,7 +42,7 @@ module FormatParser::EXIFParser
 
   class EXIFResult < SimpleDelegator
     def rotated?
-      __getobj__.orientation.to_i > 4
+      orientation.to_i > 4
     end
 
     def to_json(*maybe_coder)
@@ -52,7 +52,11 @@ module FormatParser::EXIFParser
     end
 
     def orientation
-      __getobj__.orientation.to_i
+      # In some EXIF tags the value type is set oddly - it unpacks into multiple values,
+      # and it will look like this: [#<EXIFR::TIFF::Orientation:TopLeft(1)>, nil]
+      orientation_values = Array(__getobj__.orientation)
+      last_usable_value = orientation_values.compact[-1] # Use the last non-nil one
+      last_usable_value.to_i
     end
 
     def orientation_sym
@@ -162,4 +166,6 @@ module FormatParser::EXIFParser
       raw_exif_data ? EXIFResult.new(raw_exif_data) : nil
     end
   end
+
+  extend self
 end

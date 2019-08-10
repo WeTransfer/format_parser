@@ -1,3 +1,6 @@
+## 0.16.2
+* All EXIF: Deal with EXIF orientations that get parsed as an array of [Orientation, nil] due to incorrect padding
+
 ## 0.16.1
 * All EXIF: Make sure the 0 orientation does not get silently treated as orientation 8, mislabling
   images which are not rotated as being rotated (orientation changed)
