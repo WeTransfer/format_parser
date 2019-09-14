@@ -5,7 +5,7 @@ class FormatParser::FLACParser
   MAGIC_BYTE_STRING = 'fLaC'
   BLOCK_HEADER_BYTES = 4
 
-  def self.likely_match?(filename)
+  def likely_match?(filename)
     filename =~ /\.flac$/i
   end
 
@@ -75,5 +75,5 @@ class FormatParser::FLACParser
     s.unpack('B*')[0].to_i(2)
   end
 
-  FormatParser.register_parser self, natures: :audio, formats: :flac
+  FormatParser.register_parser new, natures: :audio, formats: :flac
 end

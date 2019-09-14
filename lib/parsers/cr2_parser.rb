@@ -7,7 +7,7 @@ class FormatParser::CR2Parser
   TIFF_HEADER = [0x49, 0x49, 0x2a, 0x00]
   CR2_HEADER  = [0x43, 0x52, 0x02, 0x00]
 
-  def self.likely_match?(filename)
+  def likely_match?(filename)
     filename =~ /\.cr2$/i
   end
 
@@ -44,5 +44,5 @@ class FormatParser::CR2Parser
     nil
   end
 
-  FormatParser.register_parser self, natures: :image, formats: :cr2
+  FormatParser.register_parser new, natures: :image, formats: :cr2
 end

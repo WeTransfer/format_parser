@@ -11,7 +11,7 @@ class FormatParser::MOOVParser
     'm4a ' => :m4a,
   }
 
-  def self.likely_match?(filename)
+  def likely_match?(filename)
     filename =~ /\.(mov|m4a|ma4|mp4|aac)$/i
   end
 
@@ -87,5 +87,5 @@ class FormatParser::MOOVParser
     maybe_atom_size >= minimum_ftyp_atom_size && maybe_ftyp_atom_signature == 'ftyp'
   end
 
-  FormatParser.register_parser self, natures: :video, formats: FTYP_MAP.values, priority: 1
+  FormatParser.register_parser new, natures: :video, formats: FTYP_MAP.values, priority: 1
 end

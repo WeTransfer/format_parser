@@ -6,7 +6,7 @@ class FormatParser::OggParser
   # Maximum size of an Ogg page
   MAX_POSSIBLE_PAGE_SIZE = 65307
 
-  def self.likely_match?(filename)
+  def likely_match?(filename)
     filename =~ /\.ogg$/i
   end
 
@@ -218,5 +218,5 @@ class FormatParser::OggParser
     0xbcb4666d, 0xb8757bda, 0xb5365d03, 0xb1f740b4
   ].freeze
 
-  FormatParser.register_parser self, natures: :audio, formats: :ogg
+  FormatParser.register_parser new, natures: :audio, formats: :ogg
 end

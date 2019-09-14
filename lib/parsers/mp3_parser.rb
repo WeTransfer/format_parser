@@ -53,7 +53,7 @@ class FormatParser::MP3Parser
     end
   end
 
-  def self.likely_match?(filename)
+  def likely_match?(filename)
     filename =~ /\.mp3$/i
   end
 
@@ -297,5 +297,5 @@ class FormatParser::MP3Parser
     attrs
   end
 
-  FormatParser.register_parser self, natures: :audio, formats: :mp3, priority: 99
+  FormatParser.register_parser new, natures: :audio, formats: :mp3, priority: 99
 end

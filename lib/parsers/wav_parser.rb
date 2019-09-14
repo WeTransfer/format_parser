@@ -1,7 +1,7 @@
 class FormatParser::WAVParser
   include FormatParser::IOUtils
 
-  def self.likely_match?(filename)
+  def likely_match?(filename)
     filename =~ /\.wav$/i
   end
 
@@ -99,5 +99,5 @@ class FormatParser::WAVParser
     )
   end
 
-  FormatParser.register_parser self, natures: :audio, formats: :wav
+  FormatParser.register_parser new, natures: :audio, formats: :wav
 end

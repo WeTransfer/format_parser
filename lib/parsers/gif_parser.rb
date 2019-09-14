@@ -4,7 +4,7 @@ class FormatParser::GIFParser
   HEADERS = ['GIF87a', 'GIF89a'].map(&:b)
   NETSCAPE_AND_AUTHENTICATION_CODE = 'NETSCAPE2.0'
 
-  def self.likely_match?(filename)
+  def likely_match?(filename)
     filename =~ /\.gif$/i
   end
 
@@ -48,5 +48,5 @@ class FormatParser::GIFParser
     )
   end
 
-  FormatParser.register_parser self, natures: :image, formats: :gif, priority: 0
+  FormatParser.register_parser new, natures: :image, formats: :gif, priority: 0
 end

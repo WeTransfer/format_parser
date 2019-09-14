@@ -5,7 +5,7 @@ class FormatParser::TIFFParser
   MAGIC_LE = [0x49, 0x49, 0x2A, 0x0].pack('C4')
   MAGIC_BE = [0x4D, 0x4D, 0x0, 0x2A].pack('C4')
 
-  def self.likely_match?(filename)
+  def likely_match?(filename)
     filename =~ /\.tiff?$/i
   end
 
@@ -43,5 +43,5 @@ class FormatParser::TIFFParser
     safe_read(io, 2) == 'CR'
   end
 
-  FormatParser.register_parser self, natures: :image, formats: :tif
+  FormatParser.register_parser new, natures: :image, formats: :tif
 end
