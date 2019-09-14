@@ -2,8 +2,8 @@ require 'spec_helper'
 
 describe FormatParser::ZIPParser do
   it 'provides filename hints' do
-    expect(FormatParser::ZIPParser).to be_likely_match('file.zip')
-    expect(FormatParser::ZIPParser).not_to be_likely_match('file.tif')
+    expect(subject).to be_likely_match('file.zip')
+    expect(subject).not_to be_likely_match('file.tif')
   end
 
   it 'parses a ZIP archive with Zip64 extra fields (due to the number of files)' do

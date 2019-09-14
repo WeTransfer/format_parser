@@ -15,7 +15,7 @@ class FormatParser::PNGParser
     6 => true,
   }
 
-  def self.likely_match?(filename)
+  def likely_match?(filename)
     filename =~ /\.png$/i
   end
 
@@ -75,5 +75,5 @@ class FormatParser::PNGParser
   end
 
   # Give it priority 1 since priority 0 is reserved for JPEG, our most popular
-  FormatParser.register_parser self, natures: :image, formats: :png, priority: 1
+  FormatParser.register_parser new, natures: :image, formats: :png, priority: 1
 end

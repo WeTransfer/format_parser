@@ -5,7 +5,7 @@ class FormatParser::ZIPParser
   include OfficeFormats
   include FormatParser::IOUtils
 
-  def self.likely_match?(filename)
+  def likely_match?(filename)
     filename =~ /\.(zip|docx|keynote|numbers|pptx|xlsx)$/i
   end
 
@@ -58,5 +58,5 @@ class FormatParser::ZIPParser
     end
   end
 
-  FormatParser.register_parser self, natures: [:archive, :document], formats: :zip, priority: 2
+  FormatParser.register_parser new, natures: [:archive, :document], formats: :zip, priority: 2
 end
