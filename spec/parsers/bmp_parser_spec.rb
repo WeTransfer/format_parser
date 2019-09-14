@@ -52,6 +52,29 @@ describe FormatParser::BMPParser do
     expect(parsed.intrinsics).not_to be_nil
   end
 
+  it 'parses various BMP headers' do
+    # https://github.com/sdsykes/fastimage/commit/6f548c55095ddf00d4f5ad0223f76d4481e251ca#diff-7ef9079d93105bd641c81b464c7af9a3
+    bmp_path = fixtures_dir + '/BMP/test_coreheader.bmp'
+    parsed = subject.call(File.open(bmp_path, 'rb'))
+
+    expect(parsed).not_to be_nil
+    expect(parsed.nature).to eq(:image)
+    expect(parsed.format).to eq(:bmp)
+    expect(parsed.color_mode).to eq(:rgb)
+    expect(parsed.width_px).to eq(40)
+    expect(parsed.height_px).to eq(27)
+
+    bmp_path = fixtures_dir + '/BMP/test_v5header.bmp'
+    parsed = subject.call(File.open(bmp_path, 'rb'))
+
+    expect(parsed).not_to be_nil
+    expect(parsed.nature).to eq(:image)
+    expect(parsed.format).to eq(:bmp)
+    expect(parsed.color_mode).to eq(:rgb)
+    expect(parsed.width_px).to eq(40)
+    expect(parsed.height_px).to eq(27)
+  end
+
   it 'refuses to parse a BMP where the pixel array location is very large' do
     junk_data = [
       'BM',
