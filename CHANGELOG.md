@@ -1,3 +1,8 @@
+## 0.17.0
+* Remove parser factories. A parser should respond to `likely_match?` and `call`. If a parser has to be instantiated anew for
+  every call the parser should take care of instantiating itself.
+* Add support for BMP files with core headers (older version of the BMP format)
+
 ## 0.16.2
 * All EXIF: Deal with EXIF orientations that get parsed as an array of [Orientation, nil] due to incorrect padding
 
