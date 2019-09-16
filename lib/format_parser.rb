@@ -244,40 +244,25 @@ module FormatParser
 
     fitting_by_natures = assemble_parser_set[@parsers_per_nature, desired_natures]
     fitting_by_formats = assemble_parser_set[@parsers_per_format, desired_formats]
-    factories = fitting_by_natures & fitting_by_formats
+    parsers = fitting_by_natures & fitting_by_formats
 
-    if factories.empty?
+    if parsers.empty?
       raise ArgumentError, "No parsers provide both natures #{desired_natures.inspect} and formats #{desired_formats.inspect}"
     end
 
     # Order the parsers according to their priority value. The ones having a lower
     # value will sort higher and will be applied sooner
-    factories_in_order_of_priority = factories.to_a.sort do |parser_factory_a, parser_factory_b|
-      @parser_priorities[parser_factory_a] <=> @parser_priorities[parser_factory_b]
+    parsers_in_order_of_priority = parsers.to_a.sort do |parser_a, parser_b|
+      @parser_priorities[parser_a] <=> @parser_priorities[parser_b]
     end
 
     # If there is one parser that is more likely to match, place it first
-    if first_match = factories_in_order_of_priority.find { |f| f.respond_to?(:likely_match?) && f.likely_match?(filename_hint) }
-      factories_in_order_of_priority.delete(first_match)
-      factories_in_order_of_priority.unshift(first_match)
+    if first_match = parsers_in_order_of_priority.find { |f| f.respond_to?(:likely_match?) && f.likely_match?(filename_hint) }
+      parsers_in_order_of_priority.delete(first_match)
+      parsers_in_order_of_priority.unshift(first_match)
     end
 
-    factories_in_order_of_priority.map { |callable_or_class| instantiate_parser(callable_or_class) }
-  end
-
-  # Instantiates a parser object (an object that responds to `#call`) from a given class
-  # or returns the parameter as is if it is callable by itself - i.e. if it is a Proc
-  #
-  # @param callable_or_responding_to_new[#call, #new] a callable or a Class/Module
-  # @return [#call] a parser that can be called with an IO-ish argument
-  def self.instantiate_parser(callable_or_responding_to_new)
-    if callable_or_responding_to_new.respond_to?(:call)
-      callable_or_responding_to_new
-    elsif callable_or_responding_to_new.respond_to?(:new)
-      callable_or_responding_to_new.new
-    else
-      raise ArgumentError, 'A parser should be either a class with an instance method #call or a Proc'
-    end
+    parsers_in_order_of_priority
   end
 
   def self.string_to_lossy_utf8(str)

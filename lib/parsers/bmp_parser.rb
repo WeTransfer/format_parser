@@ -6,7 +6,7 @@ class FormatParser::BMPParser
   VALID_BMP = 'BM'
   PERMISSIBLE_PIXEL_ARRAY_LOCATIONS = 40..512
 
-  def self.likely_match?(filename)
+  def likely_match?(filename)
     filename =~ /\.bmp$/i
   end
 
@@ -44,5 +44,5 @@ class FormatParser::BMPParser
     )
   end
 
-  FormatParser.register_parser self, natures: :image, formats: :bmp
+  FormatParser.register_parser new, natures: :image, formats: :bmp
 end

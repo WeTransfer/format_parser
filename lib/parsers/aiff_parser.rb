@@ -18,7 +18,7 @@ class FormatParser::AIFFParser
     'ANNO',
   ]
 
-  def self.likely_match?(filename)
+  def likely_match?(filename)
     filename =~ /\.aiff?$/i
   end
 
@@ -84,5 +84,5 @@ class FormatParser::AIFFParser
     (sign == '1' ? -1.0 : 1.0) * (fraction.to_f / ((1 << 63) - 1)) * (2**exponent)
   end
 
-  FormatParser.register_parser self, natures: :audio, formats: :aiff
+  FormatParser.register_parser new, natures: :audio, formats: :aiff
 end

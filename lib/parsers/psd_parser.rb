@@ -3,7 +3,7 @@ class FormatParser::PSDParser
 
   PSD_HEADER = [0x38, 0x42, 0x50, 0x53]
 
-  def self.likely_match?(filename)
+  def likely_match?(filename)
     filename =~ /\.psd$/i # Maybe also PSB at some point
   end
 
@@ -23,5 +23,5 @@ class FormatParser::PSDParser
     )
   end
 
-  FormatParser.register_parser self, natures: :image, formats: :psd
+  FormatParser.register_parser new, natures: :image, formats: :psd
 end

@@ -19,7 +19,7 @@ class FormatParser::DPXParser
 
   private_constant :ByteOrderHintIO
 
-  def self.likely_match?(filename)
+  def likely_match?(filename)
     filename =~ /\.dpx$/i
   end
 
@@ -59,5 +59,5 @@ class FormatParser::DPXParser
     )
   end
 
-  FormatParser.register_parser self, natures: :image, formats: :dpx
+  FormatParser.register_parser new, natures: :image, formats: :dpx
 end

@@ -9,7 +9,7 @@ class FormatParser::PDFParser
   #
   PDF_MARKER = /%PDF-1\.[0-8]{1}/
 
-  def self.likely_match?(filename)
+  def likely_match?(filename)
     filename =~ /\.(pdf|ai)$/i
   end
 
@@ -21,5 +21,5 @@ class FormatParser::PDFParser
     FormatParser::Document.new(format: :pdf)
   end
 
-  FormatParser.register_parser self, natures: :document, formats: :pdf, priority: 1
+  FormatParser.register_parser new, natures: :document, formats: :pdf, priority: 1
 end

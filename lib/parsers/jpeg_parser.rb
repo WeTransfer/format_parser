@@ -17,6 +17,10 @@ class FormatParser::JPEGParser
     filename =~ /\.jpe?g$/i
   end
 
+  def self.call(io)
+    new.call(io)
+  end
+
   def call(io)
     @buf = FormatParser::IOConstraint.new(io)
     @width             = nil

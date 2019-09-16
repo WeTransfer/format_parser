@@ -1,7 +1,7 @@
 class FormatParser::FDXParser
   include FormatParser::IOUtils
 
-  def self.likely_match?(filename)
+  def likely_match?(filename)
     filename =~ /\.fdx$/i
   end
 
@@ -30,5 +30,5 @@ class FormatParser::FDXParser
     end
   end
 
-  FormatParser.register_parser self, natures: :document, formats: :fdx
+  FormatParser.register_parser new, natures: :document, formats: :fdx
 end
