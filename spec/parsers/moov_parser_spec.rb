@@ -104,4 +104,8 @@ describe FormatParser::MOOVParser do
     expect(result.width_px).to eq(160)
     expect(result.height_px).to eq(90)
   end
+
+  it 'provides filename hints' do
+    expect(subject).to be_likely_match('file.m4v')
+  end
 end
