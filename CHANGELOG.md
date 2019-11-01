@@ -1,3 +1,8 @@
+## 0.18.0
+* Adopt [Hippocratic license v. 1.2](https://firstdonoharm.dev/version/1/2/license.html)
+  Note that this might make the license conditions unacceptable for your project. If that is the case,
+  you can use the 0.17.X branch of the library which stays under the original, exact MIT license.
+
 ## 0.17.0
 * Remove parser factories. A parser should respond to `likely_match?` and `call`. If a parser has to be instantiated anew for
   every call the parser should take care of instantiating itself.
