@@ -12,7 +12,7 @@ class FormatParser::MOOVParser
   }
 
   def likely_match?(filename)
-    filename =~ /\.(mov|m4a|ma4|mp4|aac)$/i
+    filename =~ /\.(mov|m4a|ma4|mp4|aac|m4v)$/i
   end
 
   def call(io)
