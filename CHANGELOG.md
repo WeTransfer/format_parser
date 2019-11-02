@@ -1,4 +1,5 @@
 ## 0.18.0
+* Mark m4v as one of the filename extensions likely to parse via the MOOV parser
 * Adopt [Hippocratic license v. 1.2](https://firstdonoharm.dev/version/1/2/license.html)
   Note that this might make the license conditions unacceptable for your project. If that is the case,
   you can use the 0.17.X branch of the library which stays under the original, exact MIT license.
