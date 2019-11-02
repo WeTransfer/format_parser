@@ -177,3 +177,10 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 
 ### .key
 - The `keynote_recognized_as_jpeg.key` file was created by the project maintainers
+
+## Copyright
+
+Copyright (c) 2019 WeTransfer. 
+
+`format_parser` is distributed under the conditions of the [Hippocratic License](https://firstdonoharm.dev/version/1/2/license.html)
+  - See LICENSE.txt for further details.

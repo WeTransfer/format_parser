@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.version       = FormatParser::VERSION
   spec.authors       = ['Noah Berman', 'Julik Tarkhanov']
   spec.email         = ['noah@noahberman.org', 'me@julik.nl']
-  spec.licenses      = ['MIT']
+  spec.licenses      = ['MIT (Hippocratic)']
   spec.summary       = 'A library for efficient parsing of file metadata'
   spec.description   = "A Ruby library for prying open files you can convert to a previewable format, such as video, image and audio files. It includes
   a number of parser modules that try to recover metadata useful for post-processing and layout while reading the absolute
