@@ -22,8 +22,8 @@ class FormatParser::TIFFParser
     exif_data = exif_from_tiff_io(io)
     return unless exif_data
 
-    w = exif_data.image_width
-    h = exif_data.image_length
+    w = exif_data.width
+    h = exif_data.height
 
     FormatParser::Image.new(
       format: :tif,
