@@ -1,3 +1,7 @@
+## 0.19.0
+* Improve handling of Sony ARW files (make sure the width/height is correctly recognized)
+* Update Travis matrix and gitignore
+
 ## 0.18.0
 * Mark m4v as one of the filename extensions likely to parse via the MOOV parser
 * Adopt [Hippocratic license v. 1.2](https://firstdonoharm.dev/version/1/2/license.html)
