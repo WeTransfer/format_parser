@@ -14,7 +14,7 @@ Gem::Specification.new do |spec|
   a number of parser modules that try to recover metadata useful for post-processing and layout while reading the absolute
   minimum amount of data possible."
   spec.homepage      = 'https://github.com/WeTransfer/format_parser'
-  spec.license       = 'MIT'
+  spec.license       = 'MIT (Hippocratic)'
   # to allow pushing to a single host or delete this section to allow pushing to any host.
   if spec.respond_to?(:metadata)
     spec.metadata['allowed_push_host'] = 'https://rubygems.org'

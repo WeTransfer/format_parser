@@ -1,3 +1,6 @@
+## 0.20.0
+* Correctly tag the license on Rubygems as MIT (Hippocratic) for easier audit
+
 ## 0.19.0
 * Improve handling of Sony ARW files (make sure the width/height is correctly recognized)
 * Update Travis matrix and gitignore
