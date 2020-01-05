@@ -100,17 +100,7 @@ module FormatParser::EXIFParser
     end
 
     def to_json(*maybe_coder)
-      # Let EXIF tags that come later overwrite the properties from the tags
-      # that come earlier
-      overlay = @multiple_exif_results.each_with_object({}) do |one_exif_frame, h|
-        h.merge!(one_exif_frame.to_hash)
-      end
-      # Overwrite the orientation with our custom method implementation, because
-      # it does reject 0-values.
-      overlay[:orientation] = orientation
-
-      sanitized = FormatParser::AttributesJSON._sanitize_json_value(overlay)
-      sanitized.to_json(*maybe_coder)
+      to_hash.to_json(*maybe_coder)
     end
 
     def orientation_sym
@@ -135,10 +125,27 @@ module FormatParser::EXIFParser
       0 # If none were found - the orientation is unknown
     end
 
+    # ActiveSupport will attempt to call #to_hash first, and
+    # #to_hash is a decent default implementation to have
+    def to_hash
+      # Let EXIF tags that come later overwrite the properties from the tags
+      # that come earlier
+      overlay = @multiple_exif_results.each_with_object({}) do |one_exif_frame, h|
+        h.merge!(one_exif_frame.to_hash)
+      end
+      # Overwrite the orientation with our custom method implementation, because
+      # it does reject 0-values.
+      overlay[:orientation] = orientation
+
+      FormatParser::AttributesJSON._sanitize_json_value(overlay)
+    end
+
     private
 
-    def respond_to_missing?(method_name)
-      @multiple_exif_results.last.respond_to?(method_name)
+    # respond_to_missing? accepts 2 arguments: the method name symbol
+    # and whether the method being looked up can be private or not
+    def respond_to_missing?(method_name, include_private_methods)
+      @multiple_exif_results.last.respond_to?(method_name, include_private_methods)
     end
 
     def method_missing(*a)

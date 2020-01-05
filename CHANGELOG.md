@@ -1,3 +1,6 @@
+## 0.20.1
+* Make sure EXIF results work correctly with ActiveSupport JSON encoders
+
 ## 0.20.0
 * Correctly tag the license on Rubygems as MIT (Hippocratic) for easier audit
 
