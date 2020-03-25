@@ -60,7 +60,6 @@ class FormatParser::MPEGParser
       format: :mpg,
       width_px: width_px,
       height_px: height_px,
-      # media_duration_seconds: 2, file size in (bytes / bitrate) * 8
       intrinsics: {
         aspect_radio: ASPECT_RATIOS.fetch(radio_hex_raw),
         frame_rate: FRAME_RATES.fetch(rate_hex_raw)
