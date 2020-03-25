@@ -1,4 +1,4 @@
-## 0.20.2
+## 0.21.0
 * Adds support for MPEG video files
 
 ## 0.20.1
