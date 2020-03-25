@@ -29,8 +29,8 @@ class FormatParser::MPEGParser
     8 => '60'
   }
 
-  PACK_HEADER_START_CODE = "000001ba".freeze
-  SEQUENCE_HEADER_START_CODE = "b3".freeze
+  PACK_HEADER_START_CODE = '000001ba'.freeze
+  SEQUENCE_HEADER_START_CODE = 'b3'.freeze
 
   def likely_match?(filename)
     filename =~ /\.(mpg|mpeg)$/i
@@ -38,17 +38,17 @@ class FormatParser::MPEGParser
 
   def call(io)
     return unless matches_mpeg_header?(io)
-    
-    # We are looping though the stream because there can be several sequence headers and some of them are not usefull. 
+
+    # We are looping though the stream because there can be several sequence headers and some of them are not usefull.
     # If we detect that the header is not usefull, then we look for the next one
     # If we reach the EOF, then the mpg is likely to be corrupted and we return nil
     loop do
       search_for_next_sequence_header(io)
       horizontal_size, vertical_size = parse_image_size(io)
       radio_hex, rate_hex = parse_rate_information(io)
-      
+
       if valid_aspect_radio?(radio_hex) && valid_frame_rate?(rate_hex)
-        return file_info(horizontal_size, vertical_size, radio_hex, rate_hex) 
+        return file_info(horizontal_size, vertical_size, radio_hex, rate_hex)
       end
     end
   rescue FormatParser::IOUtils::InvalidRead
@@ -71,14 +71,14 @@ class FormatParser::MPEGParser
   # 1.5 bytes (12 bits) for horizontal size and 1.5 bytes for vertical size
   def parse_image_size(io)
     image_size = to_hex(safe_read(io, 3))
-    return to_decimal(image_size[0..2]), to_decimal(image_size[3..5])
+    [to_decimal(image_size[0..2]), to_decimal(image_size[3..5])]
   end
 
   # The following byte gives us information about the aspect ratio and frame rate
   # 4 bits corresponds to the aspect ratio and 4 bits to the frame rate code
   def parse_rate_information(io)
     rate_information = to_hex(safe_read(io, 1))
-    return rate_information[0].to_i, rate_information[1].to_i
+    [rate_information[0].to_i, rate_information[1].to_i]
   end
 
   def valid_aspect_radio?(radio)
@@ -104,7 +104,7 @@ class FormatParser::MPEGParser
 
   # Unpacks a whole stream to a unique hexadecimal value
   def to_hex(value)
-    value.unpack("H*").first
+    value.unpack('H*').first
   end
 
   def to_decimal(value)
