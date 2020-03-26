@@ -6,11 +6,6 @@
 class FormatParser::MPEGParser
   extend FormatParser::IOUtils
 
-  MPEG_VALUES = {
-    'mpg' => :mpg,
-    'mpeg' => :mpeg
-  }
-
   ASPECT_RATIOS = {
     1 => '1:1',
     2 => '4:3',
@@ -43,7 +38,7 @@ class FormatParser::MPEGParser
     # If we detect that the header is not usefull, then we look for the next one
     # If we reach the EOF, then the mpg is likely to be corrupted and we return nil
     loop do
-      seeking_until_next_sequence_header(io)
+      discard_bytes_until_next_sequence_header(io)
       horizontal_size, vertical_size = parse_image_size(io)
       ratio_code, rate_code = parse_rate_information(io)
 
@@ -91,7 +86,7 @@ class FormatParser::MPEGParser
 
   # Seeks to the position of the next appearence of SEQUENCE_HEADER_START_CODE in the stream.
   # After this code, comes usefull information about the video
-  def self.seeking_until_next_sequence_header(io)
+  def self.discard_bytes_until_next_sequence_header(io)
     loop do
       break if safe_read(io, 1) == SEQUENCE_HEADER_START_CODE
     end
@@ -112,5 +107,5 @@ class FormatParser::MPEGParser
     hex_value.to_i(16)
   end
 
-  FormatParser.register_parser self, natures: [:video], formats: MPEG_VALUES.values
+  FormatParser.register_parser self, natures: [:video], formats: [:mpg, :mpeg]
 end
