@@ -65,15 +65,15 @@ class FormatParser::MPEGParser
   # The following 3 bytes after the sequence header code, gives us information about the px size
   # 1.5 bytes (12 bits) for horizontal size and 1.5 bytes for vertical size
   def self.parse_image_size(io)
-    image_size = to_hex(safe_read(io, 3))
-    [to_decimal(image_size[0..2]), to_decimal(image_size[3..5])]
+    image_size = convert_3_bytes_to_bits(safe_read(io, 3))
+    [read_first_12_bits(image_size), read_last_12_bits(image_size)]
   end
 
   # The following byte gives us information about the aspect ratio and frame rate
   # 4 bits corresponds to the aspect ratio and 4 bits to the frame rate code
   def self.parse_rate_information(io)
-    rate_information = to_hex(safe_read(io, 1))
-    [rate_information[0].to_i, rate_information[1].to_i]
+    rate_information = safe_read(io, 1).unpack('C').first
+    [read_first_4_bits(rate_information), read_last_4_bits(rate_information)]
   end
 
   def self.valid_aspect_ratio_code?(ratio_code)
@@ -97,14 +97,25 @@ class FormatParser::MPEGParser
     safe_read(io, 4) == PACK_HEADER_START_CODE
   end
 
-  # Unpacks a whole stream to a unique hexadecimal value
-  def self.to_hex(value)
-    value.unpack('H*').first
+  def self.convert_3_bytes_to_bits(bytes)
+    bytes = bytes.unpack('CCC')
+    (bytes[0] << 16) | (bytes[1] << 8) | (bytes[2])
   end
 
-  # Converts an hexadecimal value to a human readable decimal
-  def self.to_decimal(hex_value)
-    hex_value.to_i(16)
+  def self.read_first_12_bits(bits)
+    bits >> 12 & 0x0fff
+  end
+
+  def self.read_last_12_bits(bits)
+    bits & 0x0fff
+  end
+
+  def self.read_first_4_bits(byte)
+    byte >> 4
+  end
+
+  def self.read_last_4_bits(byte)
+    byte & 0x0F
   end
 
   FormatParser.register_parser self, natures: [:video], formats: [:mpg, :mpeg]
