@@ -27,6 +27,8 @@ class FormatParser::MPEGParser
   PACK_HEADER_START_CODE = [0x00, 0x00, 0x01, 0xBA].pack('C*')
   SEQUENCE_HEADER_START_CODE = [0xB3].pack('C*')
   SEEK_FOR_SEQUENCE_HEADER_TIMES_LIMIT = 4
+  SEEK_FOR_SEQUENCE_HEADER_START_CODE_TIMES_LIMIT = 4
+  BYTES_TO_READ_PER_TIME = 1024
 
   def self.likely_match?(filename)
     filename =~ /\.(mpg|mpeg)$/i
@@ -39,7 +41,7 @@ class FormatParser::MPEGParser
     # If we detect that the header is not usefull, then we look for the next one for SEEK_FOR_SEQUENCE_HEADER_TIMES_LIMIT
     # If we reach the EOF, then the mpg is likely to be corrupted and we return nil
     SEEK_FOR_SEQUENCE_HEADER_TIMES_LIMIT.times do
-      discard_bytes_until_next_sequence_header(io)
+      return if fetch_next_sequence_header_code_position(io).nil?
       horizontal_size, vertical_size = parse_image_size(io)
       ratio_code, rate_code = parse_rate_information(io)
 
@@ -85,11 +87,17 @@ class FormatParser::MPEGParser
     FRAME_RATES.include?(rate_code)
   end
 
-  # Seeks to the position of the next appearence of SEQUENCE_HEADER_START_CODE in the stream.
-  # After this code, comes usefull information about the video
-  def self.discard_bytes_until_next_sequence_header(io)
-    loop do
-      break if safe_read(io, 1) == SEQUENCE_HEADER_START_CODE
+  # Returns the position of the next sequence package content in the stream
+  # This method will read BYTES_TO_READ_PER_TIME in each loop for a maximum amount of SEEK_FOR_SEQUENCE_HEADER_START_CODE_TIMES_LIMIT times
+  # If the package is not found, then it returns nil.
+  def self.fetch_next_sequence_header_code_position(io)
+    SEEK_FOR_SEQUENCE_HEADER_START_CODE_TIMES_LIMIT.times do
+      bytes_stream_read = io.read(BYTES_TO_READ_PER_TIME)
+      header_relative_index = bytes_stream_read.index(SEQUENCE_HEADER_START_CODE)
+      next if header_relative_index.nil?
+      new_io_pos = io.pos - BYTES_TO_READ_PER_TIME + header_relative_index + 1
+      io.seek(new_io_pos)
+      return new_io_pos
     end
   end
 
