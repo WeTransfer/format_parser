@@ -1,3 +1,6 @@
+## 0.21.0
+* Adds support for MPEG video files
+
 ## 0.20.1
 * Make sure EXIF results work correctly with ActiveSupport JSON encoders
 
