@@ -26,6 +26,7 @@ class FormatParser::MPEGParser
 
   PACK_HEADER_START_CODE = [0x00, 0x00, 0x01, 0xBA].pack('C*')
   SEQUENCE_HEADER_START_CODE = [0xB3].pack('C*')
+  SEEK_FOR_SEQUENCE_HEADER_TIMES_LIMIT = 4
 
   def self.likely_match?(filename)
     filename =~ /\.(mpg|mpeg)$/i
@@ -35,9 +36,9 @@ class FormatParser::MPEGParser
     return unless matches_mpeg_header?(io)
 
     # We are looping though the stream because there can be several sequence headers and some of them are not usefull.
-    # If we detect that the header is not usefull, then we look for the next one
+    # If we detect that the header is not usefull, then we look for the next one for SEEK_FOR_SEQUENCE_HEADER_TIMES_LIMIT
     # If we reach the EOF, then the mpg is likely to be corrupted and we return nil
-    loop do
+    SEEK_FOR_SEQUENCE_HEADER_TIMES_LIMIT.times do
       discard_bytes_until_next_sequence_header(io)
       horizontal_size, vertical_size = parse_image_size(io)
       ratio_code, rate_code = parse_rate_information(io)
