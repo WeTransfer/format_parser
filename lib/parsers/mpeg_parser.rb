@@ -49,6 +49,7 @@ class FormatParser::MPEGParser
         return file_info(horizontal_size, vertical_size, ratio_code, rate_code)
       end
     end
+    nil # otherwise the return value of Integer#times will be returned
   rescue FormatParser::IOUtils::InvalidRead
     nil
   end
