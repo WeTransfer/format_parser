@@ -15,9 +15,18 @@ describe FormatParser::MPEGParser do
   it 'returns a nil if it is necessary to iterate over a very large number of bytes and the requisite sequences are not detected' do
     bytes_buffer = StringIO.new
     bytes_buffer.write([0x00, 0x00, 0x01, 0xBA].pack('C*')) # MPEG header
-    zero_bytes = [0x00].pack("C") * (1024 * 1024 * 5)
+    zero_bytes = [0x00].pack('C') * (1024 * 1024 * 5)
     bytes_buffer.write(zero_bytes)
 
+    bytes_buffer.rewind
+
+    parse_result = described_class.call(bytes_buffer)
+    expect(parse_result).to be_nil
+  end
+
+  it 'returns a nil if the IO only contains the MPEG header bytes at the start and nothing else' do
+    bytes_buffer = StringIO.new
+    bytes_buffer.write([0x00, 0x00, 0x01, 0xBA].pack('C*')) # MPEG header
     bytes_buffer.rewind
 
     parse_result = described_class.call(bytes_buffer)

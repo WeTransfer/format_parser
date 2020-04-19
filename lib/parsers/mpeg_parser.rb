@@ -26,9 +26,8 @@ class FormatParser::MPEGParser
 
   PACK_HEADER_START_CODE = [0x00, 0x00, 0x01, 0xBA].pack('C*')
   SEQUENCE_HEADER_START_CODE = [0xB3].pack('C*')
-  SEEK_FOR_SEQUENCE_HEADER_TIMES_LIMIT = 4
-  SEEK_FOR_SEQUENCE_HEADER_START_CODE_TIMES_LIMIT = 4
-  BYTES_TO_READ_PER_TIME = 1024
+  MAX_BLOCK_READS = 16
+  BYTES_TO_READ_PER_READ = 1024
 
   def self.likely_match?(filename)
     filename =~ /\.(mpg|mpeg)$/i
@@ -40,11 +39,11 @@ class FormatParser::MPEGParser
     # We are looping though the stream because there can be several sequence headers and some of them are not useful.
     # If we detect that the header is not useful, then we look for the next one for SEEK_FOR_SEQUENCE_HEADER_TIMES_LIMIT
     # If we reach the EOF, then the mpg is likely to be corrupted and we return nil
-    SEEK_FOR_SEQUENCE_HEADER_TIMES_LIMIT.times do
-      return if fetch_next_sequence_header_code_position(io).nil?
+    MAX_BLOCK_READS.times do
+      next unless pos = find_next_header_code_pos(io)
+      io.seek(pos + 1)
       horizontal_size, vertical_size = parse_image_size(io)
       ratio_code, rate_code = parse_rate_information(io)
-
       if valid_aspect_ratio_code?(ratio_code) && valid_frame_rate_code?(rate_code)
         return file_info(horizontal_size, vertical_size, ratio_code, rate_code)
       end
@@ -91,15 +90,11 @@ class FormatParser::MPEGParser
   # Returns the position of the next sequence package content in the stream
   # This method will read BYTES_TO_READ_PER_TIME in each loop for a maximum amount of SEEK_FOR_SEQUENCE_HEADER_START_CODE_TIMES_LIMIT times
   # If the package is not found, then it returns nil.
-  def self.fetch_next_sequence_header_code_position(io)
-    SEEK_FOR_SEQUENCE_HEADER_START_CODE_TIMES_LIMIT.times do
-      bytes_stream_read = io.read(BYTES_TO_READ_PER_TIME)
-      header_relative_index = bytes_stream_read.index(SEQUENCE_HEADER_START_CODE)
-      next if header_relative_index.nil?
-      new_io_pos = io.pos - BYTES_TO_READ_PER_TIME + header_relative_index + 1
-      io.seek(new_io_pos)
-      return new_io_pos
-    end
+  def self.find_next_header_code_pos(io)
+    pos_before_read = io.pos
+    bin_str = io.read(BYTES_TO_READ_PER_READ) # bin_str might be nil if we are at EOF
+    header_relative_index = bin_str && bin_str.index(SEQUENCE_HEADER_START_CODE)
+    return pos_before_read + header_relative_index if header_relative_index
   end
 
   # If the first 4 bytes of the stream are equal to 00 00 01 BA, the pack start code for the Pack Header, then it's an MPEG file.
