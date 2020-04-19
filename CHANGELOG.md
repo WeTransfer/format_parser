@@ -1,3 +1,8 @@
+## 0.21.1
+* MPEG: Ensure parsing does not inadvertently return an Integer instead of Result|nil
+* MPEG: Scan further into the MPEG file than previously (scan 32 1KB chunks)
+* MPEG: Ensure the parser does not raise an exception when there is no data to read for scanning beyound the initial header
+
 ## 0.21.0
 * Adds support for MPEG video files
 
