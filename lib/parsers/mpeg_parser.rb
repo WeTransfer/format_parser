@@ -26,7 +26,7 @@ class FormatParser::MPEGParser
 
   PACK_HEADER_START_CODE = [0x00, 0x00, 0x01, 0xBA].pack('C*')
   SEQUENCE_HEADER_START_CODE = [0xB3].pack('C*')
-  MAX_BLOCK_READS = 16
+  MAX_BLOCK_READS = 32
   BYTES_TO_READ_PER_READ = 1024
 
   def self.likely_match?(filename)
