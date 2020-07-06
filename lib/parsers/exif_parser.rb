@@ -168,6 +168,8 @@ module FormatParser::EXIFParser
   EXIFR.logger = Logger.new(nil)
 
   def exif_from_tiff_io(constrained_io)
+    return if constrained_io.nil? || constrained_io.is_a?(Integer)
+
     Measurometer.instrument('format_parser.EXIFParser.exif_from_tiff_io') do
       raw_exif_data = EXIFR::TIFF.new(IOExt.new(constrained_io))
       raw_exif_data ? EXIFResult.new(raw_exif_data) : nil

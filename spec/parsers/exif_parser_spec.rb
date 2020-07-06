@@ -75,4 +75,14 @@ describe FormatParser::EXIFParser do
       expect(io.read(1)).to eq('e')
     end
   end
+
+  describe '.exif_from_tiff_io' do
+    it 'early returns when io is nil' do
+      expect(FormatParser::EXIFParser.exif_from_tiff_io(nil)).to be_nil
+    end
+
+    it 'early returns when io is an int' do
+      expect(FormatParser::EXIFParser.exif_from_tiff_io(12345)).to be_nil
+    end
+  end
 end
