@@ -19,6 +19,8 @@ end
 RSpec.configure do |c|
   c.include SpecHelpers
   c.extend SpecHelpers # makes fixtures_dir available for example groups too
+  # https://relishapp.com/rspec/rspec-core/docs/command-line/only-failures
+  c.example_status_persistence_file_path = 'spec/examples.txt'
 end
 
 RSpec.shared_examples 'an IO object compatible with IOConstraint' do
