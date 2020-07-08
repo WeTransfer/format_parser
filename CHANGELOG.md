@@ -1,3 +1,6 @@
+## 0.22.0
+* Adds option `stringify_keys: true` to #as_json methods (fix #151)
+
 ## 0.21.1
 * MPEG: Ensure parsing does not inadvertently return an Integer instead of Result|nil
 * MPEG: Scan further into the MPEG file than previously (scan 32 1KB chunks)

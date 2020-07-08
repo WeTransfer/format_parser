@@ -110,4 +110,32 @@ describe FormatParser::MP3Parser do
       subject.call(StringIO.new(''))
     }.to raise_error(FormatParser::IOUtils::InvalidRead)
   end
+
+  describe '#as_json' do
+    it 'converts all hash keys to string when stringify_keys: true' do
+      fpath = fixtures_dir + '/MP3/Cassy.mp3'
+      result = subject.call(File.open(fpath, 'rb')).as_json(stringify_keys: true)
+
+      expect(
+        result['intrinsics'].keys.map(&:class).uniq
+      ).to eq([String])
+
+      expect(
+        result['intrinsics']['id3tags'].map(&:class).uniq
+      ).to eq([ID3Tag::Tag])
+    end
+
+    it 'does not convert the hash keys to string when stringify_keys: false' do
+      fpath = fixtures_dir + '/MP3/Cassy.mp3'
+      result = subject.call(File.open(fpath, 'rb')).as_json
+
+      expect(
+        result['intrinsics'].keys.map(&:class).uniq
+      ).to eq([Symbol])
+
+      expect(
+        result['intrinsics'][:id3tags].map(&:class).uniq
+      ).to eq([ID3Tag::Tag])
+    end
+  end
 end
