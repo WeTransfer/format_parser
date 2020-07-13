@@ -8,7 +8,6 @@ $LOAD_PATH.unshift(File.dirname(__FILE__))
 
 require 'rspec'
 require 'format_parser'
-require 'pry'
 
 module SpecHelpers
   def fixtures_dir
