@@ -58,3 +58,6 @@ Gemfile.lock
 
 # OSX Files
 .DS_Store
+
+# rspec examples
+spec/examples.txt
