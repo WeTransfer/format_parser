@@ -5,6 +5,7 @@ require 'measurometer'
 # top-level methods of the library.
 module FormatParser
   require_relative 'format_parser/version'
+  require_relative 'hash_utils'
   require_relative 'attributes_json'
   require_relative 'image'
   require_relative 'audio'

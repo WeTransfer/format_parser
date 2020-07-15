@@ -75,6 +75,17 @@ img_info = FormatParser.parse(File.open("myimage.jpg", "rb"))
 JSON.pretty_generate(img_info) #=> ...
 ```
 
+To convert the result to a Hash or a structure suitable for JSON serialization
+
+```ruby
+img_info = FormatParser.parse(File.open("myimage.jpg", "rb"))
+img_info.as_json
+
+# it's also possible to convert all keys to string
+img_info.as_json(stringify_keys: true)
+```
+
+
 ## Creating your own parsers
 
 See the [section on writing parsers in CONTRIBUTING.md](CONTRIBUTING.md#so-you-want-to-contribute-a-new-parser)
@@ -188,7 +199,7 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 
 ## Copyright
 
-Copyright (c) 2019 WeTransfer. 
+Copyright (c) 2020 WeTransfer.
 
 `format_parser` is distributed under the conditions of the [Hippocratic License](https://firstdonoharm.dev/version/1/2/license.html)
   - See LICENSE.txt for further details.

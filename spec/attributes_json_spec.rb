@@ -140,4 +140,30 @@ describe FormatParser::AttributesJSON do
       JSON.pretty_generate(object_with_attributes_module)
     }.to raise_error(/structure too deep/)
   end
+
+  it 'converts all hash keys to string when stringify_keys: true' do
+    fixture_path = fixtures_dir + '/ZIP/arch_few_entries.zip'
+    fi_io = File.open(fixture_path, 'rb')
+
+    result = FormatParser::ZIPParser.new.call(fi_io).as_json(stringify_keys: true)
+
+    result['entries'].each do |entry|
+      entry.each do |key, _value|
+        expect(key).to be_a(String)
+      end
+    end
+  end
+
+  it 'does not convert hash keys to string when stringify_keys: false' do
+    fixture_path = fixtures_dir + '/ZIP/arch_few_entries.zip'
+    fi_io = File.open(fixture_path, 'rb')
+
+    result = FormatParser::ZIPParser.new.call(fi_io).as_json
+
+    result['entries'].each do |entry|
+      entry.each do |key, _value|
+        expect(key).to be_a(Symbol)
+      end
+    end
+  end
 end

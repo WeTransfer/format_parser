@@ -47,10 +47,6 @@ class FormatParser::MP3Parser
         h[k] = value if value
       end
     end
-
-    def as_json(*)
-      to_h
-    end
   end
 
   def likely_match?(filename)

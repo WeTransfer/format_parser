@@ -15,7 +15,12 @@ module FormatParser::AttributesJSON
 
   # Implements a sane default `as_json` for an object
   # that accessors defined
-  def as_json(root: false)
+  #
+  # @param root[Bool] if true, it surrounds the result in a hash with a key
+  #  `format_parser_file_info`
+  # @param stringify_keys[Bool] if true, it transforms all the hash keys to a string.
+  #   The default value is false for backward compatibility
+  def as_json(root: false, stringify_keys: false, **)
     h = {}
     h['nature'] = nature if respond_to?(:nature) # Needed for file info structs
     methods.grep(/\w\=$/).each_with_object(h) do |attr_writer_method_name, h|
@@ -27,6 +32,9 @@ module FormatParser::AttributesJSON
       sanitized_value = _sanitize_json_value(unwrapped_attribute_value)
       h[reader_method_name] = sanitized_value
     end
+
+    h = FormatParser::HashUtils.deep_transform_keys(h, &:to_s) if stringify_keys
+
     if root
       {'format_parser_file_info' => h}
     else
