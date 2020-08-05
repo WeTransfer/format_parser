@@ -235,3 +235,8 @@ This provision also applies to the test files you include with the changed code 
 ## Changelog
 
 When creating a new release you must add an entry in the `CHANGELOG.md`.
+
+## Testing locally
+
+It's possible to run `exe/format_parser_inspect FILE_NAME` or `exe/format_parser_inspect FILE_URI`
+to test the new code without the necessity of installing the gem.
