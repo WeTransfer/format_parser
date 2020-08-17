@@ -18,6 +18,7 @@ class FormatParser::ZIPParser::FileReader
       'Could not find the EOCD signature in the buffer - maybe a malformed ZIP file'
     end
   end
+  InvalidCentralDirectory = Class.new(Error)
 
   C_UINT32LE = 'V'
   C_UINT16LE = 'v'
@@ -175,6 +176,8 @@ class FormatParser::ZIPParser::FileReader
     # BUT! in format_parser we avoid unbounded reads, as a matter of fact they are forbidden.
     # So we will again limit ouselves to cdir_size, and we will take cushion of 1 KB.
     central_directory_str = io.read(cdir_size + 1024)
+    raise InvalidCentralDirectory if central_directory_str.nil?
+
     central_directory_io = StringIO.new(central_directory_str)
     log do
       format(
