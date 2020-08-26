@@ -1,3 +1,6 @@
+## 0.22.1
+* Fix Zip parser to not raise error for invalid zip files, with an invalid central directory
+
 ## 0.22.0
 * Adds option `stringify_keys: true` to #as_json methods (fix #151)
 

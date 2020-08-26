@@ -103,4 +103,11 @@ describe FormatParser::ZIPParser do
     expect(first_entry.filename).to eq('Li��nia Extreme//')
     expect(first_entry.type).to eq(:directory)
   end
+
+  it 'is able to handle files with invalid central directory position' do
+    invalid_zip_path = fixtures_dir + '/ZIP/invalid_central_directory.zip'
+
+    expect { subject.call(File.open(invalid_zip_path, 'rb')) }
+      .to_not raise_error
+  end
 end
