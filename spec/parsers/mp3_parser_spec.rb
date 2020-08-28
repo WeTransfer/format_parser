@@ -71,6 +71,14 @@ describe FormatParser::MP3Parser do
     expect(prepped.pos).to eq(3145738)
   end
 
+  it 'returns only ID3V1 if some member of ID3V2 raise an encoding error' do
+    fpath = fixtures_dir + '/MP3/invalid_encoding_id3v2_artist.mp3'
+
+    parsed = subject.call(File.open(fpath, 'rb'))
+
+    expect(parsed.intrinsics[:id3tags]).not_to be_nil
+  end
+
   it 'parses the Cassy MP3' do
     fpath = fixtures_dir + '/MP3/Cassy.mp3'
     parsed = subject.call(File.open(fpath, 'rb'))
