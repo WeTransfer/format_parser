@@ -41,9 +41,7 @@ module FormatParser::MP3Parser::ID3Extraction
     io.seek(0)
     blob = safe_read(io, id3_tag_size)
 
-    swallow_exceptions do
-      ID3Tag.read(StringIO.new(blob), :v2)
-    end
+    swallow_exceptions { ID3Tag.read(StringIO.new(blob), :v2) }
   rescue FormatParser::IOUtils::InvalidRead
     nil
   end
