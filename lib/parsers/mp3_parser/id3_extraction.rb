@@ -42,14 +42,7 @@ module FormatParser::MP3Parser::ID3Extraction
     blob = safe_read(io, id3_tag_size)
 
     swallow_exceptions do
-      tag = ID3Tag.read(StringIO.new(blob), :v2)
-      # In some cases, a specific member (e.g.: album) of the tag raises
-      # UnsupportedTextEncoding, so it's good to test them
-      FormatParser::MP3Parser::TagWrapper::MEMBERS.each do |member|
-        tag.public_send(member) if tag.respond_to?(member)
-      end
-
-      tag
+      ID3Tag.read(StringIO.new(blob), :v2)
     end
   rescue FormatParser::IOUtils::InvalidRead
     nil
