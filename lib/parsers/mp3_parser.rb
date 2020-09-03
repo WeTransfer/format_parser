@@ -48,12 +48,8 @@ class FormatParser::MP3Parser
     def to_h
       tag = __getobj__
       MEMBERS.each_with_object({}) do |k, h|
-        value = begin
-          tag.public_send(k)
-        rescue ID3Tag::Frames::V2::TextFrame::UnsupportedTextEncoding
-          nil
-        end
-        h[k] = value if value
+        value = tag.public_send(k)
+        h[k] = value if value && !value.empty?
       end
     end
   end

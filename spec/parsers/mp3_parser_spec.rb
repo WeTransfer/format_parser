@@ -71,13 +71,13 @@ describe FormatParser::MP3Parser do
     expect(prepped.pos).to eq(3145738)
   end
 
-  it 'ignores error unexpected encoding in tag members' do
+  it 'does not reaise error when tag members have unexpected encoding' do
     fpath = fixtures_dir + '/MP3/invalid_encoding_id3v2_artist.mp3'
 
     parsed = subject.call(File.open(fpath, 'rb'))
 
     expect(parsed.nature). to eq(:audio)
-    expect(parsed.intrinsics[:id3tags]).not_to be_nil
+    expect(parsed.album).to eq('Mix Factor')
   end
 
   it 'parses the Cassy MP3' do
