@@ -1,6 +1,3 @@
-## 0.22.2
-* Fix Mp3 parser to not raise error when a ID3TagV2 has a unsupported encoding
-
 ## 0.22.1
 * Fix Zip parser to not raise error for invalid zip files, with an invalid central directory
 
