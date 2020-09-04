@@ -71,7 +71,7 @@ describe FormatParser::MP3Parser do
     expect(prepped.pos).to eq(3145738)
   end
 
-  it 'does not reaise error when tag members have unexpected encoding' do
+  it 'does not raise error when a tag frame has unsupported encoding' do
     fpath = fixtures_dir + '/MP3/id3v2_frame_with_invalid_encoding.mp3'
 
     parsed = subject.call(File.open(fpath, 'rb'))
