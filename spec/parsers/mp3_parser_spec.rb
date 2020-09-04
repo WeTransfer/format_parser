@@ -37,6 +37,14 @@ describe FormatParser::MP3Parser do
         expect(parsed.album).to be_nil
       end
     end
+
+    context 'when has an empty tag' do
+      let(:fpath) { fixtures_dir + '/MP3/id3v2_with_empty_tag.mp3' }
+
+      it 'ignores the empty tags' do
+        expect(parsed.intrinsics[:genre]).to eq('Rock')
+      end
+    end
   end
 
   it 'decodes and estimates duration for a CBR MP3' do
