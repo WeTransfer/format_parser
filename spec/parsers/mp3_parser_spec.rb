@@ -78,6 +78,8 @@ describe FormatParser::MP3Parser do
 
     expect(parsed.nature). to eq(:audio)
     expect(parsed.album).to eq('wetransfer')
+    expect(parsed.artist).to eq('wetransfer')
+    expect(parsed.title).to eq('test')
   end
 
   it 'parses the Cassy MP3' do
