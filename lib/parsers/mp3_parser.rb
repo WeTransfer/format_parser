@@ -49,7 +49,7 @@ class FormatParser::MP3Parser
       tag = __getobj__
       MEMBERS.each_with_object({}) do |k, h|
         value = tag.public_send(k)
-        h[k] = value if value && !value.empty?
+        h[k] = value if value
       end
     end
   end
