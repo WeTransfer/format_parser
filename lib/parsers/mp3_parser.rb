@@ -2,7 +2,7 @@ require 'ks'
 require 'id3tag'
 
 ID3Tag.configuration do |c|
-  c.string_encode_options = { :invalid => :replace, :undef => :replace }
+  c.string_encode_options = { invalid: :replace, undef: :replace }
   c.source_encoding_fallback = Encoding::UTF_8
 end
 
