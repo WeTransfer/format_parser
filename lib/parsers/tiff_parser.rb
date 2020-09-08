@@ -22,6 +22,9 @@ class FormatParser::TIFFParser
     exif_data = exif_from_tiff_io(io)
     return unless exif_data
 
+    # Skip the parsing if the image is Sony arw format
+    return if arw?(exif_data)
+
     w = exif_data.width || exif_data.pixel_x_dimension
     h = exif_data.height || exif_data.pixel_y_dimension
 
@@ -41,6 +44,10 @@ class FormatParser::TIFFParser
   def cr2?(io)
     io.seek(8)
     safe_read(io, 2) == 'CR'
+  end
+
+  def arw?(exif_data)
+    exif_data.compression == 6 && exif_data.new_subfile_type == 1 && exif_data.make == 'SONY'
   end
 
   FormatParser.register_parser new, natures: :image, formats: :tif
