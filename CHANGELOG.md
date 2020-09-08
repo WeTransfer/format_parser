@@ -1,3 +1,10 @@
+## 0.23.0
+* Add ActiveStorage analyzer which can analyze ActiveStorage blobs. Enable it by setting
+  `config.active_storage.analyzers.prepend FormatParser::ActiveStorage::BlobAnalyzer`
+* Ignore empty ID3 tags and do not allow them to overwrite others
+* Update the id3tag dependency so that we can fallback to UTF8 instead of raising an error when parsing
+  MP3 files
+
 ## 0.22.1
 * Fix Zip parser to not raise error for invalid zip files, with an invalid central directory
 
