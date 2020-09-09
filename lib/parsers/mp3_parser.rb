@@ -131,12 +131,12 @@ class FormatParser::MP3Parser
   # if you have a minute. https://pypi.python.org/pypi/tinytag
   def parse_mpeg_frames(io)
     mpeg_frames = []
+    bytes_to_read = 4
 
     MAX_FRAMES_TO_SCAN.times do |frame_i|
       # Read through until we can latch onto the 11 sync bits. Read in 4-byte
       # increments to save on read() calls
-      bites_to_read = 4
-      data = io.read(bites_to_read)
+      data = io.read(bytes_to_read)
 
       # If we are at EOF - stop iterating
       break unless data && data.bytesize == 4
@@ -146,7 +146,7 @@ class FormatParser::MP3Parser
       four_bytes = data.unpack('C4')
       seek_jmp = sync_bytes_offset_in_4_byte_seq(four_bytes)
       if seek_jmp > 0
-        io.seek(io.pos - bites_to_read + seek_jmp)
+        io.seek(io.pos - bytes_to_read + seek_jmp)
         next
       end
 
