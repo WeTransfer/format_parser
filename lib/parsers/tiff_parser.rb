@@ -46,6 +46,8 @@ class FormatParser::TIFFParser
     safe_read(io, 2) == 'CR'
   end
 
+  # Similar to how exiftool determines the image type as ARW, we are implementing a check here
+  # https://github.com/exiftool/exiftool/blob/e969456372fbaf4b980fea8bb094d71033ac8bf7/lib/Image/ExifTool/Exif.pm#L929
   def arw?(exif_data)
     exif_data.compression == 6 && exif_data.new_subfile_type == 1 && exif_data.make == 'SONY'
   end
