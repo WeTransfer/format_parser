@@ -139,7 +139,7 @@ class FormatParser::MP3Parser
       data = io.read(bytes_to_read)
 
       # If we are at EOF - stop iterating
-      break unless data && data.bytesize == 4
+      break unless data && data.bytesize == bytes_to_read
 
       # Look for the sync pattern. It can be either the last byte being 0xFF,
       # or any of the 2 bytes in sequence being 0xFF and > 0xF0.
@@ -152,7 +152,7 @@ class FormatParser::MP3Parser
 
       # Once we are past that stage we have latched onto a sync frame header
       sync, conf, bitrate_freq, rest = four_bytes
-      frame_detail = parse_mpeg_frame_header(io.pos - 4, sync, conf, bitrate_freq, rest)
+      frame_detail = parse_mpeg_frame_header(io.pos - bytes_to_read, sync, conf, bitrate_freq, rest)
       mpeg_frames << frame_detail
 
       # There might be a xing header in the first frame that contains
@@ -167,7 +167,7 @@ class FormatParser::MP3Parser
         end
       end
       if frame_detail.frame_length > 1 # jump over current frame body
-        io.seek(io.pos + frame_detail.frame_length - 4)
+        io.seek(io.pos + frame_detail.frame_length - bytes_to_read)
       end
     end
     [nil, mpeg_frames]
