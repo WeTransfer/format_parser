@@ -44,7 +44,7 @@ class FormatParser::MP3Parser
       tag = __getobj__
       MEMBERS.each_with_object({}) do |k, h|
         value = tag.public_send(k)
-        h[k] = value if value
+        h[k] = value if value && !value.empty?
       end
     end
   end
@@ -81,7 +81,7 @@ class FormatParser::MP3Parser
 
     first_frame = initial_frames.first
 
-    id3tags_hash = blend_id3_tags_into_hash(*tags)
+    id3tags_hash = with_id3tag_local_configs { blend_id3_tags_into_hash(*tags) }
 
     file_info = FormatParser::Audio.new(
       format: :mp3,
@@ -291,6 +291,15 @@ class FormatParser::MP3Parser
     attrs[:artist] = FormatParser.string_to_lossy_utf8(id3tags_hash[:artist]) unless id3tags_hash[:artist].to_s.empty?
 
     attrs
+  end
+
+  def with_id3tag_local_configs
+    ID3Tag.local_configuration do |c|
+      c.string_encode_options = { invalid: :replace, undef: :replace }
+      c.source_encoding_fallback = Encoding::UTF_8
+
+      yield
+    end
   end
 
   FormatParser.register_parser new, natures: :audio, formats: :mp3, priority: 99
