@@ -1,3 +1,6 @@
+## 0.24.0
+* Tiff parser to skip Sony RAW format images, to avoid parsing errors
+
 ## 0.23.0
 * Add ActiveStorage analyzer which can analyze ActiveStorage blobs. Enable it by setting
   `config.active_storage.analyzers.prepend FormatParser::ActiveStorage::BlobAnalyzer`
