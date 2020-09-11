@@ -47,12 +47,18 @@ describe FormatParser::TIFFParser do
     expect(parsed.intrinsics[:exif]).not_to be_nil
   end
 
-  it 'skips the parsing process for a Sony ARW fixture' do
+  it 'parses Sony ARW fixture as raw format file' do
     arw_path = fixtures_dir + '/ARW/RAW_SONY_ILCE-7RM2.ARW'
 
     parsed = subject.call(File.open(arw_path, 'rb'))
 
-    expect(parsed).to be_nil
+    expect(parsed).not_to be_nil
+    expect(parsed.nature).to eq(:image)
+    expect(parsed.format).to eq(:raw)
+
+    expect(parsed.width_px).to eq(7952)
+    expect(parsed.height_px).to eq(5304)
+    expect(parsed.intrinsics[:exif]).not_to be_nil
   end
 
   describe 'correctly extracts dimensions from various TIFF flavors of the same file' do

@@ -22,14 +22,11 @@ class FormatParser::TIFFParser
     exif_data = exif_from_tiff_io(io)
     return unless exif_data
 
-    # Skip the parsing if the image is Sony arw format
-    return if arw?(exif_data)
-
     w = exif_data.width || exif_data.pixel_x_dimension
     h = exif_data.height || exif_data.pixel_y_dimension
 
     FormatParser::Image.new(
-      format: :tif,
+      format: arw?(exif_data) ? :raw : :tif, # Specify format as raw for Sony RAW format images, else tif
       width_px: w,
       height_px: h,
       display_width_px: exif_data.rotated? ? h : w,
