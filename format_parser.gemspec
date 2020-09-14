@@ -31,7 +31,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'ks', '~> 0.0'
-  spec.add_dependency 'exifr', '~> 1', '>= 1.3.4'
+  spec.add_dependency 'exifr', '~> 1', '>= 1.3.7'
   spec.add_dependency 'id3tag', '~> 0.13'
   spec.add_dependency 'faraday', '~> 0.13'
   spec.add_dependency 'measurometer', '~> 1'
