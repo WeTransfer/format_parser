@@ -1,3 +1,6 @@
+## 0.23.1
+* Updated gem exifr to fix problems related to jpeg files from Olympos microscopes, which often have bad thumbnail data
+
 ## 0.23.0
 * Add ActiveStorage analyzer which can analyze ActiveStorage blobs. Enable it by setting
   `config.active_storage.analyzers.prepend FormatParser::ActiveStorage::BlobAnalyzer`
