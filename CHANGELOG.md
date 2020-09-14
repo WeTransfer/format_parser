@@ -1,5 +1,5 @@
 ## 0.24.0
-* Tiff parser to skip Sony RAW format images, to avoid parsing errors
+* Tiff parser to return :raw as format for Sony ARW files
 
 ## 0.23.0
 * Add ActiveStorage analyzer which can analyze ActiveStorage blobs. Enable it by setting
