@@ -54,7 +54,7 @@ describe FormatParser::TIFFParser do
 
     expect(parsed).not_to be_nil
     expect(parsed.nature).to eq(:image)
-    expect(parsed.format).to eq(:raw)
+    expect(parsed.format).to eq(:arw)
 
     expect(parsed.width_px).to eq(7952)
     expect(parsed.height_px).to eq(5304)
