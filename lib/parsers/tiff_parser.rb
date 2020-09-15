@@ -26,7 +26,7 @@ class FormatParser::TIFFParser
     h = exif_data.height || exif_data.pixel_y_dimension
 
     FormatParser::Image.new(
-      format: :tif,
+      format: arw?(exif_data) ? :arw : :tif, # Specify format as arw for Sony ARW format images, else tif
       width_px: w,
       height_px: h,
       display_width_px: exif_data.rotated? ? h : w,
@@ -41,6 +41,12 @@ class FormatParser::TIFFParser
   def cr2?(io)
     io.seek(8)
     safe_read(io, 2) == 'CR'
+  end
+
+  # Similar to how exiftool determines the image type as ARW, we are implementing a check here
+  # https://github.com/exiftool/exiftool/blob/e969456372fbaf4b980fea8bb094d71033ac8bf7/lib/Image/ExifTool/Exif.pm#L929
+  def arw?(exif_data)
+    exif_data.compression == 6 && exif_data.new_subfile_type == 1 && exif_data.make == 'SONY'
   end
 
   FormatParser.register_parser new, natures: :image, formats: :tif
