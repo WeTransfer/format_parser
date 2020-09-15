@@ -1,3 +1,6 @@
+## 0.23.1
+* Updated gem exifr to fix problems related to jpeg files from Olympos microscopes, which often have bad thumbnail data
+
 ## 0.24.0
 * Tiff parser to return :raw as format for Sony ARW files
 
