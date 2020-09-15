@@ -27,6 +27,7 @@ class FormatParser::MP3Parser
 
   # For some edge cases
   ZIP_LOCAL_ENTRY_SIGNATURE = "PK\x03\x04\x14\x00".b
+  PNG_HEADER_BYTES = [137, 80, 78, 71, 13, 10, 26, 10].pack('C*')
 
   # Wraps the Tag object returned by ID3Tag in such
   # a way that a usable JSON representation gets
@@ -60,8 +61,12 @@ class FormatParser::MP3Parser
     # To avoid having that happen, we check for the PKZIP signature -
     # local entry header signature - at the very start of the file.
     # If the file is too small safe_read will fail too and the parser
-    # will terminate here.
-    return if safe_read(io, 6) == ZIP_LOCAL_ENTRY_SIGNATURE
+    # will terminate here. Same with PNGs. In the future
+    # we should implement "confidence" for MP3 as of all our formats
+    # it is by far the most lax.
+    header = safe_read(io, 8)
+    return if header.start_with?(ZIP_LOCAL_ENTRY_SIGNATURE)
+    return if header.start_with?(PNG_HEADER_BYTES)
 
     # Read all the ID3 tags (or at least attempt to)
     io.seek(0)

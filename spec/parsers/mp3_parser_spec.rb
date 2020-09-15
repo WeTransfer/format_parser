@@ -15,6 +15,12 @@ describe FormatParser::MP3Parser do
     expect(parsed.media_duration_seconds).to be_within(0.1).of(0.836)
   end
 
+  it 'does not misdetect a PNG' do
+    fpath = fixtures_dir + '/PNG/anim.png'
+    parsed = subject.call(File.open(fpath, 'rb'))
+    expect(parsed).to be_nil
+  end
+
   describe 'title/artist/album attributes' do
     let(:parsed) { subject.call(File.open(fpath, 'rb')) }
 
