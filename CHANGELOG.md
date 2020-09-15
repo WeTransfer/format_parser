@@ -1,5 +1,6 @@
 ## 0.24.0
-* Tiff parser to return :arw as format for Sony ARW files
+* The TIFF parser will now return :arw as format for Sony ARW files insted of :tif so that the caller can decide whether it
+  wants to deal with RAW processing or not
 
 ## 0.23.1
 * Updated gem exifr to fix problems related to jpeg files from Olympos microscopes, which often have bad thumbnail data
