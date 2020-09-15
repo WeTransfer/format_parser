@@ -47,7 +47,7 @@ describe FormatParser::TIFFParser do
     expect(parsed.intrinsics[:exif]).not_to be_nil
   end
 
-  it 'parses Sony ARW fixture as raw format file' do
+  it 'parses Sony ARW fixture as arw format file' do
     arw_path = fixtures_dir + '/ARW/RAW_SONY_ILCE-7RM2.ARW'
 
     parsed = subject.call(File.open(arw_path, 'rb'))
