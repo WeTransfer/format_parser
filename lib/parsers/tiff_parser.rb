@@ -26,7 +26,7 @@ class FormatParser::TIFFParser
     h = exif_data.height || exif_data.pixel_y_dimension
 
     FormatParser::Image.new(
-      format: arw?(exif_data) ? :arw : :tif, # Specify format as arw for Sony RAW format images, else tif
+      format: arw?(exif_data) ? :arw : :tif, # Specify format as arw for Sony ARW format images, else tif
       width_px: w,
       height_px: h,
       display_width_px: exif_data.rotated? ? h : w,
