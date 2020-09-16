@@ -1,3 +1,6 @@
+## 0.24.1
+* Fix MP3 frames reading to jump correctly to the next bytes
+
 ## 0.24.0
 * The TIFF parser will now return :arw as format for Sony ARW files insted of :tif so that the caller can decide whether it
   wants to deal with RAW processing or not
