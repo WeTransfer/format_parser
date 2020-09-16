@@ -20,13 +20,14 @@ class FormatParser::MP3Parser
 
   # We limit the number of MPEG frames we scan
   # to obtain our duration estimation
-  MAX_FRAMES_TO_SCAN = 128
+  MAX_FRAMES_TO_SCAN = 500
 
   # Default frame size for mp3
   SAMPLES_PER_FRAME = 1152
 
   # For some edge cases
   ZIP_LOCAL_ENTRY_SIGNATURE = "PK\x03\x04\x14\x00".b
+  PNG_HEADER_BYTES = [137, 80, 78, 71, 13, 10, 26, 10].pack('C*')
 
   # Wraps the Tag object returned by ID3Tag in such
   # a way that a usable JSON representation gets
@@ -60,8 +61,12 @@ class FormatParser::MP3Parser
     # To avoid having that happen, we check for the PKZIP signature -
     # local entry header signature - at the very start of the file.
     # If the file is too small safe_read will fail too and the parser
-    # will terminate here.
-    return if safe_read(io, 6) == ZIP_LOCAL_ENTRY_SIGNATURE
+    # will terminate here. Same with PNGs. In the future
+    # we should implement "confidence" for MP3 as of all our formats
+    # it is by far the most lax.
+    header = safe_read(io, 8)
+    return if header.start_with?(ZIP_LOCAL_ENTRY_SIGNATURE)
+    return if header.start_with?(PNG_HEADER_BYTES)
 
     # Read all the ID3 tags (or at least attempt to)
     io.seek(0)
@@ -131,27 +136,28 @@ class FormatParser::MP3Parser
   # if you have a minute. https://pypi.python.org/pypi/tinytag
   def parse_mpeg_frames(io)
     mpeg_frames = []
+    bytes_to_read = 4
 
     MAX_FRAMES_TO_SCAN.times do |frame_i|
       # Read through until we can latch onto the 11 sync bits. Read in 4-byte
       # increments to save on read() calls
-      data = io.read(4)
+      data = io.read(bytes_to_read)
 
       # If we are at EOF - stop iterating
-      break unless data && data.bytesize == 4
+      break unless data && data.bytesize == bytes_to_read
 
       # Look for the sync pattern. It can be either the last byte being 0xFF,
       # or any of the 2 bytes in sequence being 0xFF and > 0xF0.
       four_bytes = data.unpack('C4')
       seek_jmp = sync_bytes_offset_in_4_byte_seq(four_bytes)
       if seek_jmp > 0
-        io.seek(io.pos + seek_jmp)
+        io.seek(io.pos - bytes_to_read + seek_jmp)
         next
       end
 
       # Once we are past that stage we have latched onto a sync frame header
       sync, conf, bitrate_freq, rest = four_bytes
-      frame_detail = parse_mpeg_frame_header(io.pos - 4, sync, conf, bitrate_freq, rest)
+      frame_detail = parse_mpeg_frame_header(io.pos - bytes_to_read, sync, conf, bitrate_freq, rest)
       mpeg_frames << frame_detail
 
       # There might be a xing header in the first frame that contains
@@ -166,7 +172,7 @@ class FormatParser::MP3Parser
         end
       end
       if frame_detail.frame_length > 1 # jump over current frame body
-        io.seek(io.pos + frame_detail.frame_length - 4)
+        io.seek(io.pos + frame_detail.frame_length - bytes_to_read)
       end
     end
     [nil, mpeg_frames]

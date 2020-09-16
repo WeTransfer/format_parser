@@ -15,6 +15,12 @@ describe FormatParser::MP3Parser do
     expect(parsed.media_duration_seconds).to be_within(0.1).of(0.836)
   end
 
+  it 'does not misdetect a PNG' do
+    fpath = fixtures_dir + '/PNG/anim.png'
+    parsed = subject.call(File.open(fpath, 'rb'))
+    expect(parsed).to be_nil
+  end
+
   describe 'title/artist/album attributes' do
     let(:parsed) { subject.call(File.open(fpath, 'rb')) }
 
@@ -88,6 +94,14 @@ describe FormatParser::MP3Parser do
     expect(parsed.album).to eq('wetransfer')
     expect(parsed.artist).to eq('wetransfer')
     expect(parsed.title).to eq('test')
+  end
+
+  it 'reads the mpeg frames correctly' do
+    fpath = fixtures_dir + '/MP3/test_read_frames.mp3'
+
+    parsed = subject.call(File.open(fpath, 'rb'))
+
+    expect(parsed.audio_sample_rate_hz). to eq(48000)
   end
 
   it 'parses the Cassy MP3' do
