@@ -1,3 +1,6 @@
+## 0.24.2
+* Update gem id3tag to 0.14.0 to fix MP3 issues
+
 ## 0.24.1
 * Fix MP3 frames reading to jump correctly to the next bytes
 
