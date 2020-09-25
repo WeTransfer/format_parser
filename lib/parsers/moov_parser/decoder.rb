@@ -265,7 +265,11 @@ class FormatParser::MOOVParser::Decoder
       elsif KNOWN_BRANCH_ATOM_TYPES.include?(atom_type)
         [extract_atom_stream(io, atom_size_sans_header, current_branch + [atom_type]), nil]
       else # Assume leaf atom
-        [nil, parse_atom_fields_per_type(io, atom_size_sans_header, atom_type)]
+        if atom_size_sans_header == 0
+          [nil, nil]
+        else
+          [nil, parse_atom_fields_per_type(io, atom_size_sans_header, atom_type)]
+        end
       end
 
       atoms << Atom.new(atom_pos, atom_size, atom_type, current_branch + [atom_type], children, fields)
