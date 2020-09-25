@@ -1,6 +1,6 @@
 module FormatParser::MP3Parser::ID3Extraction
   ID3V1_TAG_SIZE_BYTES = 128
-  ID3V2_TAG_VERSIONS = ["\x43\x00".b, "\x03\x00".b, "\x02\x00".b]
+  ID3V2_TAG_VERSIONS = ["\x03\x00".b, "\x02\x00".b]
   MAX_SIZE_FOR_ID3V2 = 1 * 1024 * 1024
 
   extend FormatParser::IOUtils
