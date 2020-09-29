@@ -49,7 +49,7 @@ class FormatParser::MOOVParser::Decoder
 
   def find_atoms_by_path(atoms, atom_types)
     type_to_find = atom_types.shift
-    requisites = atoms.filter { |e| e.atom_type == type_to_find }
+    requisites = atoms.select { |e| e.atom_type == type_to_find }
 
     # Return if we found our match
     return requisites if atom_types.empty?
