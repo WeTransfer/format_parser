@@ -48,13 +48,8 @@ describe FormatParser::MOOVParser do
 
       expect(result).not_to be_nil
       expect(result.nature).to eq(:video)
-      # This is a valid video recorded with QuickTime which its dimensions
-      # were not recognized.
-      # TODO: Investigate it why
-      unless mov_path.include?('Test_Meta_Atom_With_Size_Zero.mov')
-        expect(result.width_px).to be > 0
-        expect(result.height_px).to be > 0
-      end
+      expect(result.width_px).to be > 0
+      expect(result.height_px).to be > 0
       expect(result.media_duration_seconds).to be_kind_of(Float)
       expect(result.media_duration_seconds).to be > 0
 
