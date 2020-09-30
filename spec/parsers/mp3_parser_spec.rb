@@ -15,6 +15,20 @@ describe FormatParser::MP3Parser do
     expect(parsed.media_duration_seconds).to be_within(0.1).of(0.836)
   end
 
+  it 'reads the Xing header without raising errors' do
+    fpath = fixtures_dir + '/MP3/test_xing_header.mp3'
+    parsed = subject.call(File.open(fpath, 'rb'))
+
+    expect(parsed).not_to be_nil
+
+    expect(parsed.nature).to eq(:audio)
+    expect(parsed.format).to eq(:mp3)
+    expect(parsed.num_audio_channels).to eq(2)
+    expect(parsed.audio_sample_rate_hz).to eq(48000)
+    expect(parsed.intrinsics).not_to be_nil
+    expect(parsed.media_duration_seconds).to be_within(0.1).of(0.0342)
+  end
+
   it 'does not misdetect a PNG' do
     fpath = fixtures_dir + '/PNG/anim.png'
     parsed = subject.call(File.open(fpath, 'rb'))
