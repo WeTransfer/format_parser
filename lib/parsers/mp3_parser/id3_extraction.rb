@@ -1,6 +1,8 @@
 module FormatParser::MP3Parser::ID3Extraction
   ID3V1_TAG_SIZE_BYTES = 128
-  ID3V2_TAG_VERSIONS = ["\x03\x00".b, "\x02\x00".b]
+  # it supports 2.4.x, 2.3.x, 2.2.x which are supported by the gem id3tag
+  # see https://id3.org/Developer%20Information for more details of each version
+  ID3V2_MINOR_TAG_VERSIONS = [2, 3, 4]
   MAX_SIZE_FOR_ID3V2 = 1 * 1024 * 1024
 
   extend FormatParser::IOUtils
@@ -22,7 +24,7 @@ module FormatParser::MP3Parser::ID3Extraction
     io.seek(0) # Only support header ID3v2
     header = parse_id3_v2_header(io)
     return unless header[:tag] == 'ID3' && header[:size] > 0
-    return unless ID3V2_TAG_VERSIONS.include?(header[:version])
+    return unless ID3V2_MINOR_TAG_VERSIONS.include?(header[:version].unpack('C').first)
 
     id3_tag_size = io.pos + header[:size]
 

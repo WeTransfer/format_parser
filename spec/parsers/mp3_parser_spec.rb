@@ -144,6 +144,14 @@ describe FormatParser::MP3Parser do
     }.to raise_error(FormatParser::IOUtils::InvalidRead)
   end
 
+  it 'supports id3 v2.4.x' do
+    fpath = fixtures_dir + '/MP3/id3v24.mp3'
+
+    parsed = subject.call(File.open(fpath, 'rb'))
+
+    expect(parsed.artist). to eq('wetransfer')
+  end
+
   describe '#as_json' do
     it 'converts all hash keys to string when stringify_keys: true' do
       fpath = fixtures_dir + '/MP3/Cassy.mp3'
