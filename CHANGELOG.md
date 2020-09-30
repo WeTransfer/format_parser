@@ -1,3 +1,7 @@
+## 0.25.0
+* MP3: add suport to id3 v2.4.x
+* JPEG: Update gem exifr to 1.3.8 to fix a bug
+
 ## 0.24.2
 * Update gem id3tag to 0.14.0 to fix MP3 issues
 
