@@ -73,7 +73,7 @@ describe FormatParser::MP3Parser do
 
     large_syncsfe_size = [ID3Tag::SynchsafeInteger.encode(more_bytes_than_permitted)].pack('N')
     prepped = StringIO.new(
-      'ID3' + "\x43\x00".b + "\x00".b + large_syncsfe_size + gunk
+      'ID3' + "\x03\x00".b + "\x00".b + large_syncsfe_size + gunk
     )
 
     expect(ID3Tag).not_to receive(:read)
