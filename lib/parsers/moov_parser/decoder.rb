@@ -223,7 +223,7 @@ class FormatParser::MOOVParser::Decoder
   end
 
   def parse_meta_atom(io, atom_size)
-    return nil if atom_size == 0 # this atom can be empty
+    return if atom_size == 0 # this atom can be empty
 
     parse_hdlr_atom(io, atom_size)
   end
