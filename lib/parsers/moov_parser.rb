@@ -38,14 +38,8 @@ class FormatParser::MOOVParser
     ftyp_atom = decoder.find_first_atom_by_path(atom_tree, 'ftyp')
     file_type = ftyp_atom.field_value(:major_brand)
 
-    width = nil
-    height = nil
-
     # Try to find the width and height in the tkhd
-    if tkhd = decoder.find_first_atom_by_path(atom_tree, 'moov', 'trak', 'tkhd')
-      width = tkhd.field_value(:track_width).first
-      height = tkhd.field_value(:track_height).first
-    end
+    width, height = parse_dimensions(decoder, atom_tree)
 
     # Try to find the "topmost" duration (respecting edits)
     if mdhd = decoder.find_first_atom_by_path(atom_tree, 'moov', 'mvhd')
@@ -76,6 +70,31 @@ class FormatParser::MOOVParser
 
   def format_from_moov_type(file_type)
     FTYP_MAP.fetch(file_type.downcase, :mov)
+  end
+
+  # The dimensions are located in tkhd atom, but in some files it is necessary
+  # to get it below the video track, because it can have other tracks such as
+  # audio which does not have the dimensions.
+  # More details in https://developer.apple.com/library/archive/documentation/QuickTime/QTFF/QTFFChap2/qtff2.html#//apple_ref/doc/uid/TP40000939-CH204-DontLinkElementID_147
+  #
+  # Returns [width, height] if the dimension is found
+  # Returns [nil, nil] if the dimension is not found
+  def parse_dimensions(decoder, atom_tree)
+    video_trak_atom = decoder.find_video_trak_atom(atom_tree)
+
+    tkhd = begin
+      if video_trak_atom
+        decoder.find_first_atom_by_path([video_trak_atom], 'trak', 'tkhd')
+      else
+        decoder.find_first_atom_by_path(atom_tree, 'moov', 'trak', 'tkhd')
+      end
+    end
+
+    if tkhd
+      [tkhd.field_value(:track_width).first, tkhd.field_value(:track_height).first]
+    else
+      [nil, nil]
+    end
   end
 
   # An MPEG4/MOV/M4A will start with the "ftyp" atom. The atom must have a length

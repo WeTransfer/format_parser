@@ -47,6 +47,34 @@ class FormatParser::MOOVParser::Decoder
     find_first_atom_by_path(requisite.children || [], *atom_types)
   end
 
+  def find_atoms_by_path(atoms, atom_types)
+    type_to_find = atom_types.shift
+    requisites = atoms.select { |e| e.atom_type == type_to_find }
+
+    # Return if we found our match
+    return requisites if atom_types.empty?
+
+    # Return nil if we didn't find the match at this nesting level
+    return unless requisites
+
+    # ...otherwise drill further down
+    find_atoms_by_path(requisites.flat_map(&:children).compact || [], atom_types)
+  end
+
+  # A file can have multiple tracks. To identify the type it is necessary to check
+  # the fields `omponent_subtype` in hdlr atom under the trak atom
+  # More details in https://developer.apple.com/library/archive/documentation/QuickTime/QTFF/QTFFChap2/qtff2.html#//apple_ref/doc/uid/TP40000939-CH204-DontLinkElementID_147
+  def find_video_trak_atom(atoms)
+    trak_atoms = find_atoms_by_path(atoms, ['moov', 'trak'])
+
+    return [] if trak_atoms.empty?
+
+    trak_atoms.find do |trak_atom|
+      hdlr_atom = find_first_atom_by_path([trak_atom], 'trak', 'mdia', 'hdlr')
+      hdlr_atom.atom_fields[:component_type] == 'mhlr' && hdlr_atom.atom_fields[:component_subtype] == 'vide'
+    end
+  end
+
   def parse_ftyp_atom(io, atom_size)
     # Subtract 8 for the atom_size+atom_type,
     # and 8 once more for the major_brand and minor_version. The remaining

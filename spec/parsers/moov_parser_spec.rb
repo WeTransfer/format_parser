@@ -108,4 +108,16 @@ describe FormatParser::MOOVParser do
   it 'provides filename hints' do
     expect(subject).to be_likely_match('file.m4v')
   end
+
+  it 'reads correctly the video dimensions' do
+    mov_path = fixtures_dir + '/MOOV/MOV/Test_Dimensions.mov'
+
+    result = subject.call(File.open(mov_path, 'rb'))
+
+    expect(result).not_to be_nil
+    expect(result.nature).to eq(:video)
+    expect(result.format).to eq(:mov)
+    expect(result.width_px).to eq(640)
+    expect(result.height_px).to eq(360)
+  end
 end
