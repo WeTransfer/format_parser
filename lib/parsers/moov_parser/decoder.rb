@@ -1,6 +1,7 @@
 # Handles decoding of MOV/MPEG4 atoms/boxes in a stream. Will recursively
 # read atoms and parse their data fields if applicable. Also contains
 # a few utility functions for finding atoms in a list etc.
+# To know more about Atoms: https://developer.apple.com/library/archive/documentation/QuickTime/QTFF/QTFFChap2/qtff2.html
 class FormatParser::MOOVParser::Decoder
   include FormatParser::IOUtils
 
@@ -222,6 +223,8 @@ class FormatParser::MOOVParser::Decoder
   end
 
   def parse_meta_atom(io, atom_size)
+    return if atom_size == 0 # this atom can be empty
+
     parse_hdlr_atom(io, atom_size)
   end
 

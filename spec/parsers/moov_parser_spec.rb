@@ -120,4 +120,12 @@ describe FormatParser::MOOVParser do
     expect(result.width_px).to eq(640)
     expect(result.height_px).to eq(360)
   end
+
+  it 'does not raise error when a meta atom has size 0' do
+    mov_path = fixtures_dir + '/MOOV/MOV/Test_Meta_Atom_With_Size_Zero.mov'
+
+    result = subject.call(File.open(mov_path, 'rb'))
+    expect(result).not_to be_nil
+    expect(result.format).to eq(:mov)
+  end
 end
