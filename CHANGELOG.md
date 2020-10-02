@@ -1,3 +1,8 @@
+## 0.25.1
+* MOV: Fix error "negative length"
+* MOV: Fix reading dimensions in multi-track files
+* MP3: Fix parse of the Xing header to not raise errors
+
 ## 0.25.0
 * MP3: add suport to id3 v2.4.x
 * JPEG: Update gem exifr to 1.3.8 to fix a bug
