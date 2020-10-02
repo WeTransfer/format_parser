@@ -249,16 +249,16 @@ class FormatParser::MP3Parser
     io.seek(xing_offset + 4) # Include the length of "Xing" itself
 
     # https://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#XINGHeader
-    header_flags, _ = io.read(4).unpack('s>s>')
+    header_flags, _ = io.read(4).unpack('i>')
     frames = byte_count = toc = vbr_scale = nil
 
-    frames = io.read(4).unpack('N1').first if header_flags & 1 # FRAMES FLAG
+    frames = io.read(4).unpack('N1').first if header_flags & 1 != 0   # FRAMES FLAG
 
-    byte_count = io.read(4).unpack('N1').first if header_flags & 2 # BYTES FLAG
+    byte_count = io.read(4).unpack('N1').first if header_flags & 2 != 0   # BYTES FLAG
 
-    toc = io.read(100).unpack('C100') if header_flags & 4 # TOC FLAG
+    toc = io.read(100).unpack('C100') if header_flags & 4 != 0   # TOC FLAG
 
-    vbr_scale = io.read(4).unpack('N1').first if header_flags & 8 # VBR SCALE FLAG
+    vbr_scale = io.read(4).unpack('N1').first if header_flags & 8 != 0   # VBR SCALE FLAG
 
     VBRHeader.new(frames: frames, byte_count: byte_count, toc_entries: toc, vbr_scale: vbr_scale)
   end
