@@ -36,7 +36,7 @@ module FormatParser
   # Register a parser object to be used to perform file format detection. Each parser FormatParser
   # provides out of the box registers itself using this method.
   #
-  # @param callable_or_responding_to_new[#call, #new] an object that either responds to #new or to #call
+  # @param callable_parser[#call] an object that responds to #call for parsing an IO
   # @param formats[Array<Symbol>] file formats that the parser provides
   # @param natures[Array<Symbol>] file natures that the parser provides
   # @param priority[Integer] whether the parser has to be applied first or later. Parsers that offer the safest
@@ -45,39 +45,39 @@ module FormatParser
   #   with a lower priority value will be applied first, and if a single result is requested, will also return
   #   first.
   # @return void
-  def self.register_parser(callable_or_responding_to_new, formats:, natures:, priority: LEAST_PRIORITY)
+  def self.register_parser(callable_parser, formats:, natures:, priority: LEAST_PRIORITY)
     parser_provided_formats = Array(formats)
     parser_provided_natures = Array(natures)
     PARSER_MUX.synchronize do
       @parsers ||= Set.new
-      @parsers << callable_or_responding_to_new
+      @parsers << callable_parser
       @parsers_per_nature ||= {}
       parser_provided_natures.each do |provided_nature|
         @parsers_per_nature[provided_nature] ||= Set.new
-        @parsers_per_nature[provided_nature] << callable_or_responding_to_new
+        @parsers_per_nature[provided_nature] << callable_parser
       end
       @parsers_per_format ||= {}
       parser_provided_formats.each do |provided_format|
         @parsers_per_format[provided_format] ||= Set.new
-        @parsers_per_format[provided_format] << callable_or_responding_to_new
+        @parsers_per_format[provided_format] << callable_parser
       end
       @parser_priorities ||= {}
-      @parser_priorities[callable_or_responding_to_new] = priority
+      @parser_priorities[callable_parser] = priority
     end
   end
 
   # Deregister a parser object (makes FormatParser forget this parser existed). Is mostly used in
   # tests, but can also be used to forcibly disable some formats completely.
   #
-  # @param callable_or_responding_to_new[#call, #new] an object that either responds to #new or to #call
+  # @param callable_parser[#==] an object that is identity-equal to any other registered parser
   # @return void
-  def self.deregister_parser(callable_or_responding_to_new)
+  def self.deregister_parser(callable_parser)
     # Used only in tests
     PARSER_MUX.synchronize do
-      (@parsers || []).delete(callable_or_responding_to_new)
-      (@parsers_per_nature || {}).values.map { |e| e.delete(callable_or_responding_to_new) }
-      (@parsers_per_format || {}).values.map { |e| e.delete(callable_or_responding_to_new) }
-      (@parser_priorities || {}).delete(callable_or_responding_to_new)
+      (@parsers || []).delete(callable_parser)
+      (@parsers_per_nature || {}).values.map { |e| e.delete(callable_parser) }
+      (@parsers_per_format || {}).values.map { |e| e.delete(callable_parser) }
+      (@parser_priorities || {}).delete(callable_parser)
     end
   end
 
