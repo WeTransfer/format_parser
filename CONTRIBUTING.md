@@ -83,32 +83,59 @@ of software. Ideally, this file is going to be something you have produced yours
 and you are permitted to share under the MIT license provisions.
 
 When writing a parser, please try to ensure it returns a usable result as soon as possible,
-or no result as soon as possible (once you know the file is not fit for your specific parser).
+or `nil` as soon as possible (once you know the file is not fit for your specific parser).
 Bear in mind that we enforce read budgets per-parser, so you will not be allowed to perform
 too many reads, or perform reads which are too large.
 
-In order to create new parsers, it is recommended to make a well-named class with an instance method `call`.
+In order to create new parsers, make a well-named class with an instance method `call`,
+and to register a single instance of that class as the parser - so that only one object needs to be stored
+in memory when parsing multiple inputs. In that case your object must be **thread-safe and stateless** - this
+is really important since FormatParser is thread-safe and multiple parsing procedures may be in progress
+concurrently against the same parser object. You can also create a Proc if your parser is fairly trivial.
 
-`call` accepts the IO-ish object as an argument, parses data that it reads from it,
-and then returns the metadata for the file (if it could recover any) or `nil` if it couldn't. All files pass
+If it will be difficult to have your parser thread-safe you can register your class itself as
+the parser and define the `self.call` method to parse using a fresh instance every time, allowing
+object-level state:
+
+```ruby
+class MyParser
+  def self.call(io)
+    new.call(io)
+  end
+
+  def call(io)
+    @state = ...
+  end
+```
+
+`call` accepts a single argument - an IO-ish object which is guaranteed to respond to the same methods as the
+ones defined in `IOConstraint` - that is, it is a strict subset of a standard Ruby IO object. *All reads from
+this IO object are guaranteed to be returned in binary encoding.* The IO will be at offset of 0 when your parsing
+proc receives it and there will be no concurrent calls to that object until your proc returns.
+
+Your parsing procedure may read from this IO object, and should return either a `Result`-like object with
+the file metadata (if it could recover any) or `nil` if it couldn't. All files pass
 through all parsers by default, so if you are dealing with a file that is not "your" format - return `nil` from
-your method or `break` your Proc as early as possible. A blank `return` works fine too.
+your method or `break` your Proc as early as possible. A blank `return` works fine too as it actually returns `nil`.
 
-The IO will at the minimum support the subset of the IO API defined in `IOConstraint`
+Your parser then needs to be registered using `FormatParser.register_parser` with the information on the formats
+and file natures it provides. This allows FormatParser to skip your parser if, say, the user only want to parse for
+`:image` nature files but your parser parses `:audio`.
 
-Your parser has to be registered using `FormatParser.register_parser` with the information on the formats
-and file natures it provides.
-
-Down below you can find the most basic parser implementation:
+Down below you can find the most basic parser implementation which parses an imaginary `IMGA` file format:
 
 ```ruby
 MyParser = ->(io) {
-  # ... do some parsing with `io`
+  # ... Read the magic bytes from the start of IO - the IO is
+  # guaranteed to be fed to you at offset 0, start-of-file.
   magic_bytes = io.read(4)
+
   # breaking the block returns `nil` to the caller signaling "no match"
   break if magic_bytes != 'IMGA'
 
+  # Our file format stores the width and height as 2 32-bit unsigned integers
   parsed_witdh, parsed_height = io.read(8).unpack('VV')
+
   # ...and return the FileInformation::Image object with the metadata.
   FormatParser::Image.new(
     format: :imga,
@@ -135,8 +162,8 @@ class MyParser
     # ... do some parsing with `io`
     # The instance will be discarded after parsing, so using instance variables
     # is permitted - they are not shared between calls to `call`
-    @magic_bytes = io.read(4)
-    break if @magic_bytes != 'IMGA'
+    magic_bytes = io.read(4)
+    break if magic_bytes != 'IMGA'
     parsed_witdh, parsed_height = io.read(8).unpack('VV')
     FormatParser::Image.new(
       format: :imga,
@@ -145,23 +172,33 @@ class MyParser
     )
   end
 
-  FormatParser.register_parser self, natures: :image, formats: :bmp
+  # Note that we register an instance of the class, not the class. It is the
+  # instance that responds to `call()` and we can do this because our object
+  # is stateless.
+  FormatParser.register_parser new, natures: :image, formats: :bmp
 end
 ```
 
+If your parser supports file types which have a known filename extension, you can add a method to it called `likely_match?`,
+add this method on the object you register itself. For example, for the ZIP parser we use:
+
+```ruby
+  def likely_match?(filename)
+    filename =~ /\.(zip|docx|keynote|numbers|pptx|xlsx)$/i
+  end
+```
+
+If your parser matches the filename it is going to be applied *earlier*, saving time. Since most FormatParser users are
+likely to only want the first result of the parsing, the sooner your parser gets applied - the sooner you can return the result,
+avoiding unnecessary reads.
+
 ### Calling convention for preparing parsers
 
-A parser that gets registered using `register_parser` must be either:
-
-1) An object that can be `call()`-ed itself, with an argument that conforms to `IOConstraint`
-2) An object that responds to `new` and returns something that can be `call()`-ed with with an argument that conforms to `IOConstraint`.
-
-The second opton is recommended  for most cases.
+A parser that gets registered using `register_parser` must be an object that can be `call()`-ed, with an argument that conforms to `IOConstraint`
 
 FormatParser is made to be used in threaded environments, and if you use instance variables
-you need your parser to be isolated from it's siblings in other threads - therefore you can pass
-a Class on registration to have your parser instantiated for each `call()`, anew.
-
+you need your parser to be isolated from it's siblings in other threads - create a copy for one-off use inside
+your `call` method.
 
 ## Pull requests
 
