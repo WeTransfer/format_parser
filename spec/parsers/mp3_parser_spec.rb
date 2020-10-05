@@ -166,6 +166,18 @@ describe FormatParser::MP3Parser do
     expect(parsed.artist). to eq('wetransfer')
   end
 
+  it 'does not skip the first bytes if it is not a id3 tag header' do
+    fpath = fixtures_dir + '/MP3/no_id3_tags.mp3'
+
+    parsed = subject.call(File.open(fpath, 'rb'))
+
+    expect(parsed).not_to be_nil
+
+    expect(parsed.nature).to eq(:audio)
+    expect(parsed.format).to eq(:mp3)
+    expect(parsed.audio_sample_rate_hz).to eq(44100)
+  end
+
   describe '#as_json' do
     it 'converts all hash keys to string when stringify_keys: true' do
       fpath = fixtures_dir + '/MP3/Cassy.mp3'

@@ -73,6 +73,8 @@ class FormatParser::MP3Parser
     id3v1 = ID3Extraction.attempt_id3_v1_extraction(io)
     tags = [id3v1, ID3Extraction.attempt_id3_v2_extraction(io)].compact
 
+    io.seek(0) if tags.empty?
+
     # Compute how many bytes are occupied by the actual MPEG frames
     ignore_bytes_at_tail = id3v1 ? 128 : 0
     ignore_bytes_at_head = io.pos
