@@ -36,7 +36,7 @@ class FormatParser::MOOVParser::Decoder
   # matches the type, drilling down if a list of atom names is given
   def find_first_atom_by_path(atoms, *atom_types)
     type_to_find = atom_types.shift
-    requisite = atoms.find { |e| e.is_a?(Atom) && e.atom_type == type_to_find }
+    requisite = atoms.find { |e| e.atom_type == type_to_find }
 
     # Return if we found our match
     return requisite if atom_types.empty?
