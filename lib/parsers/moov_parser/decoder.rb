@@ -68,7 +68,7 @@ class FormatParser::MOOVParser::Decoder
   def find_video_trak_atom(atoms)
     trak_atoms = find_atoms_by_path(atoms, ['moov', 'trak'])
 
-    return [] if trak_atoms.empty?
+    return if trak_atoms.empty?
 
     trak_atoms.find do |trak_atom|
       hdlr_atom = find_first_atom_by_path([trak_atom], 'trak', 'mdia', 'hdlr')
