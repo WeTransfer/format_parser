@@ -1,3 +1,9 @@
+## 0.25.3
+* MP3: Fix parser to not skip the first bytes if it's not an ID3 header
+
+## 0.25.2
+* Hotfix Moov parser
+
 ## 0.25.1
 * MOV: Fix error "negative length"
 * MOV: Fix reading dimensions in multi-track files
