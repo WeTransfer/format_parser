@@ -255,7 +255,11 @@ module FormatParser
     # Order the parsers according to their priority value. The ones having a lower
     # value will sort higher and will be applied sooner
     parsers_in_order_of_priority = parsers.to_a.sort do |parser_a, parser_b|
-      @parser_priorities[parser_a] <=> @parser_priorities[parser_b]
+      if @parser_priorities[parser_a] != @parser_priorities[parser_b]
+        @parser_priorities[parser_a] <=> @parser_priorities[parser_b]
+      else
+        parser_a.class.name <=> parser_b.class.name
+      end
     end
 
     # If there is one parser that is more likely to match, place it first
