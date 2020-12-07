@@ -73,7 +73,7 @@ class FormatParser::MP3Parser
     return if header.start_with?(PNG_HEADER_BYTES)
 
     io.seek(0)
-    return if tif?(io)
+    return if TIFF_HEADER_BYTES.include?(safe_read(io, 4))
 
     # Read all the ID3 tags (or at least attempt to)
     io.seek(0)
@@ -139,10 +139,6 @@ class FormatParser::MP3Parser
   end
 
   private
-
-  def tif?(io)
-    TIFF_HEADER_BYTES.include?(safe_read(io, 4))
-  end
 
   # The implementation of the MPEG frames parsing is mostly based on tinytag,
   # a sweet little Python library for parsing audio metadata - do check it out
