@@ -258,6 +258,14 @@ module FormatParser
       if @parser_priorities[parser_a] != @parser_priorities[parser_b]
         @parser_priorities[parser_a] <=> @parser_priorities[parser_b]
       else
+        # Some parsers have the same priority and we want them to be always sorted
+        # in the same way, to not change the result of FormatParser.parse(results: :first).
+        # When this changes, it can generate flaky tests or event different
+        # results in different environments, which can be hard to understand why.
+        # There is also no guarantee in the order that the elements are added in
+        # @@parser_priorities
+        # So, to have always the same order, we sort by the class name when the
+        # priorities are the same.
         parser_a.class.name <=> parser_b.class.name
       end
     end
