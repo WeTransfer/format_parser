@@ -180,17 +180,17 @@ describe FormatParser do
         [:cr2, :dpx, :fdx, :flac, :gif, :jpg, :mov, :mp4, :m4a, :mp3, :mpg, :mpeg, :ogg, :png, :tif, :wav]
       )
 
-      expect(parsers.map{ |parser| parser.class.name }).to eq([
-        "Class",
-        "FormatParser::GIFParser",
-        "FormatParser::PNGParser",
-        "FormatParser::CR2Parser",
-        "FormatParser::DPXParser",
-        "FormatParser::FLACParser",
-        "FormatParser::MP3Parser",
-        "FormatParser::OggParser",
-        "FormatParser::TIFFParser",
-        "FormatParser::WAVParser"
+      expect(parsers.map { |parser| parser.class.name }).to eq([
+        'Class',
+        'FormatParser::GIFParser',
+        'FormatParser::PNGParser',
+        'FormatParser::CR2Parser',
+        'FormatParser::DPXParser',
+        'FormatParser::FLACParser',
+        'FormatParser::MP3Parser',
+        'FormatParser::OggParser',
+        'FormatParser::TIFFParser',
+        'FormatParser::WAVParser'
       ])
     end
   end
