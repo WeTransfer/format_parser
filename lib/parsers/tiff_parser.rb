@@ -4,7 +4,7 @@ class FormatParser::TIFFParser
 
   MAGIC_LE = [0x49, 0x49, 0x2A, 0x0].pack('C4')
   MAGIC_BE = [0x4D, 0x4D, 0x0, 0x2A].pack('C4')
-  HEADERS = [MAGIC_LE, MAGIC_BE]
+  HEADER_BYTES = [MAGIC_LE, MAGIC_BE]
 
   def likely_match?(filename)
     filename =~ /\.tiff?$/i
@@ -13,7 +13,7 @@ class FormatParser::TIFFParser
   def call(io)
     io = FormatParser::IOConstraint.new(io)
 
-    return unless HEADERS.include?(safe_read(io, 4))
+    return unless HEADER_BYTES.include?(safe_read(io, 4))
     io.seek(io.pos + 2) # Skip over the offset of the IFD, EXIFR will re-read it anyway
     return if cr2?(io)
 

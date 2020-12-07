@@ -29,6 +29,10 @@ class FormatParser::MP3Parser
   ZIP_LOCAL_ENTRY_SIGNATURE = "PK\x03\x04\x14\x00".b
   PNG_HEADER_BYTES = [137, 80, 78, 71, 13, 10, 26, 10].pack('C*')
 
+  MAGIC_LE = [0x49, 0x49, 0x2A, 0x0].pack('C4')
+  MAGIC_BE = [0x4D, 0x4D, 0x0, 0x2A].pack('C4')
+  TIFF_HEADER_BYTES = [MAGIC_LE, MAGIC_BE]
+
   # Wraps the Tag object returned by ID3Tag in such
   # a way that a usable JSON representation gets
   # returned
@@ -137,7 +141,7 @@ class FormatParser::MP3Parser
   private
 
   def tif?(io)
-    FormatParser::TIFFParser::HEADERS.include?(safe_read(io, 4))
+    TIFF_HEADER_BYTES.include?(safe_read(io, 4))
   end
 
   # The implementation of the MPEG frames parsing is mostly based on tinytag,
