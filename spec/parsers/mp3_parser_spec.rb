@@ -205,4 +205,12 @@ describe FormatParser::MP3Parser do
       ).to eq([ID3Tag::Tag])
     end
   end
+
+  it 'does not recognize TIFF files as MP3' do
+    fpath = fixtures_dir + '/TIFF/test2.tif'
+
+    parsed = subject.call(File.open(fpath, 'rb'))
+
+    expect(parsed).to be_nil
+  end
 end
