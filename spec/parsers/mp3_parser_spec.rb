@@ -211,6 +211,6 @@ describe FormatParser::MP3Parser do
 
     parsed = subject.call(File.open(fpath, 'rb'))
 
-    expect(parsed).to eq(nil)
+    expect(parsed).to be_nil
   end
 end
