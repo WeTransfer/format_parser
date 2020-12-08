@@ -207,7 +207,7 @@ describe FormatParser::MP3Parser do
   end
 
   it 'does not recognize TIFF files as MP3' do
-    fpath = fixtures_dir + '/TIFF/tiff_and_mp3.tif'
+    fpath = fixtures_dir + '/TIFF/test2.tif'
 
     parsed = subject.call(File.open(fpath, 'rb'))
 
