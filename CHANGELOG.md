@@ -1,3 +1,7 @@
+## 0.25.4
+* MP3: Fix MP3Parser to return nil for TIFF files
+* Add support to ruby 2.7
+
 ## 0.25.3
 * MP3: Fix parser to not skip the first bytes if it's not an ID3 header
 
