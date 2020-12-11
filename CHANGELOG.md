@@ -1,3 +1,6 @@
+## 0.25.5
+* DPX: Fix DPXParser to support images without aspect ratio
+
 ## 0.25.4
 * MP3: Fix MP3Parser to return nil for TIFF files
 * Add support to ruby 2.7
