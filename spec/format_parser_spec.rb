@@ -181,8 +181,8 @@ describe FormatParser do
       )
 
       expect(parsers.map { |parser| parser.class.name }).to eq([
-        'Class',
         'FormatParser::GIFParser',
+        'Class',
         'FormatParser::PNGParser',
         'FormatParser::CR2Parser',
         'FormatParser::DPXParser',
