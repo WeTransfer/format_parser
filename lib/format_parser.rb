@@ -62,9 +62,9 @@ module FormatParser
         @parsers_per_format[provided_format] << callable_parser
       end
       @parser_priorities ||= {}
-      @parser_order_of_registration ||= []
+      @parser_registration_order ||= []
       @parser_priorities[callable_parser] = priority
-      @parser_order_of_registration << callable_parser
+      @parser_registration_order << callable_parser
     end
   end
 
@@ -268,7 +268,7 @@ module FormatParser
         # @@parser_priorities
         # So, to have always the same order, we sort by the order that the parsers
         # were registered if the priorities are the same.
-        @parser_order_of_registration.index(parser_a) <=> @parser_order_of_registration.index(parser_b)
+        @parser_registration_order.index(parser_a) <=> @parser_registration_order.index(parser_b)
       end
     end
 
