@@ -49,6 +49,8 @@ module FormatParser
     parser_provided_formats = Array(formats)
     parser_provided_natures = Array(natures)
     PARSER_MUX.synchronize do
+      # It can't be a Set because the method `parsers_for` depends on the order
+      # that the parsers were added.
       @parsers ||= []
       @parsers << callable_parser unless @parsers.include?(callable_parser)
       @parsers_per_nature ||= {}
