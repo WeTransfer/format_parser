@@ -49,8 +49,8 @@ module FormatParser
     parser_provided_formats = Array(formats)
     parser_provided_natures = Array(natures)
     PARSER_MUX.synchronize do
-      @parsers ||= Set.new
-      @parsers << callable_parser
+      @parsers ||= []
+      @parsers << callable_parser unless @parsers.include?(callable_parser)
       @parsers_per_nature ||= {}
       parser_provided_natures.each do |provided_nature|
         @parsers_per_nature[provided_nature] ||= Set.new
@@ -62,9 +62,7 @@ module FormatParser
         @parsers_per_format[provided_format] << callable_parser
       end
       @parser_priorities ||= {}
-      @parser_registration_order ||= []
       @parser_priorities[callable_parser] = priority
-      @parser_registration_order << callable_parser
     end
   end
 
@@ -268,7 +266,7 @@ module FormatParser
         # @@parser_priorities
         # So, to have always the same order, we sort by the order that the parsers
         # were registered if the priorities are the same.
-        @parser_registration_order.index(parser_a) <=> @parser_registration_order.index(parser_b)
+        @parsers.index(parser_a) <=> @parsers.index(parser_b)
       end
     end
 
