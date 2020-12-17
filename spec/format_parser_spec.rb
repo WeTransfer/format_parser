@@ -173,6 +173,26 @@ describe FormatParser do
       prioritized_parsers = FormatParser.parsers_for([:archive, :document, :image, :audio], [:tif, :jpg, :zip, :docx, :mp3, :aiff], 'a-file.zip')
       expect(prioritized_parsers.first).to be_kind_of(FormatParser::ZIPParser)
     end
+
+    it 'sorts the parsers by priority and name' do
+      parsers = FormatParser.parsers_for(
+        [:audio, :image],
+        [:cr2, :dpx, :fdx, :flac, :gif, :jpg, :mov, :mp4, :m4a, :mp3, :mpg, :mpeg, :ogg, :png, :tif, :wav]
+      )
+
+      expect(parsers.map { |parser| parser.class.name }).to eq([
+        'FormatParser::GIFParser',
+        'Class',
+        'FormatParser::PNGParser',
+        'FormatParser::CR2Parser',
+        'FormatParser::DPXParser',
+        'FormatParser::FLACParser',
+        'FormatParser::MP3Parser',
+        'FormatParser::OggParser',
+        'FormatParser::TIFFParser',
+        'FormatParser::WAVParser'
+      ])
+    end
   end
 
   describe '.register_parser and .deregister_parser' do
