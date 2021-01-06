@@ -19,6 +19,7 @@ module FormatParser
   require_relative 'io_constraint'
   require_relative 'care'
   require_relative 'active_storage/blob_analyzer'
+  require_relative 'm3u'
 
   # Define Measurometer in the internal namespace as well
   # so that we stay compatible for the applications that use it
