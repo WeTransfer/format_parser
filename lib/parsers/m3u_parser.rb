@@ -13,12 +13,9 @@ class FormatParser::M3UParser
     header = safe_read(io, 7)
     return unless HEADER.eql?(header)
 
-    file_content = io.read(io.size)
-
-    FormatParser::M3U.new(
+    FormatParser::Text.new(
       format: :m3u,
-      size: io.size,
-      content: file_content
+      size: io.size
     )
   end
   FormatParser.register_parser new, natures: :text, formats: [:m3u, :m3u8]
