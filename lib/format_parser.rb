@@ -50,8 +50,10 @@ module FormatParser
     parser_provided_formats = Array(formats)
     parser_provided_natures = Array(natures)
     PARSER_MUX.synchronize do
-      @parsers ||= Set.new
-      @parsers << callable_parser
+      # It can't be a Set because the method `parsers_for` depends on the order
+      # that the parsers were added.
+      @parsers ||= []
+      @parsers << callable_parser unless @parsers.include?(callable_parser)
       @parsers_per_nature ||= {}
       parser_provided_natures.each do |provided_nature|
         @parsers_per_nature[provided_nature] ||= Set.new
@@ -256,7 +258,19 @@ module FormatParser
     # Order the parsers according to their priority value. The ones having a lower
     # value will sort higher and will be applied sooner
     parsers_in_order_of_priority = parsers.to_a.sort do |parser_a, parser_b|
-      @parser_priorities[parser_a] <=> @parser_priorities[parser_b]
+      if @parser_priorities[parser_a] != @parser_priorities[parser_b]
+        @parser_priorities[parser_a] <=> @parser_priorities[parser_b]
+      else
+        # Some parsers have the same priority and we want them to be always sorted
+        # in the same way, to not change the result of FormatParser.parse(results: :first).
+        # When this changes, it can generate flaky tests or event different
+        # results in different environments, which can be hard to understand why.
+        # There is also no guarantee in the order that the elements are added in
+        # @@parser_priorities
+        # So, to have always the same order, we sort by the order that the parsers
+        # were registered if the priorities are the same.
+        @parsers.index(parser_a) <=> @parsers.index(parser_b)
+      end
     end
 
     # If there is one parser that is more likely to match, place it first

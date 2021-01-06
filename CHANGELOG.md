@@ -1,3 +1,6 @@
+## 0.25.6
+* Fix FormatParser.parse (with `results: :first`) to be deterministic
+
 ## 0.25.5
 * DPX: Fix DPXParser to support images without aspect ratio
 
