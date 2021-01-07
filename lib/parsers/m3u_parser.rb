@@ -4,7 +4,7 @@ class FormatParser::M3UParser
   HEADER = '#EXTM3U'
 
   def likely_match?(filename)
-    filename =~ /\.(m3u|m3u8)$/i
+    filename =~ /\.m3u8?$/i
   end
 
   def call(io)
@@ -18,5 +18,5 @@ class FormatParser::M3UParser
       size: io.size
     )
   end
-  FormatParser.register_parser new, natures: :text, formats: [:m3u, :m3u8]
+  FormatParser.register_parser new, natures: :text, formats: :m3u
 end
