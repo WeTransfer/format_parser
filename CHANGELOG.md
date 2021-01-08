@@ -1,3 +1,6 @@
+## 0.26.0
+* Add support for M3U format files
+
 ## 0.25.6
 * Fix FormatParser.parse (with `results: :first`) to be deterministic
 
