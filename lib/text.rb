@@ -5,7 +5,6 @@ module FormatParser
     NATURE = :text
 
     attr_accessor :format
-    attr_accessor :size
 
     # Only permits assignments via defined accessors
     def initialize(**attributes)

@@ -25,7 +25,6 @@ describe FormatParser::M3UParser do
       expect(parsed_m3u).not_to be_nil
       expect(parsed_m3u.nature).to eq(:text)
       expect(parsed_m3u.format).to eq(:m3u)
-      expect(parsed_m3u.size).to eq(124)
     end
   end
 
@@ -36,7 +35,6 @@ describe FormatParser::M3UParser do
       expect(parsed_m3u).not_to be_nil
       expect(parsed_m3u.nature).to eq(:text)
       expect(parsed_m3u.format).to eq(:m3u)
-      expect(parsed_m3u.size).to eq(124)
     end
   end
 end

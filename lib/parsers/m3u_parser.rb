@@ -14,8 +14,7 @@ class FormatParser::M3UParser
     return unless HEADER.eql?(header)
 
     FormatParser::Text.new(
-      format: :m3u,
-      size: io.size
+      format: :m3u
     )
   end
   FormatParser.register_parser new, natures: :text, formats: :m3u
