@@ -32,6 +32,7 @@ and [dimensions,](https://github.com/sstephenson/dimensions) borrowing from them
 * DOCX, PPTX, XLSX
 * OGG
 * MPEG, MPG
+* M3U
 
 ...with [more](https://github.com/WeTransfer/format_parser/issues?q=is%3Aissue+is%3Aopen+label%3Aformats) on the way!
 
@@ -193,6 +194,9 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 - Downloaded from Unspash (and thus freely avaliable) - https://unsplash.com/license and have then been
   manipulated using the [https://github.com/recurser/exif-orientation-examples](exif-orientation-examples)
   script.
+
+### M3U
+- The M3U fixture files were created by one of the project maintainers
 
 ### .key
 - The `keynote_recognized_as_jpeg.key` file was created by the project maintainers
