@@ -17,6 +17,7 @@ describe FormatParser::PDFParser do
       expect(parsed_pdf).not_to be_nil
       expect(parsed_pdf.nature).to eq(:document)
       expect(parsed_pdf.format).to eq(:pdf)
+      expect(parsed_pdf.content_type).to eq('application/pdf')
     end
   end
 

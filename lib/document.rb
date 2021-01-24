@@ -7,6 +7,7 @@ module FormatParser
     attr_accessor :format
     attr_accessor :document_type
     attr_accessor :page_count
+    attr_accessor :content_type
 
     # Only permits assignments via defined accessors
     def initialize(**attributes)

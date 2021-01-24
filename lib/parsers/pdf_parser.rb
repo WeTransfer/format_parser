@@ -1,6 +1,5 @@
 class FormatParser::PDFParser
   include FormatParser::IOUtils
-
   # First 9 bytes of a PDF should be in this format, according to:
   #
   #  https://stackoverflow.com/questions/3108201/detect-if-pdf-file-is-correct-header-pdf
@@ -8,6 +7,7 @@ class FormatParser::PDFParser
   # There are however exceptions, which are left out for now.
   #
   PDF_MARKER = /%PDF-1\.[0-8]{1}/
+  PDF_CONTENT_TYPE = 'application/pdf'
 
   def likely_match?(filename)
     filename =~ /\.(pdf|ai)$/i
@@ -18,7 +18,7 @@ class FormatParser::PDFParser
 
     return unless safe_read(io, 9) =~ PDF_MARKER
 
-    FormatParser::Document.new(format: :pdf)
+    FormatParser::Document.new(format: :pdf, content_type: PDF_CONTENT_TYPE)
   end
 
   FormatParser.register_parser new, natures: :document, formats: :pdf, priority: 1
