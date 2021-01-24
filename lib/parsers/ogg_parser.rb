@@ -3,8 +3,8 @@
 class FormatParser::OggParser
   include FormatParser::IOUtils
 
-  # Maximum size of an Ogg page
   MAX_POSSIBLE_PAGE_SIZE = 65307
+  OGG_MIME_TYPE = 'audio/ogg'
 
   def likely_match?(filename)
     filename =~ /\.ogg$/i
@@ -45,7 +45,8 @@ class FormatParser::OggParser
       format: :ogg,
       audio_sample_rate_hz: sample_rate,
       num_audio_channels: channels,
-      media_duration_seconds: duration
+      media_duration_seconds: duration,
+      content_type: OGG_MIME_TYPE,
     )
   end
 
