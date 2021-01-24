@@ -11,6 +11,12 @@ class FormatParser::MOOVParser
     'm4a ' => :m4a,
   }
 
+  # https://tools.ietf.org/html/rfc4337#section-2
+  # There is also video/quicktime which we should be able to capture
+  # here, but there is currently no detection for MOVs versus MP4s
+  MP4_AU_MIME_TYPE = 'audio/mp4'
+  MP4_MIXED_MIME_TYPE = 'video/mp4'
+
   def likely_match?(filename)
     filename =~ /\.(mov|m4a|ma4|mp4|aac|m4v)$/i
   end
@@ -49,10 +55,12 @@ class FormatParser::MOOVParser
     end
 
     # M4A only contains audio, while MP4 and friends can contain video.
-    if format_from_moov_type(file_type) == :m4a
+    fmt = format_from_moov_type(file_type)
+    if fmt == :m4a
       FormatParser::Audio.new(
         format: format_from_moov_type(file_type),
         media_duration_seconds: media_duration_s,
+        content_type: MP4_AU_MIME_TYPE,
         intrinsics: atom_tree,
       )
     else
@@ -61,6 +69,7 @@ class FormatParser::MOOVParser
         width_px: width,
         height_px: height,
         media_duration_seconds: media_duration_s,
+        content_type: MP4_MIXED_MIME_TYPE,
         intrinsics: atom_tree,
       )
     end
