@@ -1,6 +1,8 @@
 class FormatParser::AIFFParser
   include FormatParser::IOUtils
 
+  AIFF_MIME_TYPE = 'audio/x-aiff'
+
   # Known chunk types we can omit when parsing,
   # grossly lifted from http://www.muratnkonar.com/aiff/
   KNOWN_CHUNKS = [
@@ -70,7 +72,8 @@ class FormatParser::AIFFParser
       num_audio_channels: channels,
       audio_sample_rate_hz: sample_rate.to_i,
       media_duration_frames: sample_frames,
-      media_duration_seconds: duration_in_seconds
+      media_duration_seconds: duration_in_seconds,
+      content_type: AIFF_MIME_TYPE,
     )
   end
 

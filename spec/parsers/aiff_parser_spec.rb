@@ -10,6 +10,7 @@ describe FormatParser::AIFFParser do
     expect(parse_result.num_audio_channels).to eq(2)
     expect(parse_result.audio_sample_rate_hz).to be_within(0.01).of(44100)
     expect(parse_result.media_duration_seconds).to be_within(0.01).of(1.05)
+    expect(parse_result.content_type).to eq('audio/x-aiff')
   end
 
   it 'parses a Logic Pro created AIFF sample file having a COMT chunk before a COMM chunk' do
