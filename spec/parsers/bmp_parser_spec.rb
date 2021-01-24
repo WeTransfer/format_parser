@@ -13,6 +13,8 @@ describe FormatParser::BMPParser do
     expect(parsed.width_px).to eq(40)
     expect(parsed.height_px).to eq(27)
 
+    expect(parsed.content_type).to eq('image/bmp')
+
     expect(parsed.intrinsics).not_to be_nil
     expect(parsed.intrinsics[:vertical_resolution]).to eq(2834)
     expect(parsed.intrinsics[:horizontal_resolution]).to eq(2834)
@@ -31,6 +33,8 @@ describe FormatParser::BMPParser do
 
     expect(parsed.width_px).to eq(1920)
     expect(parsed.height_px).to eq(1080)
+
+    expect(parsed.content_type).to eq('image/bmp')
 
     expect(parsed.intrinsics).not_to be_nil
     expect(parsed.intrinsics[:vertical_resolution]).to eq(2835)
@@ -51,6 +55,8 @@ describe FormatParser::BMPParser do
     expect(parsed.width_px).to eq(200)
     expect(parsed.height_px).to eq(200)
 
+    expect(parsed.content_type).to eq('image/bmp')
+
     expect(parsed.intrinsics).not_to be_nil
   end
 
@@ -64,6 +70,7 @@ describe FormatParser::BMPParser do
     expect(parsed.color_mode).to eq(:rgb)
     expect(parsed.width_px).to eq(40)
     expect(parsed.height_px).to eq(27)
+    expect(parsed.content_type).to eq('image/bmp')
     expect(parsed.intrinsics[:bits_per_pixel]).to eq(24)
     expect(parsed.intrinsics[:data_order]).to eq(:normal)
 
@@ -76,6 +83,7 @@ describe FormatParser::BMPParser do
     expect(parsed.color_mode).to eq(:rgb)
     expect(parsed.width_px).to eq(40)
     expect(parsed.height_px).to eq(27)
+    expect(parsed.content_type).to eq('image/bmp')
     expect(parsed.intrinsics[:bits_per_pixel]).to eq(24)
     expect(parsed.intrinsics[:data_order]).to eq(:normal)
   end

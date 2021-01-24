@@ -5,6 +5,7 @@ class FormatParser::BMPParser
 
   VALID_BMP = 'BM'
   PERMISSIBLE_PIXEL_ARRAY_LOCATIONS = 26..512
+  BMP_MIME_TYPE = 'image/bmp'
 
   def likely_match?(filename)
     filename =~ /\.bmp$/i
@@ -42,6 +43,7 @@ class FormatParser::BMPParser
       width_px: width,
       height_px: height,
       color_mode: :rgb,
+      content_type: BMP_MIME_TYPE,
       intrinsics: {
         data_order: data_order,
         bits_per_pixel: bit_depth
@@ -63,6 +65,7 @@ class FormatParser::BMPParser
       width_px: width,
       height_px: height.abs,
       color_mode: :rgb,
+      content_type: BMP_MIME_TYPE,
       intrinsics: {
         vertical_resolution: vertical_res,
         horizontal_resolution: horizontal_res,
