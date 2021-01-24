@@ -23,6 +23,7 @@ describe FormatParser::MP3Parser do
 
     expect(parsed.nature).to eq(:audio)
     expect(parsed.format).to eq(:mp3)
+    expect(parsed.content_type).to eq('audio/mpeg')
     expect(parsed.num_audio_channels).to eq(2)
     expect(parsed.audio_sample_rate_hz).to eq(48000)
     expect(parsed.intrinsics).not_to be_nil
