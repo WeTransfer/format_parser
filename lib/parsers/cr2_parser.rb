@@ -6,6 +6,7 @@ class FormatParser::CR2Parser
 
   TIFF_HEADER = [0x49, 0x49, 0x2a, 0x00]
   CR2_HEADER  = [0x43, 0x52, 0x02, 0x00]
+  CR2_MIME_TYPE = 'image/x-canon-cr2'
 
   def likely_match?(filename)
     filename =~ /\.cr2$/i
@@ -39,6 +40,7 @@ class FormatParser::CR2Parser
       display_height_px: exif_data.rotated? ? w : h,
       orientation: exif_data.orientation_sym,
       intrinsics: {exif: exif_data},
+      content_type: CR2_MIME_TYPE,
     )
   rescue EXIFR::MalformedTIFF
     nil

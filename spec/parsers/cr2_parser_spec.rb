@@ -17,6 +17,7 @@ describe FormatParser::CR2Parser do
         expect(parsed.height_px).to be > 0
 
         expect(parsed.orientation).not_to be_nil
+        expect(parsed.content_type).to eq('image/x-canon-cr2')
       end
     end
   end
