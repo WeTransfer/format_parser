@@ -14,6 +14,7 @@ class FormatParser::PNGParser
     4 => true, # Grayscale with alpha
     6 => true,
   }
+  PNG_MIME_TYPE = 'image/png'
 
   def likely_match?(filename)
     filename =~ /\.png$/i
@@ -67,6 +68,7 @@ class FormatParser::PNGParser
       color_mode: color_mode,
       has_multiple_frames: has_animation,
       num_animation_or_video_frames: num_frames,
+      content_type: PNG_MIME_TYPE,
     )
   end
 
