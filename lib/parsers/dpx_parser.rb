@@ -6,6 +6,11 @@ class FormatParser::DPXParser
   BE_MAGIC = 'SDPX'
   LE_MAGIC = BE_MAGIC.reverse
 
+  # There is no official MIME type for DPX, so we have
+  # to invent something useful. We will prefix it with x-
+  # to indicate that it is a vendor subtype
+  DPX_MIME_TYPE = 'image/x-dpx'
+
   class ByteOrderHintIO < SimpleDelegator
     def initialize(io, is_little_endian)
       super(io)
@@ -61,6 +66,7 @@ class FormatParser::DPXParser
       display_width_px: display_w,
       display_height_px: display_h,
       intrinsics: dpx_structure,
+      content_type: DPX_MIME_TYPE,
     )
   end
 

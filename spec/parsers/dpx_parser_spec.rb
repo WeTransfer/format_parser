@@ -15,6 +15,7 @@ describe FormatParser::DPXParser do
       expect(parsed.width_px).to be_between(0, 2048)
       expect(parsed.height_px).to be_kind_of(Integer)
       expect(parsed.height_px).to be_between(0, 4000)
+      expect(parsed.content_type).to eq('image/x-dpx')
     end
   end
 
