@@ -26,6 +26,9 @@ module FormatParser
     # it can be placed here
     attr_accessor :intrinsics
 
+    # The MIME type of the archive
+    attr_accessor :content_type
+
     # Only permits assignments via defined accessors
     def initialize(**attributes)
       attributes.map { |(k, v)| public_send("#{k}=", v) }
