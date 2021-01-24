@@ -17,6 +17,7 @@ describe FormatParser::GIFParser do
 
         expect(parsed.height_px).to be_kind_of(Integer)
         expect(parsed.height_px).to be > 0
+        expect(parsed.content_type).to eq('image/gif')
       end
     end
   end
