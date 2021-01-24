@@ -4,6 +4,7 @@ class FormatParser::FLACParser
   MAGIC_BYTES = 4
   MAGIC_BYTE_STRING = 'fLaC'
   BLOCK_HEADER_BYTES = 4
+  FLAC_MIME_TYPE = 'audio/x-flac'
 
   def likely_match?(filename)
     filename =~ /\.flac$/i
@@ -61,6 +62,7 @@ class FormatParser::FLACParser
       audio_sample_rate_hz: sample_rate,
       media_duration_seconds: duration,
       media_duration_frames: total_samples,
+      content_type: FLAC_MIME_TYPE,
       intrinsics: {
         bits_per_sample: bits_per_sample,
         minimum_frame_size: minimum_frame_size,
