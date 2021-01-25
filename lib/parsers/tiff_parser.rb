@@ -34,7 +34,7 @@ class FormatParser::TIFFParser
     format = arw?(exif_data) ? :arw : :tif
     mime_type = arw?(exif_data) ? ARW_MIME_TYPE : TIFF_MIME_TYPE
     FormatParser::Image.new(
-      format: format, 
+      format: format,
       width_px: w,
       height_px: h,
       display_width_px: exif_data.rotated? ? h : w,
