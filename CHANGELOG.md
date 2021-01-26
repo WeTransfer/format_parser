@@ -1,3 +1,6 @@
+## 0.27.0
+* Add `#content_type` on `Result` return values which makes sense for the detected filetype
+
 ## 0.26.0
 * Add support for M3U format files
 
