@@ -5,6 +5,8 @@ class FormatParser::ZIPParser
   include OfficeFormats
   include FormatParser::IOUtils
 
+  ZIP_MIME_TYPE = 'application/zip'
+
   def likely_match?(filename)
     filename =~ /\.(zip|docx|keynote|numbers|pptx|xlsx)$/i
   end
@@ -25,10 +27,10 @@ class FormatParser::ZIPParser
     end
 
     if office_document?(filenames_set)
-      office_format = office_file_format_from_entry_set(filenames_set)
-      FormatParser::Archive.new(nature: :document, format: office_format, entries: entries_archive)
+      office_format, mime_type = office_file_format_and_mime_type_from_entry_set(filenames_set)
+      FormatParser::Archive.new(nature: :document, format: office_format, entries: entries_archive, content_type: mime_type)
     else
-      FormatParser::Archive.new(nature: :archive,  format: :zip, entries: entries_archive)
+      FormatParser::Archive.new(nature: :archive,  format: :zip, entries: entries_archive, content_type: ZIP_MIME_TYPE)
     end
   rescue FileReader::Error
     # This is not a ZIP, or a broken ZIP.

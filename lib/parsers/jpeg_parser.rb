@@ -12,6 +12,7 @@ class FormatParser::JPEGParser
   APP1_MARKER = 0xE1  # maybe EXIF
   EXIF_MAGIC_STRING = "Exif\0\0".b
   MUST_FIND_NEXT_MARKER_WITHIN_BYTES = 1024
+  JPEG_MIME_TYPE = 'image/jpeg'
 
   def self.likely_match?(filename)
     filename =~ /\.jpe?g$/i
@@ -88,6 +89,7 @@ class FormatParser::JPEGParser
         display_height_px: dh,
         orientation: flat_exif.orientation_sym,
         intrinsics: {exif: flat_exif},
+        content_type: JPEG_MIME_TYPE
       )
 
       return result

@@ -37,15 +37,15 @@ module FormatParser::ZIPParser::OfficeFormats
     OFFICE_MARKER_FILES.subset?(filenames_set)
   end
 
-  def office_file_format_from_entry_set(filenames_set)
+  def office_file_format_and_mime_type_from_entry_set(filenames_set)
     if filenames_set.include?('word/document.xml')
-      :docx
+      [:docx, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
     elsif filenames_set.include?('xl/workbook.xml')
-      :xlsx
+      [:xlsx, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
     elsif filenames_set.include?('ppt/presentation.xml')
-      :pptx
+      [:pptx, 'application/vnd.openxmlformats-officedocument.presentationml.presentation']
     else
-      :unknown
+      [:unknown, 'application/zip']
     end
   end
 end

@@ -2,6 +2,7 @@ class FormatParser::PSDParser
   include FormatParser::IOUtils
 
   PSD_HEADER = [0x38, 0x42, 0x50, 0x53]
+  PSD_MIME_TYPE = 'application/x-photoshop'
 
   def likely_match?(filename)
     filename =~ /\.psd$/i # Maybe also PSB at some point
@@ -20,6 +21,7 @@ class FormatParser::PSDParser
       format: :psd,
       width_px: w,
       height_px: h,
+      content_type: PSD_MIME_TYPE,
     )
   end
 

@@ -14,6 +14,7 @@ describe FormatParser::ZIPParser do
     expect(result).not_to be_nil
 
     expect(result.format).to eq(:zip)
+    expect(result.content_type).to eq('application/zip')
     expect(result.nature).to eq(:archive)
     expect(result.entries.length).to eq(0xFFFF + 1)
 
@@ -58,6 +59,7 @@ describe FormatParser::ZIPParser do
     result = subject.call(fi_io)
     expect(result.nature).to eq(:document)
     expect(result.format).to eq(:docx)
+    expect(result.content_type).to eq('application/vnd.openxmlformats-officedocument.wordprocessingml.document')
 
     fixture_path = fixtures_dir + '/ZIP/sample-docx.docx'
     fi_io = File.open(fixture_path, 'rb')

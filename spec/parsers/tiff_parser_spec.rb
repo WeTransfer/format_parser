@@ -59,6 +59,7 @@ describe FormatParser::TIFFParser do
     expect(parsed.width_px).to eq(7952)
     expect(parsed.height_px).to eq(5304)
     expect(parsed.intrinsics[:exif]).not_to be_nil
+    expect(parsed.content_type).to eq('image/x-sony-arw')
   end
 
   describe 'correctly extracts dimensions from various TIFF flavors of the same file' do

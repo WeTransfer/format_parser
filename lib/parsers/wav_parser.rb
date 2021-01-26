@@ -1,6 +1,8 @@
 class FormatParser::WAVParser
   include FormatParser::IOUtils
 
+  WAV_MIME_TYPE = 'audio/x-wav'
+
   def likely_match?(filename)
     filename =~ /\.wav$/i
   end
@@ -96,6 +98,7 @@ class FormatParser::WAVParser
       audio_sample_rate_hz: fmt_data[:sample_rate],
       media_duration_frames: sample_frames,
       media_duration_seconds: duration_in_seconds,
+      content_type: WAV_MIME_TYPE,
     )
   end
 

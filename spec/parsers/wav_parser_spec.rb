@@ -9,6 +9,7 @@ describe FormatParser::WAVParser do
 
       expect(parse_result.nature).to eq(:audio)
       expect(parse_result.format).to eq(:wav)
+      expect(parse_result.content_type).to eq('audio/x-wav')
     end
   end
 

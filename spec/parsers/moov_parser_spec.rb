@@ -37,7 +37,7 @@ describe FormatParser::MOOVParser do
       expect(result.nature).to eq(:audio)
       expect(result.media_duration_seconds).to be_kind_of(Float)
       expect(result.media_duration_seconds).to be > 0
-
+      expect(result.content_type).to be_kind_of(String)
       expect(result.intrinsics).not_to be_nil
     end
   end
@@ -52,6 +52,7 @@ describe FormatParser::MOOVParser do
       expect(result.height_px).to be > 0
       expect(result.media_duration_seconds).to be_kind_of(Float)
       expect(result.media_duration_seconds).to be > 0
+      expect(result.content_type).to eq('video/mp4')
 
       expect(result.intrinsics).not_to be_nil
     end
@@ -67,6 +68,7 @@ describe FormatParser::MOOVParser do
       expect(result.height_px).to be > 0
       expect(result.media_duration_seconds).to be_kind_of(Float)
       expect(result.media_duration_seconds).to be > 0
+      expect(result.content_type).to eq('video/mp4')
 
       expect(result.intrinsics).not_to be_nil
     end
@@ -79,6 +81,7 @@ describe FormatParser::MOOVParser do
     expect(result).not_to be_nil
     expect(result.nature).to eq(:audio)
     expect(result.format).to eq(:m4a)
+    expect(result.content_type).to eq('audio/mp4')
   end
 
   it 'parses a MOV file and provides the necessary metadata' do

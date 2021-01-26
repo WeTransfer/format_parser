@@ -5,6 +5,8 @@ class FormatParser::TIFFParser
   MAGIC_LE = [0x49, 0x49, 0x2A, 0x0].pack('C4')
   MAGIC_BE = [0x4D, 0x4D, 0x0, 0x2A].pack('C4')
   HEADER_BYTES = [MAGIC_LE, MAGIC_BE]
+  TIFF_MIME_TYPE = 'image/tiff'
+  ARW_MIME_TYPE = 'image/x-sony-arw'
 
   def likely_match?(filename)
     filename =~ /\.tiff?$/i
@@ -14,7 +16,10 @@ class FormatParser::TIFFParser
     io = FormatParser::IOConstraint.new(io)
 
     return unless HEADER_BYTES.include?(safe_read(io, 4))
-    io.seek(io.pos + 2) # Skip over the offset of the IFD, EXIFR will re-read it anyway
+
+    # Skip over the offset of the IFD,
+    # EXIFR will re-read it anyway
+    io.seek(io.pos + 2)
     return if cr2?(io)
 
     # The TIFF scanner in EXIFR is plenty good enough,
@@ -26,14 +31,17 @@ class FormatParser::TIFFParser
     w = exif_data.width || exif_data.pixel_x_dimension
     h = exif_data.height || exif_data.pixel_y_dimension
 
+    format = arw?(exif_data) ? :arw : :tif
+    mime_type = arw?(exif_data) ? ARW_MIME_TYPE : TIFF_MIME_TYPE
     FormatParser::Image.new(
-      format: arw?(exif_data) ? :arw : :tif, # Specify format as arw for Sony ARW format images, else tif
+      format: format,
       width_px: w,
       height_px: h,
       display_width_px: exif_data.rotated? ? h : w,
       display_height_px: exif_data.rotated? ? w : h,
       orientation: exif_data.orientation_sym,
       intrinsics: {exif: exif_data},
+      content_type: mime_type,
     )
   rescue EXIFR::MalformedTIFF
     nil

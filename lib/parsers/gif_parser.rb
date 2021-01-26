@@ -3,6 +3,7 @@ class FormatParser::GIFParser
 
   HEADERS = ['GIF87a', 'GIF89a'].map(&:b)
   NETSCAPE_AND_AUTHENTICATION_CODE = 'NETSCAPE2.0'
+  GIF_MIME_TYPE = 'image/gif'
 
   def likely_match?(filename)
     filename =~ /\.gif$/i
@@ -45,6 +46,7 @@ class FormatParser::GIFParser
       height_px: h,
       has_multiple_frames: is_animated,
       color_mode: :indexed,
+      content_type: GIF_MIME_TYPE
     )
   end
 

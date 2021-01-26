@@ -32,7 +32,7 @@ class FormatParser::MP3Parser
   MAGIC_LE = [0x49, 0x49, 0x2A, 0x0].pack('C4')
   MAGIC_BE = [0x4D, 0x4D, 0x0, 0x2A].pack('C4')
   TIFF_HEADER_BYTES = [MAGIC_LE, MAGIC_BE]
-
+  MP3_MIME_TYPE = 'audio/mpeg'
   # Wraps the Tag object returned by ID3Tag in such
   # a way that a usable JSON representation gets
   # returned
@@ -104,7 +104,8 @@ class FormatParser::MP3Parser
       # do not tell anything of substance
       num_audio_channels: first_frame.channels,
       audio_sample_rate_hz: first_frame.sample_rate,
-      intrinsics: id3tags_hash.merge(id3tags: tags)
+      intrinsics: id3tags_hash.merge(id3tags: tags),
+      content_type: MP3_MIME_TYPE,
     )
 
     extra_file_attirbutes = fetch_extra_attributes_from_id3_tags(id3tags_hash)

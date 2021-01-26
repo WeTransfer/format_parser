@@ -14,6 +14,7 @@ describe FormatParser::FLACParser do
     expect(parsed.intrinsics).not_to be_nil
     expect(parsed.media_duration_frames).to eq(33810)
     expect(parsed.media_duration_seconds).to be_within(0.1).of(0.836)
+    expect(parsed.content_type).to eq('audio/x-flac')
   end
 
   it 'decodes and estimates duration for the 16bit FLAC File' do

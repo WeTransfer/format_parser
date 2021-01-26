@@ -14,6 +14,7 @@ describe FormatParser::JPEGParser do
 
         expect(parsed.height_px).to be_kind_of(Integer)
         expect(parsed.height_px).to be > 0
+        expect(parsed.content_type).to eq('image/jpeg')
       end
     end
   end
