@@ -101,4 +101,4 @@ jobs:
         run: bundle install --jobs 4 --retry 3
       - name: RSpec
         continue-on-error: ${{ matrix.experimental }}
-        run: bundle exec parallel:spec
+        run: bundle exec rake parallel:spec
