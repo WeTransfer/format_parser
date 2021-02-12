@@ -26,6 +26,7 @@ class FormatParser::RemoteIO
   # @param uri[URI, String] the remote URL to obtain
   def initialize(uri)
     require 'faraday'
+    require 'faraday_middleware/response/follow_redirects'
     @uri = uri
     @pos = 0
     @remote_size = false
@@ -78,7 +79,11 @@ class FormatParser::RemoteIO
     # We use a GET and not a HEAD request followed by a GET because
     # S3 does not allow HEAD requests if you only presigned your URL for GETs, so we
     # combine the first GET of a segment and retrieving the size of the resource
-    response = Faraday.get(@uri, nil, range: 'bytes=%d-%d' % [range.begin, range.end])
+    conn = Faraday.new do |faraday|
+      faraday.use FaradayMiddleware::FollowRedirects
+      faraday.adapter Faraday.default_adapter
+    end
+    response = conn.get(@uri, nil, range: 'bytes=%d-%d' % [range.begin, range.end])
 
     case response.status
     when 200, 206
