@@ -81,6 +81,7 @@ class FormatParser::RemoteIO
     # combine the first GET of a segment and retrieving the size of the resource
     conn = Faraday.new do |faraday|
       faraday.use FaradayMiddleware::FollowRedirects
+      # we still need the default adapter, mode details: https://blog.thecodewhisperer.com/permalink/losing-time-to-faraday
       faraday.adapter Faraday.default_adapter
     end
     response = conn.get(@uri, nil, range: 'bytes=%d-%d' % [range.begin, range.end])
