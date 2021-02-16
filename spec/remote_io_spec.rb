@@ -7,7 +7,9 @@ describe FormatParser::RemoteIO do
     rio = described_class.new('https://images.invalid/img.jpg')
 
     fake_resp = double(headers: {'Content-Range' => '10-109/2577'}, status: 206, body: 'This is the response')
-    expect_any_instance_of(Faraday::Connection).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=10-109').and_return(fake_resp)
+    faraday_conn = instance_double(Faraday::Connection, get: fake_resp)
+    allow(Faraday).to receive(:new).and_return(faraday_conn)
+    expect(faraday_conn).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=10-109')
 
     rio.seek(10)
     read_result = rio.read(100)
@@ -18,7 +20,9 @@ describe FormatParser::RemoteIO do
     rio = described_class.new('https://images.invalid/img.jpg')
 
     fake_resp = double(headers: {'Content-Range' => '10-109/2577'}, status: 200, body: 'This is the response')
-    expect_any_instance_of(Faraday::Connection).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=10-109').and_return(fake_resp)
+    faraday_conn = instance_double(Faraday::Connection, get: fake_resp)
+    allow(Faraday).to receive(:new).and_return(faraday_conn)
+    expect(faraday_conn).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=10-109')
 
     rio.seek(10)
     read_result = rio.read(100)
@@ -29,7 +33,9 @@ describe FormatParser::RemoteIO do
     rio = described_class.new('https://images.invalid/img.jpg')
 
     fake_resp = double(headers: {}, status: 403, body: 'Please log in')
-    expect_any_instance_of(Faraday::Connection).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=100-199').and_return(fake_resp)
+    faraday_conn = instance_double(Faraday::Connection, get: fake_resp)
+    allow(Faraday).to receive(:new).and_return(faraday_conn)
+    expect(faraday_conn).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=100-199')
 
     rio.seek(100)
     expect { rio.read(100) }.to raise_error(/replied with a 403 and refused/)
@@ -39,7 +45,9 @@ describe FormatParser::RemoteIO do
     rio = described_class.new('https://images.invalid/img.jpg')
 
     fake_resp = double(headers: {}, status: 416, body: 'You stepped off the ledge of the range')
-    expect_any_instance_of(Faraday::Connection).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=100-199').and_return(fake_resp)
+    faraday_conn = instance_double(Faraday::Connection, get: fake_resp)
+    allow(Faraday).to receive(:new).and_return(faraday_conn)
+    expect(faraday_conn).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=100-199')
 
     rio.seek(100)
     expect(rio.read(100)).to be_nil
@@ -49,7 +57,9 @@ describe FormatParser::RemoteIO do
     rio = described_class.new('https://images.invalid/img.jpg')
 
     fake_resp = double(headers: {}, status: 403, body: 'Please log in')
-    expect_any_instance_of(Faraday::Connection).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=100-199').and_return(fake_resp)
+    faraday_conn = instance_double(Faraday::Connection, get: fake_resp)
+    allow(Faraday).to receive(:new).and_return(faraday_conn)
+    expect(faraday_conn).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=100-199')
 
     rio.seek(100)
     # rubocop: disable Lint/AmbiguousBlockAssociation
@@ -60,7 +70,9 @@ describe FormatParser::RemoteIO do
     rio = described_class.new('https://images.invalid/img.jpg')
 
     fake_resp = double(headers: {}, status: 416, body: 'You jumped off the end of the file maam')
-    expect_any_instance_of(Faraday::Connection).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=100-199').and_return(fake_resp)
+    faraday_conn = instance_double(Faraday::Connection, get: fake_resp)
+    allow(Faraday).to receive(:new).and_return(faraday_conn)
+    expect(faraday_conn).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=100-199')
 
     rio.seek(100)
     expect(rio.read(100)).to be_nil
@@ -97,7 +109,9 @@ describe FormatParser::RemoteIO do
     rio = described_class.new('https://images.invalid/img.jpg')
 
     fake_resp = double(headers: {}, status: 502, body: 'Guru meditation')
-    expect_any_instance_of(Faraday::Connection).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=100-199').and_return(fake_resp)
+    faraday_conn = instance_double(Faraday::Connection, get: fake_resp)
+    allow(Faraday).to receive(:new).and_return(faraday_conn)
+    expect(faraday_conn).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=100-199')
 
     rio.seek(100)
     expect { rio.read(100) }.to raise_error(/replied with a 502 and we might want to retry/)
@@ -109,7 +123,9 @@ describe FormatParser::RemoteIO do
     expect(rio.pos).to eq(0)
 
     fake_resp = double(headers: {'Content-Range' => 'bytes 0-0/13'}, status: 206, body: 'a')
-    expect_any_instance_of(Faraday::Connection).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=0-0').and_return(fake_resp)
+    faraday_conn = instance_double(Faraday::Connection, get: fake_resp)
+    allow(Faraday).to receive(:new).and_return(faraday_conn)
+    expect(faraday_conn).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=0-0')
     rio.read(1)
 
     expect(rio.pos).to eq(1)
