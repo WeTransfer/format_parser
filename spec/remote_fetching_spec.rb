@@ -95,7 +95,7 @@ describe 'Fetching data from HTTP remotes' do
     end
   end
 
-  context 'when the server respond with a redirect' do
+  context 'when the server responds with a redirect' do
     it 'follows the redirect' do
       file_information = FormatParser.parse_http('http://localhost:9399/redirect/TIFF/test.tif')
       expect(file_information.format).to eq(:tif)
