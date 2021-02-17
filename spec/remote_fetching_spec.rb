@@ -110,14 +110,13 @@ describe 'Fetching data from HTTP remotes' do
     end
   end
 
-  context 'when the server requires authentication' do
-    it 'uses the provided headers to make the HTTP request' do
-      file_information = FormatParser.parse_http(
-        'http://localhost:9399//require-auth-and-redirect/TIFF/test.tif',
-        headers: {'Authorization' => 'any-token'}
-      )
-      expect(file_information.format).to eq(:tif)
-    end
+  it 'sends provided HTTP headers in the request' do
+    file_information = FormatParser.parse_http(
+      'http://localhost:9399//require-auth-and-redirect/TIFF/test.tif',
+      headers: {'Authorization' => 'any-token'}
+    )
+
+    expect(file_information.format).to eq(:tif)
   end
 
   after(:all) do
