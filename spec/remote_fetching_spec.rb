@@ -15,6 +15,10 @@ describe 'Fetching data from HTTP remotes' do
     }
     @server = WEBrick::HTTPServer.new(options)
     @server.mount '/', WEBrick::HTTPServlet::FileHandler, fixtures_dir
+    @server.mount_proc '/redirect' do |req, res|
+      res.status = 302
+      res.header['Location'] = req.path.sub('/redirect', '')
+    end
     trap('INT') { @server.stop }
     @server_thread = Thread.new { @server.start }
   end
@@ -88,6 +92,13 @@ describe 'Fetching data from HTTP remotes' do
         cleaned_remote_fixture_path = remote_fixture_path.gsub(' ', '%20')
         FormatParser.parse_http(cleaned_remote_fixture_path)
       end
+    end
+  end
+
+  context 'when the server responds with a redirect' do
+    it 'follows the redirect' do
+      file_information = FormatParser.parse_http('http://localhost:9399/redirect/TIFF/test.tif')
+      expect(file_information.format).to eq(:tif)
     end
   end
 
