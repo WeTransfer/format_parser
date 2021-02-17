@@ -43,5 +43,4 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'yard', '~> 0.9'
   spec.add_development_dependency 'wetransfer_style', '0.5.0'
   spec.add_development_dependency 'parallel_tests'
-  spec.add_development_dependency 'pry-byebug'
 end
