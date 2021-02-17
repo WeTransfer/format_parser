@@ -1,3 +1,6 @@
+## 0.28.0
+* Change `FormatParser.parse_http` to follow HTTP redirects
+
 ## 0.27.0
 * Add `#content_type` on `Result` return values which makes sense for the detected filetype
 
