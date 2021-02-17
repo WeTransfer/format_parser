@@ -19,6 +19,14 @@ describe 'Fetching data from HTTP remotes' do
       res.status = 302
       res.header['Location'] = req.path.sub('/redirect', '')
     end
+    @server.mount_proc '/require-auth-and-redirect' do |req, res|
+      if req.header['authorization'].any?
+        res.status = 302
+        res.header['Location'] = req.path.sub('/require-auth-and-redirect', '')
+      else
+        res.status = 401
+      end
+    end
     trap('INT') { @server.stop }
     @server_thread = Thread.new { @server.start }
   end
@@ -98,6 +106,16 @@ describe 'Fetching data from HTTP remotes' do
   context 'when the server responds with a redirect' do
     it 'follows the redirect' do
       file_information = FormatParser.parse_http('http://localhost:9399/redirect/TIFF/test.tif')
+      expect(file_information.format).to eq(:tif)
+    end
+  end
+
+  context 'when the server requires authentication' do
+    it 'uses the provided headers to make the HTTP request' do
+      file_information = FormatParser.parse_http(
+        'http://localhost:9399//require-auth-and-redirect/TIFF/test.tif',
+       headers: {'Authorization' => 'any-token'}
+      )
       expect(file_information.format).to eq(:tif)
     end
   end
