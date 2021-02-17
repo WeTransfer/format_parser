@@ -88,6 +88,7 @@ module FormatParser
   # given to `.parse`. The accepted keyword arguments are the same as the ones for `parse`.
   #
   # @param url[String, URI] the HTTP(S) URL to request the object from using Faraday and `Range:` requests
+  # @param headers[Hash] (optional) the HTTP headers to request the object from using Faraday
   # @param kwargs the keyword arguments to be delegated to `.parse`
   # @see {.parse}
   def self.parse_http(url, headers: {}, **kwargs)
