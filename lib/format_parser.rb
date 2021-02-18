@@ -88,13 +88,14 @@ module FormatParser
   # given to `.parse`. The accepted keyword arguments are the same as the ones for `parse`.
   #
   # @param url[String, URI] the HTTP(S) URL to request the object from using Faraday and `Range:` requests
+  # @param headers[Hash] (optional) the HTTP headers to request the object from using Faraday
   # @param kwargs the keyword arguments to be delegated to `.parse`
   # @see {.parse}
-  def self.parse_http(url, **kwargs)
+  def self.parse_http(url, headers: {}, **kwargs)
     # Do not extract the filename, since the URL
     # can really be "anything". But if the caller
     # provides filename_hint it will be carried over
-    parse(RemoteIO.new(url), **kwargs)
+    parse(RemoteIO.new(url, headers: headers), **kwargs)
   end
 
   # Parses the file at the given `path` and returns the results as if it were any IO
