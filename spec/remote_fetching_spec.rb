@@ -19,14 +19,6 @@ describe 'Fetching data from HTTP remotes' do
       res.status = 302
       res.header['Location'] = req.path.sub('/redirect', '')
     end
-    @server.mount_proc '/require-auth-and-redirect' do |req, res|
-      if req.header['authorization'].any?
-        res.status = 302
-        res.header['Location'] = req.path.sub('/require-auth-and-redirect', '')
-      else
-        res.status = 401
-      end
-    end
     trap('INT') { @server.stop }
     @server_thread = Thread.new { @server.start }
   end
@@ -111,9 +103,19 @@ describe 'Fetching data from HTTP remotes' do
   end
 
   it 'sends provided HTTP headers in the request' do
+    # Faraday is required only after calling .parse_http
+    # This line is just to trigger this require, then it's possible to
+    # add an expectation of how Faraday is initialized after.
+    FormatParser.parse_http('invalid_url') rescue nil
+
+    expect(Faraday)
+      .to receive(:new)
+      .with(headers: {'test-header' => 'test-value'})
+      .and_call_original
+
     file_information = FormatParser.parse_http(
-      'http://localhost:9399//require-auth-and-redirect/TIFF/test.tif',
-      headers: {'Authorization' => 'any-token'}
+      'http://localhost:9399//TIFF/test.tif',
+      headers: {'test-header' => 'test-value'}
     )
 
     expect(file_information.format).to eq(:tif)
