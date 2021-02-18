@@ -1,3 +1,6 @@
+## 0.29.0
+* Add option `headers:` to `FormatParser.parse_http`
+
 ## 0.28.0
 * Change `FormatParser.parse_http` to follow HTTP redirects
 
