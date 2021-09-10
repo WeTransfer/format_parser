@@ -1,3 +1,6 @@
+## 0.29.1
+* Fix handling of 200 responses with `parse_http` as well as handling of very small responses which do not need range access
+
 ## 0.29.0
 * Add option `headers:` to `FormatParser.parse_http`
 

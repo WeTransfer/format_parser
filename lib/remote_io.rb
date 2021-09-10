@@ -89,18 +89,32 @@ class FormatParser::RemoteIO
     response = conn.get(@uri, nil, range: 'bytes=%d-%d' % [range.begin, range.end])
 
     case response.status
-    when 200, 206
+    when 200
+      # S3 returns 200 when you request a Range that is fully satisfied by the entire object,
+      # we take that into account here. Also, for very tiny responses (and also for empty responses)
+      # the responses are going to be 200 which does not mean we cannot proceed
+      # To have a good check for both of these conditions we need to know whether the ranges overlap fully
+      response_size = response.body.bytesize
+      requested_range_size = range.end - range.begin + 1
+      if response_size > requested_range_size
+        error_message = <<~ERROR
+          We requested #{requested_range_size} bytes, but the server sent us more
+          (#{response_size} bytes) - it likely has no `Range:` support.
+          The error occurred when talking to #{@uri})
+        ERROR
+        raise InvalidRequest.new(response.status, error_message)
+      end
+      [response_size, response.body]
+    when 206
       # Figure out of the server supports content ranges, if it doesn't we have no
       # business working with that server
       range_header = response.headers['Content-Range']
-      raise InvalidRequest.new(response.status, "No range support at #{@uri}") unless range_header
+      raise InvalidRequest.new(response.status, "The server replied with 206 status but no Content-Range at #{@uri}") unless range_header
 
       # "Content-Range: bytes 0-0/307404381" is how the response header is structured
       size = range_header[/\/(\d+)$/, 1].to_i
 
-      # S3 returns 200 when you request a Range that is fully satisfied by the entire object,
-      # we take that into account here. For other servers, 206 is the expected response code.
-      # Also, if we request a _larger_ range than what can be satisfied by the server,
+      # If we request a _larger_ range than what can be satisfied by the server,
       # the response is going to only contain what _can_ be sent and the status is also going
       # to be 206
       return [size, response.body]
