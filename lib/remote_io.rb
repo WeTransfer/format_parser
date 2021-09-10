@@ -97,12 +97,12 @@ class FormatParser::RemoteIO
       response_size = response.body.bytesize
       requested_range_size = range.end - range.begin + 1
       if response_size > requested_range_size
-        error_message = <<~ERROR
-          We requested #{requested_range_size} bytes, but the server sent us more
-          (#{response_size} bytes) - it likely has no `Range:` support.
-          The error occurred when talking to #{@uri})
-        ERROR
-        raise InvalidRequest.new(response.status, error_message)
+        error_message = [
+          "We requested #{requested_range_size} bytes, but the server sent us more",
+          "(#{response_size} bytes) - it likely has no `Range:` support.",
+          "The error occurred when talking to #{@uri})"
+        ]
+        raise InvalidRequest.new(response.status, error_message.join("\n"))
       end
       [response_size, response.body]
     when 206
