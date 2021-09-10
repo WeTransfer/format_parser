@@ -19,24 +19,45 @@ describe 'Fetching data from HTTP remotes' do
       res.status = 302
       res.header['Location'] = req.path.sub('/redirect', '')
     end
+    @server.mount_proc '/empty' do |_req, res|
+      res.status = 200
+      res.body = ''
+    end
+    @server.mount_proc '/tiny' do |_req, res|
+      res.status = 200
+      res.body = File.read(fixtures_dir + '/test.gif')
+    end
+
     trap('INT') { @server.stop }
     @server_thread = Thread.new { @server.start }
   end
 
-  it '#parse_http is called without any option' do
+  it 'works with .parse_http called without any options' do
     result = FormatParser.parse_http('http://localhost:9399/PNG/anim.png')
 
     expect(result.format).to eq(:png)
     expect(result.height_px).to eq(180)
   end
 
-  it '#parse_http is called with hash options' do
+  it 'works with .parse_http called with additional options' do
     fake_result = double(nature: :audio, format: :aiff)
     expect_any_instance_of(FormatParser::AIFFParser).to receive(:call).and_return(fake_result)
     results = FormatParser.parse_http('http://localhost:9399/PNG/anim.png', results: :all)
 
     expect(results.count).to eq(2)
     expect(results).to include(fake_result)
+  end
+
+  it 'is able to cope with a 0-size resource which does not provide Content-Range' do
+    file_information = FormatParser.parse_http('http://localhost:9399/empty')
+
+    expect(file_information).to be_nil
+  end
+
+  it 'is able to cope with a tiny resource which fits into the first requested range completely' do
+    file_information = FormatParser.parse_http('http://localhost:9399/tiny')
+    expect(file_information).not_to be_nil
+    expect(file_information.nature).to eq(:image)
   end
 
   it 'parses the animated PNG over HTTP' do
