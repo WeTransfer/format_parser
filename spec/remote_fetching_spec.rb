@@ -19,6 +19,10 @@ describe 'Fetching data from HTTP remotes' do
       res.status = 302
       res.header['Location'] = req.path.sub('/redirect', '')
     end
+    @server.mount_proc '/empty' do |req, res|
+      res.status = 200
+      res.body = ''
+    end
     trap('INT') { @server.stop }
     @server_thread = Thread.new { @server.start }
   end
@@ -37,6 +41,11 @@ describe 'Fetching data from HTTP remotes' do
 
     expect(results.count).to eq(2)
     expect(results).to include(fake_result)
+  end
+
+  it 'is able to cope with a 0-size resource which does not provide Content-Range' do
+    file_information = FormatParser.parse_http('http://localhost:9399/empty')
+    expect(file_information).to be_nil
   end
 
   it 'parses the animated PNG over HTTP' do
