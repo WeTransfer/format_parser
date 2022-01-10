@@ -1,5 +1,6 @@
 ## 1.0.0
 * Dropping support for Ruby 2.2.X, 2.3.X and 2.4.X
+* MP3: Fix negative length reads in edge cases by bumping `id3tag` version to `v0.14.2`
 
 ## 0.29.1
 * Fix handling of 200 responses with `parse_http` as well as handling of very small responses which do not need range access
