@@ -17,12 +17,6 @@ jobs:
           - 2.6
           - 2.5
           - jruby
-        experimental: [false]
-        include:
-          - ruby: 3.1
-            experimental: true
-          - ruby: 3.0
-            experimental: true
     steps:
       - name: Checkout
         uses: actions/checkout@v2
