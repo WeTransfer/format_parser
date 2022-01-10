@@ -1,3 +1,3 @@
 module FormatParser
-  VERSION = '0.29.1'
+  VERSION = '1.0.0'
 end

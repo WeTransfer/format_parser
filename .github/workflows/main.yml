@@ -16,9 +16,6 @@ jobs:
           - 2.7
           - 2.6
           - 2.5
-          - 2.4
-          - 2.3
-          - 2.2
           - jruby
     steps:
       - name: Checkout
@@ -65,12 +62,11 @@ jobs:
           - 2.7
           - 2.6
           - 2.5
-          - 2.4
-          - 2.3
-          - 2.2
           - jruby
         experimental: [false]
         include:
+          - ruby: 3.1
+            experimental: true
           - ruby: 3.0
             experimental: true
     steps:

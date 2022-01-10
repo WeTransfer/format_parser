@@ -53,19 +53,22 @@ end
 require 'minitest/autorun'
 require 'open-uri'
 
+fixtures_dir = File.join(File.dirname(__FILE__), '../../fixtures')
+
 describe User do
   describe "profile_picture's metadatas" do
     it 'parse metadatas with format_parser' do
+      fixture_path = fixtures_dir + '/PNG/cat.png'
       user = User.create
       user.profile_picture.attach(
         filename: 'cat.png',
-        io: URI.open('https://freesvg.org/img/1416155153.png')
+        io: File.open(fixture_path, 'rb')
       )
 
       user.profile_picture.analyze
 
-      _(user.profile_picture.metadata[:width_px]).must_equal 500
-      _(user.profile_picture.metadata[:height_px]).must_equal 296
+      _(user.profile_picture.metadata[:width_px]).must_equal 600
+      _(user.profile_picture.metadata[:height_px]).must_equal 600
       _(user.profile_picture.metadata[:color_mode]).must_equal 'rgba'
     end
   end
