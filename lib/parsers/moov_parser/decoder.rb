@@ -72,7 +72,7 @@ class FormatParser::MOOVParser::Decoder
 
     trak_atoms.find do |trak_atom|
       hdlr_atom = find_first_atom_by_path([trak_atom], 'trak', 'mdia', 'hdlr')
-      hdlr_atom.atom_fields[:component_type] == 'mhlr' && hdlr_atom.atom_fields[:component_subtype] == 'vide'
+      hdlr_atom&.atom_fields[:component_type] == 'mhlr' && hdlr_atom&.atom_fields[:component_subtype] == 'vide'
     end
   end
 
