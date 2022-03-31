@@ -106,6 +106,7 @@ describe FormatParser::MOOVParser do
     expect(result.format).to eq(:mov)
     expect(result.width_px).to eq(160)
     expect(result.height_px).to eq(90)
+    expect(result.frame_rate).to eq(14.98)
   end
 
   it 'provides filename hints' do
@@ -122,6 +123,7 @@ describe FormatParser::MOOVParser do
     expect(result.format).to eq(:mov)
     expect(result.width_px).to eq(640)
     expect(result.height_px).to eq(360)
+    expect(result.frame_rate).to eq(30)
   end
 
   it 'does not raise error when a meta atom has size 0' do
