@@ -54,8 +54,6 @@ class FormatParser::MOOVParser
       media_duration_s = duration / timescale.to_f
     end
 
-    frame_rate = parse_sample_atom(decoder, atom_tree).truncate(2)
-
     # M4A only contains audio, while MP4 and friends can contain video.
     fmt = format_from_moov_type(file_type)
     if fmt == :m4a
@@ -66,6 +64,7 @@ class FormatParser::MOOVParser
         intrinsics: atom_tree,
       )
     else
+      frame_rate = parse_sample_atom(decoder, atom_tree)&.truncate(2)
       FormatParser::Video.new(
         format: format_from_moov_type(file_type),
         width_px: width,
@@ -118,29 +117,31 @@ class FormatParser::MOOVParser
     maybe_atom_size >= minimum_ftyp_atom_size && maybe_ftyp_atom_signature == 'ftyp'
   end
 
+  # Sample information is found in the 'time-to-sample' stts atom.
+  # The media atom mdhd is needed too in order to get the movie timescale 
   def parse_sample_atom(decoder, atom_tree)
     video_trak_atom = decoder.find_video_trak_atom(atom_tree)
 
-    stts = begin
-      if video_trak_atom
-        decoder.find_first_atom_by_path([video_trak_atom], 'trak', 'mdia', 'minf', 'stbl', 'stts')
-      else
-        decoder.find_first_atom_by_path(atom_tree, 'moov', 'trak', 'mdia', 'minf', 'stbl', 'stts')
-      end
+    stts = if video_trak_atom
+      decoder.find_first_atom_by_path([video_trak_atom], 'trak', 'mdia', 'minf', 'stbl', 'stts')
+    else
+      decoder.find_first_atom_by_path(atom_tree, 'moov', 'trak', 'mdia', 'minf', 'stbl', 'stts')
     end
 
-    mdhd = begin
-      if video_trak_atom
-        decoder.find_first_atom_by_path([video_trak_atom], 'trak', 'mdia', 'mdhd')
-      else
-        decoder.find_first_atom_by_path(atom_tree, 'moov', 'trak', 'mdia', 'mdhd')
-      end
+    mdhd = if video_trak_atom
+      decoder.find_first_atom_by_path([video_trak_atom], 'trak', 'mdia', 'mdhd')
+    else
+      decoder.find_first_atom_by_path(atom_tree, 'moov', 'trak', 'mdia', 'mdhd')
     end
 
     if stts && mdhd
       timescale = mdhd.atom_fields[:tscale]
       sample_duration = stts.field_value(:entries).first[:sample_duration]
-      return timescale.to_f / sample_duration
+      if timescale.nil? || timescale == 0 || sample_duration.nil? || sample_duration == 0
+        nil
+      else
+        timescale.to_f / sample_duration
+      end
     else
       nil
     end
