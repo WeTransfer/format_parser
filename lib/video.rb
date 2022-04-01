@@ -8,6 +8,8 @@ module FormatParser
 
     attr_accessor :height_px
 
+    attr_accessor :frame_rate
+
     # Type of the file (e.g :mp3)
     attr_accessor :format
 

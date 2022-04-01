@@ -48,9 +48,9 @@ class FormatParser::MOOVParser
     width, height = parse_dimensions(decoder, atom_tree)
 
     # Try to find the "topmost" duration (respecting edits)
-    if mdhd = decoder.find_first_atom_by_path(atom_tree, 'moov', 'mvhd')
-      timescale = mdhd.field_value(:tscale)
-      duration = mdhd.field_value(:duration)
+    if mvhd = decoder.find_first_atom_by_path(atom_tree, 'moov', 'mvhd')
+      timescale = mvhd.field_value(:tscale)
+      duration = mvhd.field_value(:duration)
       media_duration_s = duration / timescale.to_f
     end
 
@@ -64,13 +64,15 @@ class FormatParser::MOOVParser
         intrinsics: atom_tree,
       )
     else
+      frame_rate = parse_sample_atom(decoder, atom_tree)&.truncate(2)
       FormatParser::Video.new(
         format: format_from_moov_type(file_type),
         width_px: width,
         height_px: height,
+        frame_rate: frame_rate,
         media_duration_seconds: media_duration_s,
         content_type: MP4_MIXED_MIME_TYPE,
-        intrinsics: atom_tree,
+        intrinsics: atom_tree
       )
     end
   end
@@ -113,6 +115,36 @@ class FormatParser::MOOVParser
     maybe_atom_size, maybe_ftyp_atom_signature = safe_read(io, 8).unpack('N1a4')
     minimum_ftyp_atom_size = 4 + 4 + 4 + 4
     maybe_atom_size >= minimum_ftyp_atom_size && maybe_ftyp_atom_signature == 'ftyp'
+  end
+
+  # Sample information is found in the 'time-to-sample' stts atom.
+  # The media atom mdhd is needed too in order to get the movie timescale
+  def parse_sample_atom(decoder, atom_tree)
+    video_trak_atom = decoder.find_video_trak_atom(atom_tree)
+
+    stts = if video_trak_atom
+      decoder.find_first_atom_by_path([video_trak_atom], 'trak', 'mdia', 'minf', 'stbl', 'stts')
+    else
+      decoder.find_first_atom_by_path(atom_tree, 'moov', 'trak', 'mdia', 'minf', 'stbl', 'stts')
+    end
+
+    mdhd = if video_trak_atom
+      decoder.find_first_atom_by_path([video_trak_atom], 'trak', 'mdia', 'mdhd')
+    else
+      decoder.find_first_atom_by_path(atom_tree, 'moov', 'trak', 'mdia', 'mdhd')
+    end
+
+    if stts && mdhd
+      timescale = mdhd.atom_fields[:tscale]
+      sample_duration = stts.field_value(:entries).first[:sample_duration]
+      if timescale.nil? || timescale == 0 || sample_duration.nil? || sample_duration == 0
+        nil
+      else
+        timescale.to_f / sample_duration
+      end
+    else
+      nil
+    end
   end
 
   FormatParser.register_parser new, natures: :video, formats: FTYP_MAP.values, priority: 1

@@ -1,3 +1,6 @@
+## 1.1.0
+* Add support for `frame_rate` in moov_parser
+
 ## 1.0.0
 * Dropping support for Ruby 2.2.X, 2.3.X and 2.4.X
 * MP3: Fix negative length reads in edge cases by bumping `id3tag` version to `v0.14.2`
