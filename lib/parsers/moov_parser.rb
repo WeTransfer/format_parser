@@ -118,7 +118,7 @@ class FormatParser::MOOVParser
   end
 
   # Sample information is found in the 'time-to-sample' stts atom.
-  # The media atom mdhd is needed too in order to get the movie timescale 
+  # The media atom mdhd is needed too in order to get the movie timescale
   def parse_sample_atom(decoder, atom_tree)
     video_trak_atom = decoder.find_video_trak_atom(atom_tree)
 
