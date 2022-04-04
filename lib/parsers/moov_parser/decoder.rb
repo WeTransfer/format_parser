@@ -112,6 +112,24 @@ class FormatParser::MOOVParser::Decoder
     }
   end
 
+  def parse_stts_atom(io, _)
+    version = read_byte_value(io)
+    is_v1 = version == 1
+    stts = {
+      version: version,
+      flags: read_bytes(io, 3),
+      number_of_entries: is_v1 ? read_64bit_uint(io) : read_32bit_uint(io),
+      entries: []
+    }
+    stts[:number_of_entries].times {
+      stts[:entries] << {
+        sample_count: read_32bit_uint(io),
+        sample_duration: read_32bit_uint(io)
+      }
+    }
+    stts
+  end
+
   def parse_mdhd_atom(io, _)
     version = read_byte_value(io)
     is_v1 = version == 1
