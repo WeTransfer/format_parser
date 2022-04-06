@@ -1,6 +1,5 @@
 
 require 'spec_helper'
-require 'pry'
 
 describe FormatParser::MOOVParser do
   def deep_print_atoms(atoms, output, swimlanes = [])

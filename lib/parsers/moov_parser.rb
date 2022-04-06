@@ -157,7 +157,7 @@ class FormatParser::MOOVParser
     end
 
     if stsd
-      codecs = stsd.field_value(:codecs)
+      stsd.field_value(:codecs)
     else
       nil
     end
