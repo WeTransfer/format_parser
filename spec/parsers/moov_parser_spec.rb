@@ -1,5 +1,6 @@
 
 require 'spec_helper'
+require 'pry'
 
 describe FormatParser::MOOVParser do
   def deep_print_atoms(atoms, output, swimlanes = [])
@@ -94,6 +95,7 @@ describe FormatParser::MOOVParser do
     expect(result.format).to eq(:mov)
     expect(result.width_px).to eq(1920)
     expect(result.height_px).to eq(1080)
+    expect(result.codecs.first).to eq('apcn')
   end
 
   it 'parses an MP4 video file and provides the necessary metadata' do
@@ -107,6 +109,7 @@ describe FormatParser::MOOVParser do
     expect(result.width_px).to eq(160)
     expect(result.height_px).to eq(90)
     expect(result.frame_rate).to eq(14.98)
+    expect(result.codecs.first).to eq('avc1')
   end
 
   it 'provides filename hints' do

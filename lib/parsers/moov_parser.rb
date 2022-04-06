@@ -64,14 +64,14 @@ class FormatParser::MOOVParser
         intrinsics: atom_tree,
       )
     else
-      frame_rate = parse_sample_atom(decoder, atom_tree)&.truncate(2)
       FormatParser::Video.new(
         format: format_from_moov_type(file_type),
         width_px: width,
         height_px: height,
-        frame_rate: frame_rate,
+        frame_rate: parse_time_to_sample_atom(decoder, atom_tree)&.truncate(2),
         media_duration_seconds: media_duration_s,
         content_type: MP4_MIXED_MIME_TYPE,
+        codecs: parse_sample_description_atom(decoder, atom_tree),
         intrinsics: atom_tree
       )
     end
@@ -119,7 +119,7 @@ class FormatParser::MOOVParser
 
   # Sample information is found in the 'time-to-sample' stts atom.
   # The media atom mdhd is needed too in order to get the movie timescale
-  def parse_sample_atom(decoder, atom_tree)
+  def parse_time_to_sample_atom(decoder, atom_tree)
     video_trak_atom = decoder.find_video_trak_atom(atom_tree)
 
     stts = if video_trak_atom
@@ -142,6 +142,22 @@ class FormatParser::MOOVParser
       else
         timescale.to_f / sample_duration
       end
+    else
+      nil
+    end
+  end
+
+  def parse_sample_description_atom(decoder, atom_tree)
+    video_trak_atom = decoder.find_video_trak_atom(atom_tree)
+
+    stsd = if video_trak_atom
+      decoder.find_first_atom_by_path([video_trak_atom], 'trak', 'mdia', 'minf', 'stbl', 'stsd')
+    else
+      decoder.find_first_atom_by_path(atom_tree, 'moov', 'trak', 'mdia', 'minf', 'stbl', 'stsd')
+    end
+
+    if stsd
+      codecs = stsd.field_value(:codecs)
     else
       nil
     end

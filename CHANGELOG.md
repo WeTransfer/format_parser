@@ -1,3 +1,6 @@
+## 1.2.0
+* Add support for `codecs` in moov_parser for video metadata
+
 ## 1.1.0
 * Add support for `frame_rate` in moov_parser
 
