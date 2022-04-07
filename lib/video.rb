@@ -13,6 +13,8 @@ module FormatParser
     # Type of the file (e.g :mp3)
     attr_accessor :format
 
+    attr_accessor :codecs
+
     # Duration of the media object (be it audio or video) in seconds,
     # as a Float
     attr_accessor :media_duration_seconds
