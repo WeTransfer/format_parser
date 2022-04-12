@@ -19,6 +19,8 @@ class FormatParser::HEIFParser
   PIXEL_INFO_BOX = [0x70, 0x69, 0x78, 0x69].pack('C4') # pixi marker
   RELATIVE_LOCATION_BOX = [0x72, 0x6C, 0x6F, 0x63].pack('C4') # rloc marker
   CLEAN_APERTURE_BOX = [0x63, 0x6C, 0x61, 0x70].pack('C4') # clap marker
+  PRIMARY_ITEM_BOX = [0x70, 0x69, 0x74, 0x6D].pack('C4') # pitm marker
+  ITEM_PROPERTIES_ASSOCIATION_BOX = [0x69, 0x70, 0x6D, 0x61].pack('C4') # ipma marker
   # IMAGE_ROTATION_BOX = [0x69, 0x72, 0x6F, 0x74].pack('C4') # irot marker
   HEADER_LENGTH = 8 # every box header has a length of 8 bytes
 
@@ -42,6 +44,9 @@ class FormatParser::HEIFParser
     @horizontal_offset  = nil
     @vertical_offset    = nil
     @clean_aperture     = nil
+    @primary_item_id    = 0
+    @item_props         = Hash.new
+    @item_props_idxs    = []
     scan
   end
 
@@ -136,21 +141,24 @@ class FormatParser::HEIFParser
     @buf.seek(handler_start + handler_length) # the remaining part is reserved
 
 
-    # ..continue looking for the IPRP box, containing info about the image itself
+    # ..continue looking for the IINF box and especially for the IPRP box, containing info about the image itself
     next_box_length = read_int_32
     next_box = read_string(4)
     next_box_start_pos = @buf.pos
     while @buf.pos < @metadata_end_pos
       # box_length, box_name = next_box_container
       case next_box
+      when PRIMARY_ITEM_BOX
+        read_primary_item_box
       when ITEM_INFO_BOX
         read_item_info_box
       when ITEM_PROPERTIES_BOX
         read_item_properties_box(next_box_length)
+        fill_primary_values
       when next_box == ''
         break
       end
-      next_box_length, next_box, next_box_start_pos = next_box_container(next_box_start_pos, next_box_length)
+      next_box_length, next_box, next_box_start_pos = next_box_container(next_box_start_pos, next_box_length, @metadata_end_pos)
     end
   end
 
@@ -209,29 +217,68 @@ class FormatParser::HEIFParser
     flags = safe_read(@buf, 3) # always 0 in this current box
   end
 
+  def read_primary_item_box
+    version = read_int_8
+    flags = safe_read(@buf, 3) # always 0 in this current box
+    if version == 0
+      @primary_item_id = read_int_16
+    else
+      @primary_item_id = read_int_32
+    end
+  end
+
+  # the ITEM_PROPERTIES_CONTAINER_BOX contains an implicitely 1-based index list of item properties.
+  # While parsing such box we are storing the properties with its own index.
+  # Reason behind is that the primary_item will be associated to some of these properties through the same index
+  # and in order to output relevant data from the format_parser we need all the properties associated to the primary_item.
+  # Hence the need of the association between an item and its properties, found in the ITEM_PROPERTIES_ASSOCIATION_BOX
   def read_item_properties_box(box_length)
-    end_of_box = @buf.pos + box_length - HEADER_LENGTH
+    end_of_iprp_box = @buf.pos + box_length - HEADER_LENGTH
     ipco_length = read_int_32
     return unless read_string(4) == ITEM_PROPERTIES_CONTAINER_BOX
+    read_item_properties_container_box(ipco_length)
+    ipma_length = read_int_32
+    return unless read_string(4) == ITEM_PROPERTIES_ASSOCIATION_BOX
+    read_item_properties_association_box
+  end
+
+  def read_item_properties_container_box(box_length)
+    end_of_ipco_box = @buf.pos + box_length - HEADER_LENGTH
     item_prop_length = read_int_32
     item_prop_name = read_string(4)
     item_prop_start_pos = @buf.pos
-    while @buf.pos < end_of_box
+    item_prop_index = 1
+    while @buf.pos < end_of_ipco_box
       case item_prop_name
       when IMAGE_SPATIAL_EXTENTS_BOX
         read_nil_version_and_flag
-        @width = read_int_32
-        @height = read_int_32
+        width = read_int_32
+        height = read_int_32
+        @item_props[item_prop_index] =
+        {
+          'type': IMAGE_SPATIAL_EXTENTS_BOX,
+          'width': width,
+          'height': height
+        }
       when PIXEL_ASPECT_RATIO_BOX
         h_spacing = read_int_32
         v_spacing = read_int_32
         @pixel_aspect_ratio = h_spacing.to_s + '/' + v_spacing.to_s
+        @item_props[item_prop_index] =
+        {
+          'type': PIXEL_ASPECT_RATIO_BOX,
+          'pixel_aspect_ratio': @pixel_aspect_ratio
+        }
       when COLOUR_INFO_BOX
         @colour_info = []
         @colour_info << {
           'colour_primaries': read_int_16,
           'transfer_characteristics': read_int_16,
           'matrix_coefficients': read_int_16
+        }
+        @item_props[item_prop_index] = {
+          'type': COLOUR_INFO_BOX,
+          'colour_info': @colour_info
         }
       when PIXEL_INFO_BOX
         @pixel_info = []
@@ -242,10 +289,20 @@ class FormatParser::HEIFParser
             "bits_in_channel_#{channel}": read_int_8
           }
         end
+        @item_props[item_prop_index] = {
+          'type': PIXEL_INFO_BOX,
+          'pixel_info': @pixel_info
+        }
       when RELATIVE_LOCATION_BOX
         read_nil_version_and_flag
         @horizontal_offset = read_int_32
         @vertical_offset = read_int_32
+        @item_props[item_prop_index] =
+        {
+          'type': RELATIVE_LOCATION_BOX,
+          'horizontal_offset': @horizontal_offset,
+          'vertical_offset': @vertical_offset
+        }
       when CLEAN_APERTURE_BOX
         @clean_aperture = []
         @clean_aperture << {
@@ -258,9 +315,61 @@ class FormatParser::HEIFParser
           'vert_off_n': read_int_32,
           'vert_off_d': read_int_32
         }
+        @item_props[item_prop_index] = {
+          'type': CLEAN_APERTURE_BOX,
+          'clean_aperture': @clean_aperture
+        }
       end
-      item_prop_length, item_prop_name, item_prop_start_pos = next_box_container(item_prop_start_pos, item_prop_length)
+      item_prop_length, item_prop_name, item_prop_start_pos = next_box_container(item_prop_start_pos, item_prop_length, end_of_ipco_box)
+      item_prop_index += 1
     end
+  end
+
+  def read_item_properties_association_box
+    version = read_int_8
+    safe_read(@buf, 2) # we skip the first 2 bytes of the flags cause we care only aboiut the least significant bit
+    flags = read_int_8
+    entry_count = read_int_32
+    item_id = 0
+    entry_count.times do
+      if version == 0
+        item_id = read_int_16
+      else
+        item_id = read_int_32
+      end
+
+      association_count = read_int_8
+      association_count.times do
+        # we need to retrieve the "essential" bit wich is just the first bit in the next byte
+        binary = convert_byte_to_binary(read_int_8)
+        essential_bit = binary[0]
+        
+        if(flags & 1) == 1 #we need the next 15 bit
+          binary.concat(convert_byte_to_binary(read_int_8))
+        end
+        # we need to nullify the 1st bit since that one was the essential bit and doesn't count now to calculate the property index
+        binary[0] = 0
+        item_property_index = binary.join.to_i(2)
+        if(item_id == @primary_item_id)
+          @item_props_idxs << item_property_index
+        end
+      end
+
+      # we are interested only in the primary item
+      if item_id != @primary_item_id
+        next
+      else
+        return
+      end
+    end
+  end
+
+  def fill_primary_values
+    # @item_props_idxs.each{ |x|
+    #    case @item_props[x]&.[:type]
+    #    when 
+    # }
+    # test = 0
   end
 
   def next_meaningful_meta_byte
@@ -290,8 +399,11 @@ class FormatParser::HEIFParser
   #   end
   # end
 
-  def next_box_container(box_start_pos, box_length)
-    @buf.seek(box_start_pos + box_length - HEADER_LENGTH)
+
+  def next_box_container(box_start_pos, box_length, end_pos_upper_box)
+    skip_pos = box_start_pos + box_length - HEADER_LENGTH
+    @buf.seek(skip_pos)
+    return if(skip_pos >= end_pos_upper_box)
     next_box_length = read_int_32
     next_box_name = read_string(4)
     return next_box_length, next_box_name, @buf.pos
@@ -300,6 +412,19 @@ class FormatParser::HEIFParser
 
   def is_meaningful?(byte)
     byte != MEANINGLESS_BYTE
+  end
+
+  def convert_byte_to_binary(integer)
+    binary = []
+    while integer > 0
+      binary << integer % 2
+      integer /= 2
+    end
+    binary_value = binary.reverse
+    (8 - binary_value.length).times do
+      binary_value.prepend('0')
+    end
+    binary_value
   end
 
   
