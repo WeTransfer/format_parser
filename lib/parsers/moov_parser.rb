@@ -136,7 +136,7 @@ class FormatParser::MOOVParser
 
     if stts && mdhd
       timescale = mdhd.atom_fields[:tscale]
-      sample_duration = stts.field_value(:entries).first[:sample_duration]
+      sample_duration = stts.field_value(:entries).dig(0, :sample_duration)
       if timescale.nil? || timescale == 0 || sample_duration.nil? || sample_duration == 0
         nil
       else
