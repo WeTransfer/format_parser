@@ -1,5 +1,3 @@
-require 'pry'
-
 class FormatParser::MOOVParser
   include FormatParser::IOUtils
   require_relative 'moov_parser/decoder'
@@ -138,7 +136,6 @@ class FormatParser::MOOVParser
 
     if stts && mdhd
       timescale = mdhd.atom_fields[:tscale]
-      binding.pry
       entries = stts.field_value(:entries).first
       sample_duration = entries.nil? ? nil : entries[:sample_duration]
       if timescale.nil? || timescale == 0 || sample_duration.nil? || sample_duration == 0
