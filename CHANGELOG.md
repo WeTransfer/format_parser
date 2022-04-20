@@ -1,3 +1,6 @@
+## 1.2.1
+* Resolve bug when `stts` atom is `nil`
+
 ## 1.2.0
 * Add support for `codecs` in moov_parser for video metadata
 
