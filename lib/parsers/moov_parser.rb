@@ -147,5 +147,5 @@ class FormatParser::MOOVParser
     end
   end
 
-  FormatParser.register_parser new, natures: :video, formats: FTYP_MAP.values, priority: 1
+  FormatParser.register_parser new, natures: :video, formats: FTYP_MAP.values, priority: 3
 end

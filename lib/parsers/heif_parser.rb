@@ -21,7 +21,7 @@ class FormatParser::HEIFParser
   CLEAN_APERTURE_BOX = [0x63, 0x6C, 0x61, 0x70].pack('C4') # clap marker
   PRIMARY_ITEM_BOX = [0x70, 0x69, 0x74, 0x6D].pack('C4') # pitm marker
   ITEM_PROPERTIES_ASSOCIATION_BOX = [0x69, 0x70, 0x6D, 0x61].pack('C4') # ipma marker
-  # IMAGE_ROTATION_BOX = [0x69, 0x72, 0x6F, 0x74].pack('C4') # irot marker
+  IMAGE_ROTATION_BOX = [0x69, 0x72, 0x6F, 0x74].pack('C4') # irot marker
   HEADER_LENGTH = 8 # every box header has a length of 8 bytes
 
   def self.call(io)
@@ -46,6 +46,7 @@ class FormatParser::HEIFParser
     @clean_aperture     = nil
     @primary_item_id    = 0
     @item_props         = Hash.new
+    @rotation           = 0
     @item_props_idxs    = []
     scan
   end
@@ -63,11 +64,13 @@ class FormatParser::HEIFParser
 
     # file may be identified by MIME type of Annex C of ISO/IEC 23008-12.
     # the MIME indicates the nature and format of our assortment of bytes
-    # note particularly that the brand 'mif1' doesn't mandate a MovieBox ("moov")
-    if @compatible_brands.include?(MIF1_MARKER)
+    # note particularly that the brand 'mif1' doesn't mandate a MovieBox ("moov").
+    # One or more brands must be included in the list of compatible brands
+    return if @compatible_brands.nil?
+    if @compatible_brands&.include?(MIF1_MARKER)
       scan_meta_level_box
     end
-    if @compatible_brands.include?(MSF1_MARKER)
+    if @compatible_brands&.include?(MSF1_MARKER)
     end
 
     result = FormatParser::Image.new(
@@ -82,13 +85,14 @@ class FormatParser::HEIFParser
       intrinsics: {
         'compatible_brands': @compatible_brands,
         'handler_type': @handler_type,
-        'sub_items': @sub_items,
+        # 'sub_items': @sub_items, # enable this if you want to output all the sub-itmes in the image
         'pixel_aspect_ratio': @pixel_aspect_ratio,
         'colour_info': @colour_info,
         'pixel_info': @pixel_info,
         'horizontal_offset': @horizontal_offset,
         'vertical_offset': @vertical_offset,
-        'clean_aperture': @clean_aperture
+        'clean_aperture': @clean_aperture,
+        'rotation': @rotation
       }
     )
 
@@ -104,7 +108,7 @@ class FormatParser::HEIFParser
     # followed by the content, which the first 4 bytes must be the "heif" marker
     file_type_box_length = read_int_32
     return unless read_string(4) == FILE_TYPE_BOX_MARKER
-    return unless read_string(4) == MAJOR_BRAND_MARKER
+    return unless read_string(4) == MAJOR_BRAND_MARKER || MIF1_MARKER
     minor_brand = read_string(4)
 
     # subtracting from the length box specified in the header the header itself (8 bytes = header length and length of ftyp)
@@ -207,7 +211,7 @@ class FormatParser::HEIFParser
       if item_type == MIME_MARKER
         content_encoding = (read_string(item_info_end_pos - @buf.pos)).delete!("\0") # need to remove the null-termination part
       end
-      @sub_items << {'iteam_id': item_id, 'item_type': item_type, 'content_encoding': content_encoding}
+      @sub_items << {'item_id': item_id, 'item_type': item_type, 'content_encoding': content_encoding}
       @buf.seek(item_info_end_pos) # we are not interested in anything else, go directly to the end of this 'infe' box
     }
   end
@@ -284,7 +288,10 @@ class FormatParser::HEIFParser
         @pixel_info = []
         read_nil_version_and_flag
         num_channels = read_int_8
-        for channel in num_channels do
+        channel = 1
+        while channel <= num_channels do
+          puts channel
+          channel += 1
           @pixel_info << {
             "bits_in_channel_#{channel}": read_int_8
           }
@@ -319,6 +326,15 @@ class FormatParser::HEIFParser
           'type': CLEAN_APERTURE_BOX,
           'clean_aperture': @clean_aperture
         }
+      when IMAGE_ROTATION_BOX
+        read_nil_version_and_flag
+        binary = convert_byte_to_binary(read_int_8)
+        # we need only the last 2 bits to retrieve the angle. angle * 90 specifies the angle
+        @rotation = (binary.slice(6,2).join.to_i(2)) * 90
+        @item_props[item_prop_index] = {
+          'type': IMAGE_ROTATION_BOX,
+          'rotation': @rotation
+        }
       end
       item_prop_length, item_prop_name, item_prop_start_pos = next_box_container(item_prop_start_pos, item_prop_length, end_of_ipco_box)
       item_prop_index += 1
@@ -350,6 +366,7 @@ class FormatParser::HEIFParser
         # we need to nullify the 1st bit since that one was the essential bit and doesn't count now to calculate the property index
         binary[0] = 0
         item_property_index = binary.join.to_i(2)
+        # we are interested only in the primary item properties
         if(item_id == @primary_item_id)
           @item_props_idxs << item_property_index
         end
@@ -365,11 +382,29 @@ class FormatParser::HEIFParser
   end
 
   def fill_primary_values
-    # @item_props_idxs.each{ |x|
-    #    case @item_props[x]&.[:type]
-    #    when 
-    # }
-    # test = 0
+    @item_props_idxs.each{ |x|
+      unless @item_props[x].nil?
+        prop = @item_props[x]
+        case prop[:type]
+        when IMAGE_SPATIAL_EXTENTS_BOX
+          @width = prop[:width]
+          @height = prop[:height]
+        when PIXEL_ASPECT_RATIO_BOX
+          @pixel_aspect_ratio = prop[:pixel_aspect_ratio]
+        when COLOUR_INFO_BOX
+          @colour_info = prop[:colour_info]
+        when PIXEL_INFO_BOX
+          @pixel_info = prop[:pixel_info]
+        when RELATIVE_LOCATION_BOX
+          @horizontal_offset = prop[:horizontal_offset]
+          @vertical_offset = prop[:vertical_offset]
+        when CLEAN_APERTURE_BOX
+          @clean_aperture = prop[:clean_aperture]
+        when IMAGE_ROTATION_BOX
+          @rotation = prop[:rotation]
+        end
+      end
+    }
   end
 
   def next_meaningful_meta_byte
@@ -433,5 +468,5 @@ class FormatParser::HEIFParser
     filename =~ /\.(heif|heic)$/i
   end
 
-  FormatParser.register_parser(new, natures: :image, formats: :heif)
+  FormatParser.register_parser(new, natures: :image, formats: [:heif, :heic], priority: 2)
 end
