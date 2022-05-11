@@ -1,3 +1,6 @@
+## 1.1.1
+* Add `heif_parser` and support for `HEIF and HEIC` formats. Exif parsing is still missing.
+
 ## 1.1.0
 * Add support for `frame_rate` in moov_parser
 
