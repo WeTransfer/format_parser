@@ -61,6 +61,3 @@ Gemfile.lock
 
 # rspec examples
 spec/examples.txt
-
-#.vscode customization
-.vscode
