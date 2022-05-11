@@ -89,7 +89,7 @@ class FormatParser::HEIFParser
         @content_type = HEIF_MIME_TYPE
         @format = :heif
       elsif (@compatible_brands & HEIC_MIME_POSSIBLE_TYPES.keys).length > 0
-        @format = :heic1
+        @format = :heic
         @content_type = HEIC_MIME_TYPE
       end
     end
