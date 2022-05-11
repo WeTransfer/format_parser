@@ -1,5 +1,11 @@
-## 1.1.1
+## 1.3.1
 * Add `heif_parser` and support for `HEIF and HEIC` formats. Exif parsing is still missing.
+* 
+## 1.2.1
+* Resolve bug when `stts` atom is `nil`
+
+## 1.2.0
+* Add support for `codecs` in moov_parser for video metadata
 
 ## 1.1.0
 * Add support for `frame_rate` in moov_parser

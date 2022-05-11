@@ -130,6 +130,23 @@ class FormatParser::MOOVParser::Decoder
     stts
   end
 
+  def parse_stsd_atom(io, _)
+    version = read_byte_value(io)
+    is_v1 = version == 1
+    stsd = {
+      version: version,
+      flags: read_bytes(io, 3),
+      number_of_entries: is_v1 ? read_64bit_uint(io) : read_32bit_uint(io),
+      codecs: []
+    }
+    stsd[:number_of_entries].times {
+      codec_length = read_32bit_uint(io)
+      stsd[:codecs] << read_bytes(io, 4)
+      io.seek(io.pos + codec_length - 8) # 8 bytes is the header length containing the codec length and the codec name that we just did read
+    }
+    stsd
+  end
+
   def parse_mdhd_atom(io, _)
     version = read_byte_value(io)
     is_v1 = version == 1
