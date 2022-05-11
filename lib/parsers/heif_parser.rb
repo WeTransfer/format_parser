@@ -1,4 +1,3 @@
-require 'pry'
 # HEIF stands for High-Efficiency Image File format, which is basically a container that is capable of storing an image, or a sequence of images in a single file.
 # There are a number of variants of HEIF, which can be used to store images, sequences of images, or videos using different codecs.
 # The variant that Apple uses to store images and sequences of images in its iOS and macOS operating systems is High Efficiency Image Coding (HEIC), which uses HEVC / H.265 for content compression.
@@ -45,6 +44,7 @@ class FormatParser::HEIFParser
   def call(io)
     @buf                = FormatParser::IOConstraint.new(io)
     @format             = nil
+    @@major_brand       = nil
     @width              = nil
     @height             = nil
     @exif_data_frames   = []
@@ -85,10 +85,12 @@ class FormatParser::HEIFParser
     return if @compatible_brands.nil?
     if @compatible_brands&.include?(MIF1_MARKER)
       scan_meta_level_box
-      @content_type = if (@compatible_brands & HEIC_MIME_POSSIBLE_TYPES.keys).length > 0
-        HEIC_MIME_TYPE
-      else
-        HEIF_MIME_TYPE
+      if @major_brand == MIF1_MARKER
+        @content_type = HEIF_MIME_TYPE
+        @format = :heif
+      elsif (@compatible_brands & HEIC_MIME_POSSIBLE_TYPES.keys).length > 0
+        @format = :heic1
+        @content_type = HEIC_MIME_TYPE
       end
     end
     if @compatible_brands&.include?(MSF1_MARKER)
@@ -96,7 +98,7 @@ class FormatParser::HEIFParser
     end
 
     result = FormatParser::Image.new(
-      format: (@format.nil? ? :heif : @format),
+      format: @format,
       width_px: @width,
       height_px: @height,
       intrinsics: {
@@ -120,8 +122,9 @@ class FormatParser::HEIFParser
   def scan_file_type_box
     file_type_box_length = read_int_32
     return unless read_string(4) == FILE_TYPE_BOX_MARKER
-    return unless read_string(4) == HEIF_MARKER || MIF1_MARKER
-    minor_brand = read_string(4)
+    @major_brand = read_string(4)
+    return unless @major_brand == HEIF_MARKER || MIF1_MARKER
+    read_string(4) # minor_brand
 
     # Subtracting from the total length of the box specified in the header the size header itself (8 bytes = header length and length of ftyp)
     # and the length of the major and minor brand, we obtain the the compatible brands
@@ -256,48 +259,48 @@ class FormatParser::HEIFParser
       when PIXEL_ASPECT_RATIO_BOX
         h_spacing = read_int_32
         v_spacing = read_int_32
-        @pixel_aspect_ratio = h_spacing.to_s + '/' + v_spacing.to_s
+        pixel_aspect_ratio = h_spacing.to_s + '/' + v_spacing.to_s
         @item_props[item_prop_index] = {
           'type': PIXEL_ASPECT_RATIO_BOX,
-          'pixel_aspect_ratio': @pixel_aspect_ratio
+          'pixel_aspect_ratio': pixel_aspect_ratio
         }
       when COLOUR_INFO_BOX
-        @colour_info = {
+        colour_info = {
           'colour_primaries': read_int_16,
           'transfer_characteristics': read_int_16,
           'matrix_coefficients': read_int_16
         }
         @item_props[item_prop_index] = {
           'type': COLOUR_INFO_BOX,
-          'colour_info': @colour_info
+          'colour_info': colour_info
         }
       when PIXEL_INFO_BOX
-        @pixel_info = []
+        pixel_info = []
         read_nil_version_and_flag
         num_channels = read_int_8
         channel = 1
         while channel <= num_channels
           channel += 1
-          @pixel_info << {
+          pixel_info << {
             "bits_in_channel_#{channel}": read_int_8
           }
         end
         @item_props[item_prop_index] = {
           'type': PIXEL_INFO_BOX,
-          'pixel_info': @pixel_info
+          'pixel_info': pixel_info
         }
       when RELATIVE_LOCATION_BOX
         read_nil_version_and_flag
-        @horizontal_offset = read_int_32
-        @vertical_offset = read_int_32
+        horizontal_offset = read_int_32
+        vertical_offset = read_int_32
         @item_props[item_prop_index] = {
           'type': RELATIVE_LOCATION_BOX,
-          'horizontal_offset': @horizontal_offset,
-          'vertical_offset': @vertical_offset
+          'horizontal_offset': horizontal_offset,
+          'vertical_offset': vertical_offset
         }
       when CLEAN_APERTURE_BOX
-        @clean_aperture = []
-        @clean_aperture << {
+        clean_aperture = []
+        clean_aperture << {
           'clean_aperture_width_n': read_int_32,
           'clean_aperture_width_d': read_int_32,
           'clean_aperture_height_n': read_int_32,
@@ -309,16 +312,16 @@ class FormatParser::HEIFParser
         }
         @item_props[item_prop_index] = {
           'type': CLEAN_APERTURE_BOX,
-          'clean_aperture': @clean_aperture
+          'clean_aperture': clean_aperture
         }
       when IMAGE_ROTATION_BOX
         read_nil_version_and_flag
         binary = convert_byte_to_binary(read_int_8)
         # we need only the last 2 bits to retrieve the angle multiplier. angle multiplier * 90 specifies the angle
-        @rotation = binary.slice(6, 2).join.to_i(2) * 90
+        rotation = binary.slice(6, 2).join.to_i(2) * 90
         @item_props[item_prop_index] = {
           'type': IMAGE_ROTATION_BOX,
-          'rotation': @rotation
+          'rotation': rotation
         }
       end
       item_prop_length, item_prop_name, item_prop_start_pos = get_next_box(item_prop_start_pos, item_prop_length, end_of_ipco_box)
@@ -328,7 +331,7 @@ class FormatParser::HEIFParser
 
   def read_item_properties_association_box
     version = read_int_8
-    safe_read(@buf, 2) # we skip the first 2 bytes of the flags cause we care only aboiut the least significant bit
+    safe_read(@buf, 2) # we skip the first 2 bytes of the flags (total of 3 bytes) cause we care only about the least significant bit
     flags = read_int_8
     entry_count = read_int_32
     item_id = 0
@@ -343,8 +346,8 @@ class FormatParser::HEIFParser
       association_count.times do
         # we need to retrieve the "essential" bit wich is just the first bit in the next byte
         binary = convert_byte_to_binary(read_int_8)
-        # essential_bit = binary[0]
-        binary.concat(convert_byte_to_binary(read_int_8)) if (flags & 1) == 1 # we need the next 15 bit
+        # essential_bit = binary[0] # uncomment if needed
+        binary.concat(convert_byte_to_binary(read_int_8)) if (flags & 1) == 1 # if flag is 1 we need the next 15 bits instead of only the next 7 bits
         # we need to nullify the 1st bit since that one was the essential bit and doesn't count now to calculate the property index
         binary[0] = 0
         item_property_index = binary.join.to_i(2)
@@ -420,10 +423,7 @@ class FormatParser::HEIFParser
   end
 
   def likely_match?(filename)
-    if filename =~ /\.(heif|heic)$/i
-      @format = filename
-      true
-    end
+    filename =~ /\.(heif|heic)$/i
   end
 
   FormatParser.register_parser(new, natures: :image, formats: [:heif, :heic], priority: 2)
