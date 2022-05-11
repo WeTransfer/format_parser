@@ -1,7 +1,11 @@
+require 'pry'
+# HEIF stands for High-Efficiency Image File format, which is basically a container that is capable of storing an image, or a sequence of images in a single file.
+# There are a number of variants of HEIF, which can be used to store images, sequences of images, or videos using different codecs.
+# The variant that Apple uses to store images and sequences of images in its iOS and macOS operating systems is High Efficiency Image Coding (HEIC), which uses HEVC / H.265 for content compression.
 class FormatParser::HEIFParser
   include FormatParser::IOUtils
 
-  MAJOR_BRAND_MARKER = [0x68, 0x65, 0x69, 0x63].pack('C4') # heif marker
+  HEIF_MARKER = [0x68, 0x65, 0x69, 0x63].pack('C4') # heif marker
   FILE_TYPE_BOX_MARKER = [0x66, 0x74, 0x79, 0x70].pack('C4') # ftyp marker
   META_BOX_MARKER = [0x6D, 0x65, 0x74, 0x61].pack('C4') # meta marker
   MIF1_MARKER = [0x6D, 0x69, 0x66, 0x31].pack('C4') # mif1 marker
@@ -23,13 +27,24 @@ class FormatParser::HEIFParser
   ITEM_PROPERTIES_ASSOCIATION_BOX = [0x69, 0x70, 0x6D, 0x61].pack('C4') # ipma marker
   IMAGE_ROTATION_BOX = [0x69, 0x72, 0x6F, 0x74].pack('C4') # irot marker
   HEADER_LENGTH = 8 # every box header has a length of 8 bytes
+  HEIC_MIME_POSSIBLE_TYPES = {
+    'heic' => :heic,
+    'heix' => :heix,
+    'heim' => :heim,
+    'heis' => :heis
+  }
+  HEIC_MIME_TYPE = 'image/heic'
+  HEIF_MIME_TYPE = 'image/heif'
+  # HEIC_SEQUENCE_MIME_TYPE = 'image/heic-sequence' # TODO: to be used when adding image-sequence parsing
+  # HEIF_SEQUENCE_MIME_TYPE = 'image/heif-sequence'
 
   def self.call(io)
     new.call(io)
   end
 
   def call(io)
-    @buf = FormatParser::IOConstraint.new(io)
+    @buf                = FormatParser::IOConstraint.new(io)
+    @format             = nil
     @width              = nil
     @height             = nil
     @exif_data_frames   = []
@@ -45,43 +60,45 @@ class FormatParser::HEIFParser
     @vertical_offset    = nil
     @clean_aperture     = nil
     @primary_item_id    = 0
-    @item_props         = Hash.new
+    @item_props         = {}
     @rotation           = 0
     @item_props_idxs    = []
+    @content_type       = nil
     scan
   end
 
   def scan
     # All HEIC files must be conform to ISO/IEC 23008-12:2017
     # Moreover, all HEIC files are conform to ISO/IEC 14496-12:2015 and should be conform to the Clause 4 of such spec.
-    # Files are formed as a series of objects, called boxes. All data is contained in boxes.
-    # Boxes start with a header which gives both size and type.
+    # Files are formed as a series of objects, called boxes. All data is contained in such boxes.
+    # All boxes start with a header which defines both size and type.
     # The size is the entire size of the box, including the size and type header, fields, and all contained boxes.
     # The fields in the objects are stored with the most significant byte first, commonly known as network byte order or big-endian format.
     # A HEIC file must contain a File Type Box (ftyp).
-    # file conforms to all the requirements of the brands listed in the compatible_brands
+    # A file conforms to all the requirements of the brands listed in the compatible_brands.
     scan_file_type_box
 
-    # file may be identified by MIME type of Annex C of ISO/IEC 23008-12.
+    # file may be identified by MIME type of Annex C of ISO/IEC 23008-12 if 'mif1' is the major brand or Annex D if 'msf1' is the major brand.
     # the MIME indicates the nature and format of our assortment of bytes
     # note particularly that the brand 'mif1' doesn't mandate a MovieBox ("moov").
     # One or more brands must be included in the list of compatible brands
     return if @compatible_brands.nil?
     if @compatible_brands&.include?(MIF1_MARKER)
       scan_meta_level_box
+      @content_type = if (@compatible_brands & HEIC_MIME_POSSIBLE_TYPES.keys).length > 0
+        HEIC_MIME_TYPE
+      else
+        HEIF_MIME_TYPE
+      end
     end
     if @compatible_brands&.include?(MSF1_MARKER)
+      # TODO
     end
 
     result = FormatParser::Image.new(
-      format: :heic,
+      format: @format,
       width_px: @width,
       height_px: @height,
-      # display_width_px: dw,
-      # display_height_px: dh,
-      # orientation: flat_exif.orientation_sym,
-      # intrinsics: {exif: flat_exif},
-      # content_type: JPEG_MIME_TYPE
       intrinsics: {
         'compatible_brands': @compatible_brands,
         'handler_type': @handler_type,
@@ -93,30 +110,23 @@ class FormatParser::HEIFParser
         'vertical_offset': @vertical_offset,
         'clean_aperture': @clean_aperture,
         'rotation': @rotation
-      }
+      },
+      content_type: @content_type
     )
 
-    return result
-
-    # if mif1 brand is present, the file may be identified by MIME type
-
+    result
   end
 
   def scan_file_type_box
-    # the header is made by 4 bytes defining the box length and 4 bytes of the file type box marker.
-    # HEIF Images start with the same marker, the usual "ftyp" box marker still as part of the 8 byte header
-    # followed by the content, which the first 4 bytes must be the "heif" marker
     file_type_box_length = read_int_32
     return unless read_string(4) == FILE_TYPE_BOX_MARKER
-    return unless read_string(4) == MAJOR_BRAND_MARKER || MIF1_MARKER
+    return unless read_string(4) == HEIF_MARKER || MIF1_MARKER
     minor_brand = read_string(4)
 
-    # subtracting from the length box specified in the header the header itself (8 bytes = header length and length of ftyp)
-    # then the length of the major and minor brand
-    # what's left are the compatible brands
-    data_left_length = file_type_box_length - HEADER_LENGTH - MAJOR_BRAND_MARKER.length - 4
+    # Subtracting from the total length of the box specified in the header the size header itself (8 bytes = header length and length of ftyp)
+    # and the length of the major and minor brand, we obtain the the compatible brands
+    data_left_length = file_type_box_length - HEADER_LENGTH - HEIF_MARKER.length - 4
 
-    # all info are stored in bytes of 4
     @compatible_brands = []
     (data_left_length / 4).times do
       @compatible_brands << read_string(4)
@@ -124,7 +134,6 @@ class FormatParser::HEIFParser
   end
 
   def scan_meta_level_box
-
     metadata_length = read_int_32
     return unless read_string(4) == META_BOX_MARKER
     @metadata_start_pos = @buf.pos
@@ -132,25 +141,23 @@ class FormatParser::HEIFParser
     read_nil_version_and_flag
 
     # we are looking for box/containers right beneath the Meta box
-    # we start with the HDLR box..
+    # we start with the HDLR (Handler) box..
     handler_length = read_int_32
     return unless read_string(4) == HANDLER_MARKER
-    handler_length -= HEADER_LENGTH # subtract the header
+    handler_length -= HEADER_LENGTH # subtract the header as usual (will not be mentioned anymore from now on)
     handler_start = @buf.pos
-    # the handler type declare the type of metadata and thus the process by which the media-data in the track is presented
+    # the handler type declares the type of metadata and thus the process by which the media-data in the track is presented
     # it also indicates the structure or format of the ‘meta’ box contents
     read_nil_version_and_flag
-    pre_defined = read_string(4) # always 0 in the hdlr box
+    pre_defined = read_string(4) # always 4 null bytes in the hdlr box
     @handler_type = read_string(4)
     @buf.seek(handler_start + handler_length) # the remaining part is reserved
-
 
     # ..continue looking for the IINF box and especially for the IPRP box, containing info about the image itself
     next_box_length = read_int_32
     next_box = read_string(4)
     next_box_start_pos = @buf.pos
-    while @buf.pos < @metadata_end_pos
-      # box_length, box_name = next_box_container
+    while @buf.pos < @metadata_end_pos # we iterate over all next incoming boxed but without going outside the meta-box
       case next_box
       when PRIMARY_ITEM_BOX
         read_primary_item_box
@@ -165,22 +172,6 @@ class FormatParser::HEIFParser
       next_box_length, next_box, next_box_start_pos = next_box_container(next_box_start_pos, next_box_length, @metadata_end_pos)
     end
   end
-
-  #   # ..continue looking for the IPRP box, containing info about the image itself
-  #   while @buf.pos < @metadata_end_pos
-  #     box_length, box_name = next_box_container
-  #     case box_name
-  #     when ITEM_INFO_BOX
-  #       read_item_info_box
-  #     when ITEM_PROPERTIES_BOX
-  #       read_item_properties_box(box_length)
-  #     when box_name == ''
-  #       break
-  #     else
-  #       @buf.seek(@buf.pos + box_length - HEADER_LENGTH)
-  #     end
-  #   end
-  # end
 
   def read_item_info_box
     version = read_int_8
@@ -274,8 +265,7 @@ class FormatParser::HEIFParser
           'pixel_aspect_ratio': @pixel_aspect_ratio
         }
       when COLOUR_INFO_BOX
-        @colour_info = []
-        @colour_info << {
+        @colour_info = {
           'colour_primaries': read_int_16,
           'transfer_characteristics': read_int_16,
           'matrix_coefficients': read_int_16
@@ -290,7 +280,6 @@ class FormatParser::HEIFParser
         num_channels = read_int_8
         channel = 1
         while channel <= num_channels do
-          puts channel
           channel += 1
           @pixel_info << {
             "bits_in_channel_#{channel}": read_int_8
@@ -465,7 +454,10 @@ class FormatParser::HEIFParser
   
 
   def likely_match?(filename)
-    filename =~ /\.(heif|heic)$/i
+    if filename =~ /\.(heif|heic)$/i
+      @format = filename
+      return true
+    end
   end
 
   FormatParser.register_parser(new, natures: :image, formats: [:heif, :heic], priority: 2)
