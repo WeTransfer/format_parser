@@ -259,7 +259,7 @@ class FormatParser::HEIFParser
       when PIXEL_ASPECT_RATIO_BOX
         h_spacing = read_int_32
         v_spacing = read_int_32
-        pixel_aspect_ratio = h_spacing.to_s + '/' + v_spacing.to_s
+        pixel_aspect_ratio = "#{h_spacing}/#{v_spacing}"
         @item_props[item_prop_index] = {
           'type': PIXEL_ASPECT_RATIO_BOX,
           'pixel_aspect_ratio': pixel_aspect_ratio
