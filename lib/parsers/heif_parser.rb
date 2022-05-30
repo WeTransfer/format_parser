@@ -127,7 +127,7 @@ class FormatParser::HEIFParser
     read_string(4) # minor_brand
 
     # Subtracting from the total length of the box specified in the header the size header itself (8 bytes = header length and length of ftyp)
-    # and the length of the major and minor brand, we obtain the the compatible brands
+    # and the length of the major and minor brand, we obtain the compatible brands
     data_left_length = file_type_box_length - HEADER_LENGTH - HEIF_MARKER.length - 4
 
     @compatible_brands = []
