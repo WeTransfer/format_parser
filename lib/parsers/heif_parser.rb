@@ -103,16 +103,16 @@ class FormatParser::HEIFParser
       width_px: @width,
       height_px: @height,
       intrinsics: {
-        'compatible_brands': @compatible_brands,
-        'handler_type': @handler_type,
+        compatible_brands: @compatible_brands,
+        handler_type: @handler_type,
         # 'sub_items': @sub_items, # enable this if you want to output all the sub-items in the image
-        'pixel_aspect_ratio': @pixel_aspect_ratio,
-        'colour_info': @colour_info,
-        'pixel_info': @pixel_info,
-        'horizontal_offset': @horizontal_offset,
-        'vertical_offset': @vertical_offset,
-        'clean_aperture': @clean_aperture,
-        'rotation': @rotation
+        pixel_aspect_ratio: @pixel_aspect_ratio,
+        colour_info: @colour_info,
+        pixel_info: @pixel_info,
+        horizontal_offset: @horizontal_offset,
+        vertical_offset: @vertical_offset,
+        clean_aperture: @clean_aperture,
+        rotation: @rotation
       },
       content_type: @content_type
     )
@@ -253,27 +253,27 @@ class FormatParser::HEIFParser
         width = read_int_32
         height = read_int_32
         @item_props[item_prop_index] = {
-          'type': IMAGE_SPATIAL_EXTENTS_BOX,
-          'width': width,
-          'height': height
+          type: IMAGE_SPATIAL_EXTENTS_BOX,
+          width: width,
+          height: height
         }
       when PIXEL_ASPECT_RATIO_BOX
         h_spacing = read_int_32
         v_spacing = read_int_32
         pixel_aspect_ratio = "#{h_spacing}/#{v_spacing}"
         @item_props[item_prop_index] = {
-          'type': PIXEL_ASPECT_RATIO_BOX,
-          'pixel_aspect_ratio': pixel_aspect_ratio
+          type: PIXEL_ASPECT_RATIO_BOX,
+          pixel_aspect_ratio: pixel_aspect_ratio
         }
       when COLOUR_INFO_BOX
         colour_info = {
-          'colour_primaries': read_int_16,
-          'transfer_characteristics': read_int_16,
-          'matrix_coefficients': read_int_16
+          colour_primaries: read_int_16,
+          transfer_characteristics: read_int_16,
+          matrix_coefficients: read_int_16
         }
         @item_props[item_prop_index] = {
-          'type': COLOUR_INFO_BOX,
-          'colour_info': colour_info
+          type: COLOUR_INFO_BOX,
+          colour_info: colour_info
         }
       when PIXEL_INFO_BOX
         pixel_info = []
@@ -287,33 +287,33 @@ class FormatParser::HEIFParser
           }
         end
         @item_props[item_prop_index] = {
-          'type': PIXEL_INFO_BOX,
-          'pixel_info': pixel_info
+          type: PIXEL_INFO_BOX,
+          pixel_info: pixel_info
         }
       when RELATIVE_LOCATION_BOX
         read_nil_version_and_flag
         horizontal_offset = read_int_32
         vertical_offset = read_int_32
         @item_props[item_prop_index] = {
-          'type': RELATIVE_LOCATION_BOX,
-          'horizontal_offset': horizontal_offset,
-          'vertical_offset': vertical_offset
+          type: RELATIVE_LOCATION_BOX,
+          horizontal_offset: horizontal_offset,
+          vertical_offset: vertical_offset
         }
       when CLEAN_APERTURE_BOX
         clean_aperture = []
         clean_aperture << {
-          'clean_aperture_width_n': read_int_32,
-          'clean_aperture_width_d': read_int_32,
-          'clean_aperture_height_n': read_int_32,
-          'clean_aperture_height_d': read_int_32,
-          'horiz_off_n': read_int_32,
-          'horiz_off_d': read_int_32,
-          'vert_off_n': read_int_32,
-          'vert_off_d': read_int_32
+          clean_aperture_width_n: read_int_32,
+          clean_aperture_width_d: read_int_32,
+          clean_aperture_height_n: read_int_32,
+          clean_aperture_height_d: read_int_32,
+          horiz_off_n: read_int_32,
+          horiz_off_d: read_int_32,
+          vert_off_n: read_int_32,
+          vert_off_d: read_int_32
         }
         @item_props[item_prop_index] = {
-          'type': CLEAN_APERTURE_BOX,
-          'clean_aperture': clean_aperture
+          type: CLEAN_APERTURE_BOX,
+          clean_aperture: clean_aperture
         }
       when IMAGE_ROTATION_BOX
         read_nil_version_and_flag
@@ -321,8 +321,8 @@ class FormatParser::HEIFParser
         # we need only the last 2 bits to retrieve the angle multiplier. angle multiplier * 90 specifies the angle
         rotation = binary.slice(6, 2).join.to_i(2) * 90
         @item_props[item_prop_index] = {
-          'type': IMAGE_ROTATION_BOX,
-          'rotation': rotation
+          type: IMAGE_ROTATION_BOX,
+          rotation: rotation
         }
       end
       item_prop_length, item_prop_name, item_prop_start_pos = get_next_box(item_prop_start_pos, item_prop_length, end_of_ipco_box)
