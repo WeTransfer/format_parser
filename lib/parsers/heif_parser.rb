@@ -423,7 +423,7 @@ class FormatParser::HEIFParser
   end
 
   def likely_match?(filename)
-    filename =~ /\.(heif|heic)$/i
+    filename =~ /\.hei[cf]$/i
   end
 
   FormatParser.register_parser(new, natures: :image, formats: [:heif, :heic], priority: 2)
