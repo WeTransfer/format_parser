@@ -104,7 +104,7 @@ class FormatParser::HEIFParser
       intrinsics: {
         'compatible_brands': @compatible_brands,
         'handler_type': @handler_type,
-        # 'sub_items': @sub_items, # enable this if you want to output all the sub-itmes in the image
+        # 'sub_items': @sub_items, # enable this if you want to output all the sub-items in the image
         'pixel_aspect_ratio': @pixel_aspect_ratio,
         'colour_info': @colour_info,
         'pixel_info': @pixel_info,
