@@ -34,7 +34,8 @@ class FormatParser::HEIFParser
   }
   HEIC_MIME_TYPE = 'image/heic'
   HEIF_MIME_TYPE = 'image/heif'
-  # HEIC_SEQUENCE_MIME_TYPE = 'image/heic-sequence' # TODO: to be used when adding image-sequence parsing
+  # TODO: use the following when adding image-sequence parsing
+  # HEIC_SEQUENCE_MIME_TYPE = 'image/heic-sequence'
   # HEIF_SEQUENCE_MIME_TYPE = 'image/heif-sequence'
 
   def self.call(io)
@@ -123,7 +124,7 @@ class FormatParser::HEIFParser
     file_type_box_length = read_int_32
     return unless read_string(4) == FILE_TYPE_BOX_MARKER
     @major_brand = read_string(4)
-    return unless @major_brand == HEIF_MARKER || MIF1_MARKER
+    return unless @major_brand == HEIF_MARKER || @major_brand == MIF1_MARKER
     read_string(4) # minor_brand
 
     # Subtracting from the total length of the box specified in the header the size header itself (8 bytes = header length and length of ftyp)
@@ -205,7 +206,7 @@ class FormatParser::HEIFParser
       if item_type == MIME_MARKER
         content_encoding = read_string(item_info_end_pos - @buf.pos).delete!("\0") # remove the null-termination part for output visualization reason
       end
-      @sub_items << {'item_id': item_id, 'item_type': item_type, 'content_encoding': content_encoding}
+      @sub_items << {item_id: item_id, item_type: item_type, content_encoding: content_encoding}
       @buf.seek(item_info_end_pos) # we are not interested in anything else, go directly to the end of this 'infe' box
     }
   end
