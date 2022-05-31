@@ -1,3 +1,6 @@
+## 1.3.0
+* Add `heif_parser` and support for `HEIF` and `HEIC` formats. Exif parsing is still missing.
+* 
 ## 1.2.1
 * Resolve bug when `stts` atom is `nil`
 

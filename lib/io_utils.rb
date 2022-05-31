@@ -30,5 +30,22 @@ module FormatParser::IOUtils
     nil
   end
 
+  def read_int_8
+    safe_read(@buf, 1).unpack('C').first
+  end
+
+  def read_int_16
+    safe_read(@buf, 2).unpack('n').first
+  end
+
+  def read_int_32
+    safe_read(@buf, 4).unpack('N').first
+  end
+
+  # 'n' is the number of bytes to read
+  def read_string(n)
+    safe_read(@buf, n)
+  end
+
   ### TODO: Some kind of built-in offset for the read
 end
