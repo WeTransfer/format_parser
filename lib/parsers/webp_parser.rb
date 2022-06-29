@@ -101,7 +101,7 @@ class FormatParser::WebpParser
     # The flags are followed by three reserved bytes of zeros, and then by the width and height, respectively - each
     # occupying three bytes and each one less than the actual canvas measurements.
     safe_skip(@io, 3)
-    dimensions = safe_read(@io, 6).unpack("VS")
+    dimensions = safe_read(@io, 6).unpack('VS')
     width = (dimensions[0] & 0xffffff) + 1
     height = (dimensions[0] >> 24 | dimensions[1] << 8 & 0xffffff) + 1
 
