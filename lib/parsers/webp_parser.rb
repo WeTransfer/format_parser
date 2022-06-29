@@ -30,7 +30,6 @@ class FormatParser::WebpParser
     # 8...11  | "WEBP" (To signify that this is a WebP file).
     # 12...15 | The VB8 variant in use ("VB8 ", "VP8L" or "VB8X")
     # 16...19 | The length of the VB8 data in bytes (i.e. The size of the file - 20 bytes).
-
     riff, webp, variant = safe_read(@io, 20).unpack('A4x4A4A4')
     return unless riff == 'RIFF' && webp == 'WEBP'
     read_data(variant)
@@ -68,8 +67,8 @@ class FormatParser::WebpParser
     safe_skip(@io, 1)
 
     # The subsequent 4 bytes contain the image width and height, respectively, as 14-bit unsigned little endian
-    # integers. The 4 remaining bits consist of a 1-bit flag indicating whether alpha is used, and a 3-bit version that
-    # is always zero.
+    # integers (minus one). The 4 remaining bits consist of a 1-bit flag indicating whether alpha is used, and a 3-bit
+    # version that is always zero.
     dimensions = safe_read(@io, 4).unpack('V')[0]
     width = (dimensions & 0x3fff) + 1
     height = (dimensions >> 14 & 0x3fff) + 1
@@ -94,15 +93,22 @@ class FormatParser::WebpParser
     #   - X = Set if file contains XMP metadata.
     #   - A = Set if file is an animated image.
     flags = safe_read(@io, 1).unpack('C')[0]
-    has_transparency = flags & 0x10
-    has_multiple_frames = flags & 0x02
+    has_transparency = flags & 0x10 != 0
+    has_multiple_frames = flags & 0x02 != 0
 
     # Note: num_animation_or_video_frames cannot be calculated without parsing the entire file.
+
+    # The flags are followed by three reserved bytes of zeros, and then by the width and height, respectively - each
+    # occupying three bytes and each one less than the actual canvas measurements.
+    safe_skip(@io, 3)
+    dimensions = safe_read(@io, 6).unpack("VS")
+    width = (dimensions[0] & 0xffffff) + 1
+    height = (dimensions[0] >> 24 | dimensions[1] << 8 & 0xffffff) + 1
 
     create_image(width, height, has_multiple_frames: has_multiple_frames, has_transparency: has_transparency)
   end
 
-  def create_image(width, height, has_multiple_frames = false, has_transparency = false)
+  def create_image(width, height, has_multiple_frames: false, has_transparency: false)
     FormatParser::Image.new(
       content_type: WEBP_MIME_TYPE,
       format: :webp,
