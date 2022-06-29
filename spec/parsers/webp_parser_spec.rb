@@ -22,8 +22,8 @@ describe FormatParser::WebpParser do
   end
 
   it 'successfully parses lossless WebP files with an alpha channel' do
-    result = subject.call(File.open(fixtures_dir + 'WEBP/lossy.webp', 'rb'))
-    check_result(result, true, 181, 65, has_transparency: true)
+    result = subject.call(File.open(fixtures_dir + 'WEBP/lossless-alpha.webp', 'rb'))
+    check_result(result, true, 181, 65, false, true)
   end
 
   it 'successfully parses extended WebP files' do
@@ -33,12 +33,12 @@ describe FormatParser::WebpParser do
 
   it 'successfully parses extended WebP files with an alpha channel' do
     result = subject.call(File.open(fixtures_dir + 'WEBP/extended-alpha.webp', 'rb'))
-    check_result(result, true, 181, 65, has_transparency: true)
+    check_result(result, true, 181, 65, false, true)
   end
 
   it 'successfully parses extended WebP files with animation' do
     result = subject.call(File.open(fixtures_dir + 'WEBP/extended-animation.webp', 'rb'))
-    check_result(result, true, nil, nil, has_multiple_frames: true)
+    check_result(result, true, 211, 211, true, true)
   end
 
   private

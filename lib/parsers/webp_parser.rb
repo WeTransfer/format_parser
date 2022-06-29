@@ -39,7 +39,7 @@ class FormatParser::WebpParser
 
   def read_data(variant)
     case variant
-    when 'VP8 ' # Lossy
+    when 'VP8' # Lossy
       read_lossy_data
     when 'VP8L' # Lossless
       read_lossless_data
