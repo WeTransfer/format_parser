@@ -199,7 +199,7 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 ### M3U
 - The M3U fixture files were created by one of the project maintainers
 
-### WebP
+### WEBP
 - With the exception of extended-animation.webp, which was obtained from Wikimedia Commons and is Creative Commons 
 licensed, all of the WebP fixture files have been created by one of the project maintainers.
 

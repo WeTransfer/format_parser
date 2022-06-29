@@ -96,7 +96,7 @@ class FormatParser::WebpParser
     has_transparency = flags & 0x10 != 0
     has_multiple_frames = flags & 0x02 != 0
 
-    # Note: num_animation_or_video_frames cannot be calculated without parsing the entire file.
+    # NOTE: num_animation_or_video_frames cannot be calculated without parsing the entire file.
 
     # The flags are followed by three reserved bytes of zeros, and then by the width and height, respectively - each
     # occupying three bytes and each one less than the actual canvas measurements.
