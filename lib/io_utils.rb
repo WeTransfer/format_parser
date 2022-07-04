@@ -42,6 +42,14 @@ module FormatParser::IOUtils
     safe_read(@buf, 4).unpack('N').first
   end
 
+  def read_little_endian_int_16
+    safe_read(@buf, 2).unpack('v').first
+  end
+
+  def read_little_endian_int_32
+    safe_read(@buf, 4).unpack('V').first
+  end
+
   # 'n' is the number of bytes to read
   def read_string(n)
     safe_read(@buf, n)

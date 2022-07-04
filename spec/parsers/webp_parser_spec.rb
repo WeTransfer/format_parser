@@ -19,6 +19,8 @@ describe FormatParser::WebpParser do
     expect(result.has_multiple_frames).to eq(false)
     expect(result.has_transparency).to eq(false)
     expect(result.height_px).to eq(181)
+    expect(result.intrinsics).to be_nil
+    expect(result.orientation).to be_nil
     expect(result.width_px).to eq(65)
   end
 
@@ -30,6 +32,8 @@ describe FormatParser::WebpParser do
     expect(result.has_multiple_frames).to eq(false)
     expect(result.has_transparency).to eq(false)
     expect(result.height_px).to eq(181)
+    expect(result.intrinsics).to be_nil
+    expect(result.orientation).to be_nil
     expect(result.width_px).to eq(65)
   end
 
@@ -41,6 +45,8 @@ describe FormatParser::WebpParser do
     expect(result.has_multiple_frames).to eq(false)
     expect(result.has_transparency).to eq(true)
     expect(result.height_px).to eq(181)
+    expect(result.intrinsics).to be_nil
+    expect(result.orientation).to be_nil
     expect(result.width_px).to eq(65)
   end
 
@@ -52,6 +58,8 @@ describe FormatParser::WebpParser do
     expect(result.has_multiple_frames).to eq(false)
     expect(result.has_transparency).to eq(false)
     expect(result.height_px).to eq(181)
+    expect(result.intrinsics).to be_nil
+    expect(result.orientation).to be_nil
     expect(result.width_px).to eq(65)
   end
 
@@ -63,6 +71,24 @@ describe FormatParser::WebpParser do
     expect(result.has_multiple_frames).to eq(false)
     expect(result.has_transparency).to eq(true)
     expect(result.height_px).to eq(181)
+    expect(result.intrinsics).to be_nil
+    expect(result.orientation).to be_nil
+    expect(result.width_px).to eq(65)
+  end
+
+  it 'successfully parses extended WebP files with Exif metadata' do
+    result = subject.call(File.open(fixtures_dir + 'WEBP/extended-exif.webp', 'rb'))
+    expect(result).not_to be_nil
+    expect(result.content_type).to eq('image/webp')
+    expect(result.format).to eq(:webp)
+    expect(result.has_multiple_frames).to eq(false)
+    expect(result.has_transparency).to eq(false)
+    expect(result.height_px).to eq(181)
+    expect(result.intrinsics).not_to be_nil
+    expect(result.intrinsics[:exif]).not_to be_nil
+    expect(result.intrinsics[:exif].image_length).to eq(result.height_px)
+    expect(result.intrinsics[:exif].image_width).to eq(result.width_px)
+    expect(result.orientation).to eq(:top_left)
     expect(result.width_px).to eq(65)
   end
 
@@ -74,8 +100,8 @@ describe FormatParser::WebpParser do
     expect(result.has_multiple_frames).to eq(true)
     expect(result.has_transparency).to eq(true)
     expect(result.height_px).to eq(211)
+    expect(result.intrinsics).to be_nil
+    expect(result.orientation).to be_nil
     expect(result.width_px).to eq(211)
   end
-
-  private
 end
