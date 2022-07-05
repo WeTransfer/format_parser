@@ -127,9 +127,9 @@ class FormatParser::WebpParser
     xmp = nil
     num_frames = 0
     loop do
-      fourCC, chunk_size = safe_read(@buf, 8).unpack('A4V')
+      fourcc, chunk_size = safe_read(@buf, 8).unpack('A4V')
       safe_skip(@buf, 1) if chunk_size.odd? # Padding byte of 0 added if chunk size is odd.
-      case fourCC
+      case fourcc
       when 'EXIF'
         exif ||= exif_from_tiff_io(StringIO.new(safe_read(@buf, chunk_size)))
       when 'XMP'
