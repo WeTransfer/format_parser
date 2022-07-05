@@ -135,13 +135,13 @@ class FormatParser::WebpParser
       when 'XMP'
         safe_skip(@buf, chunk_size)
       when 'ANMF'
-        num_frames += 1 if has_multiple_frames
+        num_frames += 1 if image.has_multiple_frames
         safe_skip(@buf, chunk_size)
       else
         safe_skip(@buf, chunk_size)
       end
-    end rescue FormatParser::IOUtils::InvalidRead
-
+    end
+  rescue FormatParser::IOUtils::InvalidRead
     if exif || xmp
       image.intrinsics = {}
       if exif
