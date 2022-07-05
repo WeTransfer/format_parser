@@ -142,15 +142,14 @@ class FormatParser::WebpParser
       end
     end
   rescue FormatParser::IOUtils::InvalidRead
-    if exif || xmp
-      image.intrinsics = {}
-      if exif
-        image.height_px, image.width_px = image.width_px, image.height_px if exif.rotated?
-        image.intrinsics[:exif] = exif
-        image.orientation = exif.orientation_sym
-      end
-      image.intrinsics[:xmp] = xmp if xmp
+    intrinsics = {}
+    if exif
+      image.height_px, image.width_px = image.width_px, image.height_px if exif.rotated?
+      intrinsics[:exif] = exif
+      image.orientation = exif.orientation_sym
     end
+    intrinsics[:xmp] = xmp if xmp
+    image.intrinsics = intrinsics unless intrinsics.empty?
     image.num_animation_or_video_frames = num_frames if num_frames > 0
   end
 
