@@ -110,11 +110,6 @@ class FormatParser::WebpParser
     image
   end
 
-  def parse_xmp_metadata(chunk_size)
-    # TODO: Parse XMP chunk
-    safe_skip(@buf, chunk_size)
-  end
-
   def create_image(width, height, has_multiple_frames: false, has_transparency: false)
     FormatParser::Image.new(
       content_type: WEBP_MIME_TYPE,
@@ -132,13 +127,13 @@ class FormatParser::WebpParser
     xmp = nil
     num_frames = 0
     loop do
-      chunk_code, chunk_size = safe_read(@buf, 8).unpack('A4V')
+      fourCC, chunk_size = safe_read(@buf, 8).unpack('A4V')
       safe_skip(@buf, 1) if chunk_size.odd? # Padding byte of 0 added if chunk size is odd.
-      case chunk_code
+      case fourCC
       when 'EXIF'
         exif ||= exif_from_tiff_io(StringIO.new(safe_read(@buf, chunk_size)))
       when 'XMP'
-        xmp ||= parse_xmp_metadata(chunk_size)
+        safe_skip(@buf, chunk_size)
       when 'ANMF'
         num_frames += 1 if has_multiple_frames
         safe_skip(@buf, chunk_size)
@@ -146,13 +141,16 @@ class FormatParser::WebpParser
         safe_skip(@buf, chunk_size)
       end
     end rescue FormatParser::IOUtils::InvalidRead
-    image.height_px, image.width_px = image.width_px, image.height_px if exif&.rotated?
+
     if exif || xmp
       image.intrinsics = {}
-      image.intrinsics[:exif] = exif if exif
+      if exif
+        image.height_px, image.width_px = image.width_px, image.height_px if exif.rotated?
+        image.intrinsics[:exif] = exif
+        image.orientation = exif.orientation_sym
+      end
       image.intrinsics[:xmp] = xmp if xmp
     end
-    image.orientation = exif&.orientation_sym
     image.num_animation_or_video_frames = num_frames if num_frames > 0
   end
 
