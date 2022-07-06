@@ -8,6 +8,8 @@
 #
 # TODO: Decide how to determine color mode (depends on variant, transformations, flags, etc.; maybe not worth it).
 
+require 'nokogiri'
+
 class FormatParser::WebpParser
   include FormatParser::EXIFParser
   include FormatParser::IOUtils
@@ -133,7 +135,7 @@ class FormatParser::WebpParser
       when 'EXIF'
         exif ||= exif_from_tiff_io(StringIO.new(safe_read(@buf, chunk_size)))
       when 'XMP'
-        safe_skip(@buf, chunk_size)
+        xmp = Nokogiri::XML(safe_read(@buf, chunk_size))
       when 'ANMF'
         num_frames += 1 if image.has_multiple_frames
         safe_skip(@buf, chunk_size)
