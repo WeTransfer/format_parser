@@ -8,8 +8,6 @@
 #
 # TODO: Decide how to determine color mode (depends on variant, transformations, flags, etc.; maybe not worth it).
 
-require 'nokogiri'
-
 class FormatParser::WebpParser
   include FormatParser::EXIFParser
   include FormatParser::IOUtils
@@ -128,21 +126,26 @@ class FormatParser::WebpParser
     intrinsics = {}
     num_frames = 0
     loop do
-      chunk_header = @buf.read(8)
-      break unless chunk_header&.bytesize == 8
+      # Try to read the next chunk header, and break the loop if we've reached EOF.
+      begin
+        fourcc, chunk_size = safe_read(@buf, 8).unpack('A4V')
+      rescue InvalidRead
+        break
+      end
 
-      fourcc, chunk_size = chunk_header.unpack('A4V')
       # Padding byte of 0 added if chunk size is odd.
       safe_skip(@buf, 1) if chunk_size.odd?
 
       case fourcc
       when 'EXIF'
         exif = exif_from_tiff_io(StringIO.new(safe_read(@buf, chunk_size)))
+        # We use ||= here at most one Exif chunk should be present, even though it is possible for there to be more.
         intrinsics[:exif] ||= exif
         image.height_px, image.width_px = image.width_px, image.height_px if exif&.rotated?
         image.orientation = exif&.orientation_sym
       when 'XMP'
-        intrinsics[:xmp] ||= Nokogiri::XML(safe_read(@buf, chunk_size))
+        # We use ||= here at most one XMP chunk should be present, even though it is possible for there to be more.
+        intrinsics[:xmp] ||= safe_read(@buf, chunk_size)
       when 'ANMF'
         num_frames += 1 if image.has_multiple_frames
         safe_skip(@buf, chunk_size)
