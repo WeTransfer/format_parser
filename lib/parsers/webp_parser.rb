@@ -139,12 +139,12 @@ class FormatParser::WebpParser
       case fourcc
       when 'EXIF'
         exif = exif_from_tiff_io(StringIO.new(safe_read(@buf, chunk_size)))
-        # We use ||= here at most one Exif chunk should be present, even though it is possible for there to be more.
+        # We use ||= here as one Exif chunk at most should be present, even though it is possible for there to be more.
         intrinsics[:exif] ||= exif
         image.height_px, image.width_px = image.width_px, image.height_px if exif&.rotated?
         image.orientation = exif&.orientation_sym
       when 'XMP'
-        # We use ||= here at most one XMP chunk should be present, even though it is possible for there to be more.
+        # We use ||= here as one XMP chunk at most should be present, even though it is possible for there to be more.
         intrinsics[:xmp] ||= safe_read(@buf, chunk_size)
       when 'ANMF'
         num_frames += 1 if image.has_multiple_frames
