@@ -33,6 +33,7 @@ and [dimensions,](https://github.com/sstephenson/dimensions) borrowing from them
 * OGG
 * MPEG, MPG
 * M3U
+* WEBP
 
 ...with [more](https://github.com/WeTransfer/format_parser/issues?q=is%3Aissue+is%3Aopen+label%3Aformats) on the way!
 
@@ -197,6 +198,10 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 
 ### M3U
 - The M3U fixture files were created by one of the project maintainers
+
+### WEBP
+- With the exception of extended-animation.webp, which was obtained from Wikimedia Commons and is Creative Commons 
+licensed, all of the WebP fixture files have been created by one of the project maintainers.
 
 ### .key
 - The `keynote_recognized_as_jpeg.key` file was created by the project maintainers
