@@ -125,17 +125,24 @@ class FormatParser::WebpParser
 
   def augment_image(image)
     # We're going to scan the file looking for the EXIF, XMP and/or ANMF chunks.
-    exif = nil
-    xmp = nil
+    intrinsics = {}
     num_frames = 0
     loop do
-      fourcc, chunk_size = safe_read(@buf, 8).unpack('A4V')
-      safe_skip(@buf, 1) if chunk_size.odd? # Padding byte of 0 added if chunk size is odd.
+      chunk_header = @buf.read(8)
+      break unless chunk_header&.bytesize == 8
+
+      fourcc, chunk_size = chunk_header.unpack('A4V')
+      # Padding byte of 0 added if chunk size is odd.
+      safe_skip(@buf, 1) if chunk_size.odd?
+
       case fourcc
       when 'EXIF'
-        exif ||= exif_from_tiff_io(StringIO.new(safe_read(@buf, chunk_size)))
+        exif = exif_from_tiff_io(StringIO.new(safe_read(@buf, chunk_size)))
+        intrinsics[:exif] ||= exif
+        image.height_px, image.width_px = image.width_px, image.height_px if exif&.rotated?
+        image.orientation = exif&.orientation_sym
       when 'XMP'
-        xmp = Nokogiri::XML(safe_read(@buf, chunk_size))
+        intrinsics[:xmp] ||= Nokogiri::XML(safe_read(@buf, chunk_size))
       when 'ANMF'
         num_frames += 1 if image.has_multiple_frames
         safe_skip(@buf, chunk_size)
@@ -143,14 +150,7 @@ class FormatParser::WebpParser
         safe_skip(@buf, chunk_size)
       end
     end
-  rescue FormatParser::IOUtils::InvalidRead
-    intrinsics = {}
-    if exif
-      image.height_px, image.width_px = image.width_px, image.height_px if exif.rotated?
-      intrinsics[:exif] = exif
-      image.orientation = exif.orientation_sym
-    end
-    intrinsics[:xmp] = xmp if xmp
+
     image.intrinsics = intrinsics unless intrinsics.empty?
     image.num_animation_or_video_frames = num_frames if num_frames > 0
   end
