@@ -129,7 +129,7 @@ class FormatParser::WebpParser
       # Try to read the next chunk header, and break the loop if we've reached EOF.
       begin
         fourcc, chunk_size = safe_read(@buf, 8).unpack('A4V')
-      rescue InvalidRead
+      rescue FormatParser::IOUtils::InvalidRead
         break
       end
 
@@ -138,11 +138,18 @@ class FormatParser::WebpParser
 
       case fourcc
       when 'EXIF'
-        exif = exif_from_tiff_io(StringIO.new(safe_read(@buf, chunk_size)))
-        # We use ||= here as one Exif chunk at most should be present, even though it is possible for there to be more.
-        intrinsics[:exif] ||= exif
-        image.height_px, image.width_px = image.width_px, image.height_px if exif&.rotated?
-        image.orientation = exif&.orientation_sym
+        chunk_pos = @buf.pos
+        begin
+          exif = exif_from_tiff_io(StringIO.new(safe_read(@buf, chunk_size)))
+          # We use ||= here as one Exif chunk at most should be present, even though it is possible for there to be more.
+          intrinsics[:exif] ||= exif
+          image.height_px, image.width_px = image.width_px, image.height_px if exif&.rotated?
+          image.orientation = exif&.orientation_sym
+        rescue EXIFR::MalformedTIFF
+          # Exif data was malformed and could not be parsed. Need to ensure that buffer is pointing at the next chunk.
+          @buf.seek(chunk_pos + chunk_size)
+          next
+        end
       when 'XMP'
         # We use ||= here as one XMP chunk at most should be present, even though it is possible for there to be more.
         intrinsics[:xmp] ||= safe_read(@buf, chunk_size)
