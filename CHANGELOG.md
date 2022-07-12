@@ -1,3 +1,6 @@
+## 1.4.1
+* Skip Exif chunks that are malformed during `WEBP` parsing.
+
 ## 1.4.0
 * Add support for `WEBP` lossy, lossless and extended file formats.
 
