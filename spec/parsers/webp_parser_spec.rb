@@ -118,4 +118,19 @@ describe FormatParser::WebpParser do
     expect(result.orientation).to be_nil
     expect(result.width_px).to eq(211)
   end
+
+  it 'successfully skips malformed Exif chunks' do
+    result = subject.call(File.open(fixtures_dir + 'WEBP/extended-malformed-exif.webp', 'rb'))
+    expect(result).not_to be_nil
+    expect(result.content_type).to eq('image/webp')
+    expect(result.format).to eq(:webp)
+    expect(result.has_multiple_frames).to eq(false)
+    expect(result.has_transparency).to eq(false)
+    expect(result.height_px).to eq(181)
+    expect(result.intrinsics).not_to be_nil
+    expect(result.intrinsics[:exif]).to be_nil
+    expect(result.intrinsics[:xmp]).not_to be_nil
+    expect(result.orientation).to be_nil
+    expect(result.width_px).to eq(65)
+  end
 end
