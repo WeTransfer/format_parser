@@ -1,3 +1,6 @@
+## 1.4.2
+* Fix `MP3Parser` taking precedence when parsing `WEBP` files.
+
 ## 1.4.1
 * Skip Exif chunks that are malformed during `WEBP` parsing.
 
