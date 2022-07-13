@@ -28,6 +28,7 @@ class FormatParser::MP3Parser
   # For some edge cases
   ZIP_LOCAL_ENTRY_SIGNATURE = "PK\x03\x04\x14\x00".b
   PNG_HEADER_BYTES = [137, 80, 78, 71, 13, 10, 26, 10].pack('C*')
+  WEBP_HEADER_REGEX = /RIFF.{4}WEBP/i
 
   MAGIC_LE = [0x49, 0x49, 0x2A, 0x0].pack('C4')
   MAGIC_BE = [0x4D, 0x4D, 0x0, 0x2A].pack('C4')
@@ -68,9 +69,10 @@ class FormatParser::MP3Parser
     # will terminate here. Same with PNGs. In the future
     # we should implement "confidence" for MP3 as of all our formats
     # it is by far the most lax.
-    header = safe_read(io, 8)
+    header = safe_read(io, 12)
     return if header.start_with?(ZIP_LOCAL_ENTRY_SIGNATURE)
     return if header.start_with?(PNG_HEADER_BYTES)
+    return if header.start_with?(WEBP_HEADER_REGEX)
 
     io.seek(0)
     return if TIFF_HEADER_BYTES.include?(safe_read(io, 4))
