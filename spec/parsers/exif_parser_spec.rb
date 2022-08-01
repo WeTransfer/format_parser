@@ -27,7 +27,7 @@ describe FormatParser::EXIFParser do
 
     describe "SubIFDs" do
       it "should not retrieve subIFDs data by default" do
-        path = fixtures_dir + "/NEF/RAW_NIKON_D40_SRGB.nef"
+        path = fixtures_dir + "NEF/RAW_NIKON_D40_SRGB.nef"
 
         exif_data = File.open(path, "rb") do |f|
           described_class.exif_from_tiff_io(f)
@@ -44,7 +44,7 @@ describe FormatParser::EXIFParser do
         #    offset_2 => { subIFD_2 data...}
         # }
 
-        path = fixtures_dir + "/NEF/RAW_NIKON_D40_SRGB.nef"
+        path = fixtures_dir + "NEF/RAW_NIKON_D40_SRGB.nef"
         should_include_sub_ifds = true
 
         exif_data = File.open(path, "rb") do |f|
@@ -68,7 +68,7 @@ describe FormatParser::EXIFParser do
         # we shouldn't verify everything, since we trust to EXIFR for that.
         # making sure we are getting each subfile type should be good enough.
 
-        path = fixtures_dir + "/NEF/RAW_NIKON_D40_SRGB.nef"
+        path = fixtures_dir + "NEF/RAW_NIKON_D40_SRGB.nef"
         should_include_sub_ifds = true
 
         exif_data = File.open(path, "rb") do |f|
