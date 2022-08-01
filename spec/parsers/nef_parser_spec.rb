@@ -91,6 +91,18 @@ describe FormatParser::NEFParser do
     end
   end
 
+  describe 'False-positive avoidance' do
+    it 'should return nil for regular TIFF images' do
+      parsed = subject.call(File.open("#{fixtures_dir}/TIFF/Shinbutsureijoushuincho.tiff", 'rb'))
+      expect(parsed).to be_nil
+    end
+
+    it 'should return nil for regular CR2 images' do
+      parsed = subject.call(File.open("#{fixtures_dir}/CR2/RAW_CANON_40D_SRAW_V103.CR2", 'rb'))
+      expect(parsed).to be_nil
+    end
+  end
+
   describe 'Parser Performance' do
     it 'extracts dimensions from a very large NEF economically' do
       # this file has 77.3mb

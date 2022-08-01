@@ -24,7 +24,8 @@ class FormatParser::NEFParser
     should_parse_sub_ifds = true
 
     exif_data = exif_from_tiff_io(io, should_parse_sub_ifds)
-    return unless exif_data&.sub_ifds_data # we can only properly parse NEFs if we can read into subIFDs
+
+    return unless valid?(exif_data)
 
     full_resolution_data = get_full_resolution_ifd(exif_data)
 
@@ -45,6 +46,12 @@ class FormatParser::NEFParser
     nil
   end
 
+  def valid?(exif_data)
+    # NEF files should hold subIFDs and have "NIKON" or "NIKON CORPORATION" as maker
+    has_sub_ifds_data = !exif_data&.sub_ifds_data&.keys.empty?
+    has_sub_ifds_data && exif_data&.make&.start_with?('NIKON')
+  end
+
   # Investigates data from all subIFDs and find the one holding the full-resolution image
   def get_full_resolution_ifd(exif_data)
     # Most of the time, NEF files have 2 subIFDs:
@@ -58,5 +65,5 @@ class FormatParser::NEFParser
     end
   end
 
-  FormatParser.register_parser new, natures: :image, formats: :nef
+  FormatParser.register_parser new, natures: :image, formats: :nef, priority: 4
 end

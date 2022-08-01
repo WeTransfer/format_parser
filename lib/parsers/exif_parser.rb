@@ -181,11 +181,11 @@ module FormatParser::EXIFParser
       sub_ifds_hash = {}
 
       if should_include_sub_ifds
-        sub_ifds_offsets = raw_exif_data.map(&:sub_ifds).flatten.compact
+        sub_ifds_offsets = raw_exif_data.flat_map(&:sub_ifds).compact
         sub_ifds_hash = load_sub_ifds(extended_io, sub_ifds_offsets)
       end
 
-      return raw_exif_data ? EXIFResult.new(raw_exif_data, sub_ifds_hash) : nil
+      raw_exif_data ? EXIFResult.new(raw_exif_data, sub_ifds_hash) : nil
     end
   end
 
@@ -198,12 +198,12 @@ module FormatParser::EXIFParser
     #    123 => { subIFD data...}
     #    456 => { another subIFD data...}
     # }
-    unless sub_ifds_offsets.empty?
-      EXIFR::TIFF::Data.open(extended_io) do |data|
+    return {} if sub_ifds_offsets.empty?
+
+    EXIFR::TIFF::Data.open(extended_io) do |data|
         return sub_ifds_offsets.map do |sub_ifd_offset|
-                 [sub_ifd_offset, EXIFR::TIFF::IFD.new(data, sub_ifd_offset)]
-               end.to_h
-      end
+                [sub_ifd_offset, EXIFR::TIFF::IFD.new(data, sub_ifd_offset)]
+              end.to_h
     end
   end
 
