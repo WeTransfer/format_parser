@@ -1,5 +1,5 @@
-require 'exifr/tiff'
-require 'delegate'
+require "exifr/tiff"
+require "delegate"
 
 module FormatParser::EXIFParser
   ORIENTATIONS = {
@@ -11,7 +11,7 @@ module FormatParser::EXIFParser
     5 => :left_top,
     6 => :right_top,
     7 => :right_bottom,
-    8 => :left_bottom
+    8 => :left_bottom,
   }
 
   # EXIFR kindly requests the presence of a few more methods than what our IOConstraint
@@ -19,7 +19,7 @@ module FormatParser::EXIFParser
   class IOExt < SimpleDelegator
     def readbyte
       if byte = read(1)
-        byte.unpack('C').first
+        byte.unpack("C").first
       end
     end
 
@@ -41,6 +41,13 @@ module FormatParser::EXIFParser
   end
 
   class EXIFResult < SimpleDelegator
+    attr_reader :sub_ifds_data
+
+    def initialize(exif_raw_data, sub_ifds_data = {})
+      super(exif_raw_data)
+      @sub_ifds_data = sub_ifds_data
+    end
+
     def rotated?
       orientation.to_i > 4
     end
@@ -167,10 +174,37 @@ module FormatParser::EXIFParser
   # Squash exifr's invalid date warning since we do not use that data.
   EXIFR.logger = Logger.new(nil)
 
-  def exif_from_tiff_io(constrained_io)
-    Measurometer.instrument('format_parser.EXIFParser.exif_from_tiff_io') do
-      raw_exif_data = EXIFR::TIFF.new(IOExt.new(constrained_io))
-      raw_exif_data ? EXIFResult.new(raw_exif_data) : nil
+  def exif_from_tiff_io(constrained_io, should_include_sub_ifds = false)
+    # TODO: qq. where should we be rescuing unexpected errors? here or somewhere higher up?
+    Measurometer.instrument("format_parser.EXIFParser.exif_from_tiff_io") do
+      extended_io = IOExt.new(constrained_io)
+      raw_exif_data = EXIFR::TIFF.new(extended_io)
+      sub_ifds_hash = {}
+
+      if should_include_sub_ifds
+        sub_ifds_offsets = raw_exif_data.map(&:sub_ifds).flatten.compact
+        sub_ifds_hash = load_sub_ifds(extended_io, sub_ifds_offsets)
+      end
+
+      return raw_exif_data ? EXIFResult.new(raw_exif_data, sub_ifds_hash) : nil
+    end
+  end
+
+  private
+
+  # Reads exif data from subIFDs. This is important for NEF files.
+  def load_sub_ifds(extended_io, sub_ifds_offsets)
+    # Returning an hash of subIFDs using offsets as keys
+    # {
+    #    123 => { subIFD data...}
+    #    456 => { another subIFD data...}
+    # }
+    unless sub_ifds_offsets.empty?
+      EXIFR::TIFF::Data.open(extended_io) do |data|
+        return sub_ifds_offsets.map do |sub_ifd_offset|
+                 [sub_ifd_offset, EXIFR::TIFF::IFD.new(data, sub_ifd_offset)]
+               end.to_h
+      end
     end
   end
 
