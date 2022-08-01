@@ -175,7 +175,7 @@ module FormatParser::EXIFParser
   EXIFR.logger = Logger.new(nil)
 
   def exif_from_tiff_io(constrained_io, should_include_sub_ifds = false)
-    Measurometer.instrument("format_parser.EXIFParser.exif_from_tiff_io") do
+    Measurometer.instrument('format_parser.EXIFParser.exif_from_tiff_io') do
       extended_io = IOExt.new(constrained_io)
       raw_exif_data = EXIFR::TIFF.new(extended_io)
       sub_ifds_hash = {}

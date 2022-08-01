@@ -2,10 +2,10 @@ class FormatParser::NEFParser
   include FormatParser::IOUtils
   include FormatParser::EXIFParser
 
-  MAGIC_LE = [0x49, 0x49, 0x2A, 0x0].pack("C4")
-  MAGIC_BE = [0x4D, 0x4D, 0x0, 0x2A].pack("C4")
+  MAGIC_LE = [0x49, 0x49, 0x2A, 0x0].pack('C4')
+  MAGIC_BE = [0x4D, 0x4D, 0x0, 0x2A].pack('C4')
   HEADER_BYTES = [MAGIC_LE, MAGIC_BE]
-  NEF_MIME_TYPE = "image/x-nikon-nef"
+  NEF_MIME_TYPE = 'image/x-nikon-nef'
 
   SUBFILE_TYPE_FULL_RESOLUTION = 0
   SUBFILE_TYPE_REDUCED_RESOLUTION = 1
@@ -47,14 +47,13 @@ class FormatParser::NEFParser
 
   # Investigates data from all subIFDs and find the one holding the full-resolution image
   def get_full_resolution_ifd(exif_data)
-
     # Most of the time, NEF files have 2 subIFDs:
     # First one: Thumbnail (Reduce resolution)
     # Second one: Full resolution
     # While this is true in most situations, there are exceptions,
     # so we can't rely in this order alone.
 
-    exif_data.sub_ifds_data.each do |ifd_offset, ifd_data|
+    exif_data.sub_ifds_data.each do |_ifd_offset, ifd_data|
       return ifd_data if ifd_data.new_subfile_type == SUBFILE_TYPE_FULL_RESOLUTION
     end
   end
