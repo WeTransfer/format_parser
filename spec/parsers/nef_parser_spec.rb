@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe FormatParser::NEFParser do
   describe 'Sample files from rawsamples' do
-    Dir.glob(fixtures_dir + '/NEF/*.nef').each do |file_path|
+    Dir.glob(fixtures_dir + '/NEF/*.NEF').each do |file_path|
       it "is able to parse #{File.basename(file_path)}" do
         parsed = subject.call(File.open(file_path, 'rb'))
 
@@ -79,7 +79,7 @@ describe FormatParser::NEFParser do
     end
 
     describe 'correctly extracts dimensions from various NEF flavors of the same file' do
-      Dir.glob(fixtures_dir + '/NEF/RAW_NIKON_D800*.nef').each do |file_path|
+      Dir.glob(fixtures_dir + '/NEF/RAW_NIKON_D800*.NEF').each do |file_path|
         it "is able to parse #{File.basename(file_path)}" do
           parsed = subject.call(File.open(file_path, 'rb'))
 
