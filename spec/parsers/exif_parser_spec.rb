@@ -6,7 +6,7 @@ describe FormatParser::EXIFParser do
       describe 'is able to correctly parse orientation for all the TIFF EXIF examples from FastImage' do
         Dir.glob(fixtures_dir + '/exif-orientation-testimages/tiff-*/*.tif').each do |tiff_path|
           filename = File.basename(tiff_path)
-          it 'is able to parse #{filename}' do
+          it "is able to parse #{filename}" do
             result = described_class.exif_from_tiff_io(File.open(tiff_path, 'rb'))
             expect(result).not_to be_nil
             expect(result.orientation_sym).to be_kind_of(Symbol)
