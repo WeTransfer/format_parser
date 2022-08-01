@@ -108,11 +108,9 @@ describe FormatParser::NEFParser do
       expect(parsed.width_px).to eq(7424)
       expect(parsed.height_px).to eq(4924)
 
-      #  todo: confirm if this is acceptable or if we need to somehow
-      #  find more optimizations or discard files with long reads
-      expect(io_with_stats.reads).to be_within(4).of(12) # actual: 15. reference 1 - 8.
-      expect(io_with_stats.seeks).to be_within(4).of(12)  # actual: 14. reference 1 - 8
-      expect(io_with_stats.bytes).to be_within(1024).of(59000) # actual: 59_002 (~59k). reference: 8k.
+      expect(io_with_stats.reads).to be_within(4).of(12)
+      expect(io_with_stats.seeks).to be_within(4).of(12)
+      expect(io_with_stats.bytes).to be_within(1024).of(59000)
     end
   end
 end

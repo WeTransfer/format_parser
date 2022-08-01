@@ -1,5 +1,5 @@
-require "exifr/tiff"
-require "delegate"
+require 'exifr/tiff'
+require 'delegate'
 
 module FormatParser::EXIFParser
   ORIENTATIONS = {
@@ -11,7 +11,7 @@ module FormatParser::EXIFParser
     5 => :left_top,
     6 => :right_top,
     7 => :right_bottom,
-    8 => :left_bottom,
+    8 => :left_bottom
   }
 
   # EXIFR kindly requests the presence of a few more methods than what our IOConstraint
@@ -19,7 +19,7 @@ module FormatParser::EXIFParser
   class IOExt < SimpleDelegator
     def readbyte
       if byte = read(1)
-        byte.unpack("C").first
+        byte.unpack('C').first
       end
     end
 
@@ -175,7 +175,6 @@ module FormatParser::EXIFParser
   EXIFR.logger = Logger.new(nil)
 
   def exif_from_tiff_io(constrained_io, should_include_sub_ifds = false)
-    # TODO: qq. where should we be rescuing unexpected errors? here or somewhere higher up?
     Measurometer.instrument("format_parser.EXIFParser.exif_from_tiff_io") do
       extended_io = IOExt.new(constrained_io)
       raw_exif_data = EXIFR::TIFF.new(extended_io)
