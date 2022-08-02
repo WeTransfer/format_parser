@@ -27,7 +27,7 @@ describe FormatParser::NEFParser do
     it 'parses dimensions properly for a given fixture' do
       # The default parser from EXIFr returns the dimensions from the embedded
       # thumbnails as being the image's actual dimensions.
-      # We make sure we properly deal this.
+      # We make sure we properly deal with this.
 
       parsed = subject.call(File.open("#{fixtures_dir}/NEF/RAW_NIKON_1S2.NEF", 'rb'))
 

@@ -201,9 +201,9 @@ module FormatParser::EXIFParser
     return {} if sub_ifds_offsets.empty?
 
     EXIFR::TIFF::Data.open(extended_io) do |data|
-        return sub_ifds_offsets.map do |sub_ifd_offset|
-                [sub_ifd_offset, EXIFR::TIFF::IFD.new(data, sub_ifd_offset)]
-              end.to_h
+      sub_ifds_offsets.map do |sub_ifd_offset|
+        [sub_ifd_offset, EXIFR::TIFF::IFD.new(data, sub_ifd_offset)]
+      end.to_h
     end
   end
 
