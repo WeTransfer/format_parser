@@ -48,7 +48,7 @@ class FormatParser::NEFParser
 
   def valid?(exif_data)
     # NEF files should hold subIFDs and have "NIKON" or "NIKON CORPORATION" as maker
-    has_sub_ifds_data = !exif_data.sub_ifds_data&.keys.empty?
+    has_sub_ifds_data = !exif_data&.sub_ifds_data.keys.empty?
     has_sub_ifds_data && exif_data.make&.start_with?('NIKON')
   end
 
