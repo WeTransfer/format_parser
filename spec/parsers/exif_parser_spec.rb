@@ -102,8 +102,8 @@ describe FormatParser::EXIFParser do
     end
 
     it 'returns a Hash from #to_hash' do
-      first_fake_exif = double(orientation: 1, to_hash: {foo: 123, bar: 675})
-      second_fake_exif = double(orientation: 4, to_hash: {foo: 245})
+      first_fake_exif = double(orientation: 1, to_hash: { foo: 123, bar: 675 })
+      second_fake_exif = double(orientation: 4, to_hash: { foo: 245 })
 
       stack = FormatParser::EXIFParser::EXIFStack.new([first_fake_exif, second_fake_exif])
       stack_as_hash = stack.to_hash
