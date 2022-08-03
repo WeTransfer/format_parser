@@ -107,7 +107,6 @@ describe FormatParser::NEFParser do
       parsed = subject.call(File.open("#{fixtures_dir}/ERF/RAW_EPSON_RD1.ERF", 'rb'))
       expect(parsed).to be_nil
     end
-
   end
 
   describe 'Parser Performance' do
