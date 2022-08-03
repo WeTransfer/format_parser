@@ -101,6 +101,13 @@ describe FormatParser::NEFParser do
       parsed = subject.call(File.open("#{fixtures_dir}/CR2/RAW_CANON_40D_SRAW_V103.CR2", 'rb'))
       expect(parsed).to be_nil
     end
+
+    it 'should return nil for regular ERF images' do
+      # ERF files are also TIFFs with subIFDs but they don't have a matching "maker" tag
+      parsed = subject.call(File.open("#{fixtures_dir}/ERF/RAW_EPSON_RD1.ERF", 'rb'))
+      expect(parsed).to be_nil
+    end
+
   end
 
   describe 'Parser Performance' do

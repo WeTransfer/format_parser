@@ -16,7 +16,7 @@ describe FormatParser::EXIFParser do
         end
       end
 
-      it 'is able to deal with an orientation tag which a tuple value for orientation' do
+      it 'is able to deal with an orientation tag with a tuple value for orientation' do
         path = fixtures_dir + '/EXIF/double_orientation.exif.bin'
         exif_data = File.open(path, 'rb') do |f|
           described_class.exif_from_tiff_io(f)
@@ -113,14 +113,6 @@ describe FormatParser::EXIFParser do
       expect(stack_as_hash).to be_kind_of(Hash)
       expect(stack_as_hash).to eq(foo: 245, bar: 675, orientation: 4)
     end
-  end
-
-  it 'is able to deal with an orientation tag which a tuple value for orientation' do
-    path = fixtures_dir + '/EXIF/double_orientation.exif.bin'
-    exif_data = File.open(path, 'rb') do |f|
-      described_class.exif_from_tiff_io(f)
-    end
-    expect(exif_data.orientation).to eq(1)
   end
 
   describe 'IOExt' do

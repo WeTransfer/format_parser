@@ -177,15 +177,17 @@ module FormatParser::EXIFParser
   def exif_from_tiff_io(constrained_io, should_include_sub_ifds = false)
     Measurometer.instrument('format_parser.EXIFParser.exif_from_tiff_io') do
       extended_io = IOExt.new(constrained_io)
-      raw_exif_data = EXIFR::TIFF.new(extended_io)
-      sub_ifds_hash = {}
+      exif_raw_data = EXIFR::TIFF.new(extended_io)
 
+      return unless exif_raw_data
+
+      sub_ifds_data = {}
       if should_include_sub_ifds
-        sub_ifds_offsets = raw_exif_data.flat_map(&:sub_ifds).compact
-        sub_ifds_hash = load_sub_ifds(extended_io, sub_ifds_offsets)
+        sub_ifds_offsets = exif_raw_data.flat_map(&:sub_ifds).compact
+        sub_ifds_data = load_sub_ifds(extended_io, sub_ifds_offsets)
       end
 
-      raw_exif_data ? EXIFResult.new(raw_exif_data, sub_ifds_hash) : nil
+      EXIFResult.new(exif_raw_data, sub_ifds_data)
     end
   end
 

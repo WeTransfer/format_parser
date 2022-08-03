@@ -10,6 +10,8 @@ class FormatParser::NEFParser
   SUBFILE_TYPE_FULL_RESOLUTION = 0
   SUBFILE_TYPE_REDUCED_RESOLUTION = 1
 
+  SHOULD_PARSE_SUB_IFDS = true
+
   def likely_match?(filename)
     filename =~ /\.nef$/i
   end
@@ -21,9 +23,7 @@ class FormatParser::NEFParser
 
     # Because of how NEF files organize their IFDs and subIFDs, we need to dive into the subIFDs
     # to get the actual image dimensions instead of the preview's
-    should_parse_sub_ifds = true
-
-    exif_data = exif_from_tiff_io(io, should_parse_sub_ifds)
+    exif_data = exif_from_tiff_io(io, SHOULD_PARSE_SUB_IFDS)
 
     return unless valid?(exif_data)
 
@@ -49,13 +49,13 @@ class FormatParser::NEFParser
   def valid?(exif_data)
     # NEF files should hold subIFDs and have "NIKON" or "NIKON CORPORATION" as maker
     has_sub_ifds_data = !exif_data&.sub_ifds_data&.keys.empty?
-    has_sub_ifds_data && exif_data&.make&.start_with?('NIKON')
+    has_sub_ifds_data && exif_data.make&.start_with?('NIKON')
   end
 
   # Investigates data from all subIFDs and find the one holding the full-resolution image
   def get_full_resolution_ifd(exif_data)
     # Most of the time, NEF files have 2 subIFDs:
-    # First one: Thumbnail (Reduce resolution)
+    # First one: Thumbnail (Reduced resolution)
     # Second one: Full resolution
     # While this is true in most situations, there are exceptions,
     # so we can't rely in this order alone.
