@@ -41,6 +41,13 @@ module FormatParser::EXIFParser
   end
 
   class EXIFResult < SimpleDelegator
+    attr_reader :sub_ifds_data
+
+    def initialize(exif_raw_data, sub_ifds_data = {})
+      super(exif_raw_data)
+      @sub_ifds_data = sub_ifds_data
+    end
+
     def rotated?
       orientation.to_i > 4
     end
@@ -167,10 +174,38 @@ module FormatParser::EXIFParser
   # Squash exifr's invalid date warning since we do not use that data.
   EXIFR.logger = Logger.new(nil)
 
-  def exif_from_tiff_io(constrained_io)
+  def exif_from_tiff_io(constrained_io, should_include_sub_ifds = false)
     Measurometer.instrument('format_parser.EXIFParser.exif_from_tiff_io') do
-      raw_exif_data = EXIFR::TIFF.new(IOExt.new(constrained_io))
-      raw_exif_data ? EXIFResult.new(raw_exif_data) : nil
+      extended_io = IOExt.new(constrained_io)
+      exif_raw_data = EXIFR::TIFF.new(extended_io)
+
+      return unless exif_raw_data
+
+      sub_ifds_data = {}
+      if should_include_sub_ifds
+        sub_ifds_offsets = exif_raw_data.flat_map(&:sub_ifds).compact
+        sub_ifds_data = load_sub_ifds(extended_io, sub_ifds_offsets)
+      end
+
+      EXIFResult.new(exif_raw_data, sub_ifds_data)
+    end
+  end
+
+  private
+
+  # Reads exif data from subIFDs. This is important for NEF files.
+  def load_sub_ifds(extended_io, sub_ifds_offsets)
+    # Returning an hash of subIFDs using offsets as keys
+    # {
+    #    123 => { subIFD data...}
+    #    456 => { another subIFD data...}
+    # }
+    return {} if sub_ifds_offsets.empty?
+
+    EXIFR::TIFF::Data.open(extended_io) do |data|
+      sub_ifds_offsets.map do |sub_ifd_offset|
+        [sub_ifd_offset, EXIFR::TIFF::IFD.new(data, sub_ifd_offset)]
+      end.to_h
     end
   end
 

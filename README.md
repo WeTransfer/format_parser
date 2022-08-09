@@ -14,6 +14,7 @@ and [dimensions,](https://github.com/sstephenson/dimensions) borrowing from them
 
 * TIFF
 * CR2
+* NEF
 * PSD
 * PNG
 * MP3
@@ -160,6 +161,12 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 
 ### CR2
 - CR2 examples are downloaded from http://www.rawsamples.ch/ and are Creative Common Licensed.
+
+### NEF
+- NEF examples are downloaded from http://www.rawsamples.ch/ and are Creative Common Licensed.
+
+### ERF
+- ERF examples are downloaded from http://www.rawsamples.ch/ and are Creative Common Licensed.
 
 ### FLAC
 - atc_fixture_vbr.flac is a converted version of the MP3 with the same name

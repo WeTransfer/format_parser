@@ -1,3 +1,6 @@
+## 1.5.0
+* Add support for `NEF` files.
+
 ## 1.4.2
 * Fix `MP3Parser` taking precedence when parsing `WEBP` files.
 
