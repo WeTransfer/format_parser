@@ -149,6 +149,9 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 ### MP3
 - Cassy.mp3 has been produced by WeTransfer and may be used with the library for the purposes of testing
 
+### AAC
+- All audio samples have been made available by Espressif Systems, as part of their audio development framework. The audio samples themselves  
+
 ### FDX
 - fixture.fdx was created by one of the project maintainers and is MIT licensed
 
