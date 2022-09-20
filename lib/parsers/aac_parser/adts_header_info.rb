@@ -49,7 +49,7 @@ class FormatParser::AdtsHeaderInfo
     end
   end
 
-  def has_fixed_bitrate?
+  def fixed_bitrate?
     # A buffer fullness value of 0x7FF (decimal: 2047) denotes a variable bitrate, for which buffer fullness isn't applicable
     @buffer_fullness != 2047
   end
@@ -92,8 +92,6 @@ class FormatParser::AdtsHeaderInfo
         # MPEG-4 Sampling Frequency Index (15 is forbidden)
         return nil unless MPEG4_AUDIO_SAMPLING_FREQUENCY_RANGE.include?(decimal_number)
         result.mpeg4_sampling_frequency_index = decimal_number
-      when 'G'
-        # Private bit, guaranteed never to be used by MPEG, set to 0 when encoding, ignore when decoding
       when 'H'
         # MPEG-4 Channel Configuration (in the case of 0, the channel configuration is sent via an in-band PCE (Program Config Element))
         result.mpeg4_channel_config = decimal_number
@@ -103,12 +101,6 @@ class FormatParser::AdtsHeaderInfo
       when 'J'
         # Home, set to 1 to signal home usage of the audio and 0 otherwise
         result.home_usage = decimal_number == 1
-      when 'K'
-        # Copyright ID bit, the next bit of a centrally registered copyright identifier.
-        # This is transmitted by sliding over the bit-string in LSB-first order and putting the current bit value
-        # in this field and wrapping to start if reached end (circular buffer).
-      when 'L'
-        # Copyright ID start, signals that this frame's Copyright ID bit is the first one by setting 1 and 0 otherwise
       when 'M'
         # Frame length, length of the ADTS frame including headers and CRC check (protectionabsent == 1? 7: 9)
         # We expect this to be higher than the header length, but we won't impose any other restrictions
@@ -122,16 +114,12 @@ class FormatParser::AdtsHeaderInfo
       when 'P'
         # Number of AAC frames (RDBs (Raw Data Blocks)) in ADTS frame minus 1. For maximum compatibility always use one AAC frame per ADTS frame.
         result.aac_frames_per_adts_frame = decimal_number + 1
-      when 'Q'
-        # CRC check, if Protection absent is 0.
-        # we don't actually care about the CRC
       end
     end
 
     result
   end
 
-  private
   # Converts a binary number given as a array of characters representing bits, into a decimal number.
   def self.convert_binary_to_decimal(binary_number)
     result = 0

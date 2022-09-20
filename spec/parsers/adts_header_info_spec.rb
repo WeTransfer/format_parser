@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe FormatParser::AdtsHeaderInfo do
-  shared_examples "parsed header" do |header_bits, expected_mpeg_version_description, expected_protection_absence, expected_profile_description, expected_mpeg4_sampling_frequency, expected_mpeg4_channel_config, expected_number_of_audio_channels, expected_originality, expected_home_usage, expected_frame_length, expected_aac_frames_per_adts_frame, expected_has_fixed_bitrate|
+  shared_examples 'parsed header' do |header_bits, expected_mpeg_version_description, expected_protection_absence, expected_profile_description, expected_mpeg4_sampling_frequency, expected_mpeg4_channel_config, expected_number_of_audio_channels, expected_originality, expected_home_usage, expected_frame_length, expected_aac_frames_per_adts_frame, expected_has_fixed_bitrate|
     it "extracts correct values for header #{header_bits}" do
       result = FormatParser::AdtsHeaderInfo.parse_adts_header(header_bits.split(''))
       expect(result).not_to be_nil
@@ -15,11 +15,11 @@ describe FormatParser::AdtsHeaderInfo do
       expect(result.home_usage).to eq(expected_home_usage)
       expect(result.frame_length).to eq(expected_frame_length)
       expect(result.aac_frames_per_adts_frame).to eq(expected_aac_frames_per_adts_frame)
-      expect(result.has_fixed_bitrate?).to eq(expected_has_fixed_bitrate)
+      expect(result.fixed_bitrate?).to eq(expected_has_fixed_bitrate)
     end
   end
 
-  shared_examples "invalid header" do |failure_reason, header_bits|
+  shared_examples 'invalid header' do |failure_reason, header_bits|
     it "fails on #{failure_reason} for header #{header_bits}" do
       result = FormatParser::AdtsHeaderInfo.parse_adts_header(header_bits.split(''))
       expect(result).to be_nil
