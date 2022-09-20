@@ -150,8 +150,13 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 - Cassy.mp3 has been produced by WeTransfer and may be used with the library for the purposes of testing
 
 ### AAC
-- All audio samples have been made available by Espressif Systems, as part of their audio development framework. The audio samples themselves  
-
+- Originals music files: “Furious Freak” and “Galway”, Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 3.0, http://creativecommons.org/licenses/by/3.0/
+- The AAC samples were converted from 'wav' format and made available [here](https://espressif-docs.readthedocs-hosted.com/projects/esp-adf/en/latest/design-guide/audio-samples.html) by Espressif Systems, as part of their audio development framework (under the ESPRESSIF MIT License).
+- Files:
+  - ff-16b-2c-44100hz.aac
+  - ff-16b-1c-44100hz.aac
+  - gs-16b-2c-44100hz.aac
+  - gs-16b-1c-44100hz.aac
 ### FDX
 - fixture.fdx was created by one of the project maintainers and is MIT licensed
 
