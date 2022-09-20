@@ -6,6 +6,9 @@ class FormatParser::AdtsHeaderInfo
 
   # An ADTS header has the following format, when represented in bits:
   # AAAAAAAA AAAABCCD EEFFFFGH HHIJKLMM MMMMMMMM MMMOOOOO OOOOOOPP (QQQQQQQQ QQQQQQQQ)
+  # The chunks represented by these letters have specific meanings, as described here:
+  # https://wiki.multimedia.cx/index.php/ADTS
+
   AAC_ADTS_HEADER_BITS_CHUNK_SIZES = [['A', 12], ['B', 1], ['C', 2], ['D', 1], ['E', 2], ['F', 4], ['G', 1], ['H', 3], ['I', 1], ['J', 1], ['K', 1], ['L', 1], ['M', 13], ['O', 11], ['P', 2], ['Q', 16]]
   MPEG4_AUDIO_OBJECT_TYPE_RANGE = 0..45
   MPEG4_AUDIO_SAMPLING_FREQUENCY_RANGE = 0..14
@@ -71,6 +74,7 @@ class FormatParser::AdtsHeaderInfo
       chunk = header_bits.shift(chunk_size)
       decimal_number = convert_binary_to_decimal(chunk)
 
+      # Skipping data represented by the letters G, K, L, Q, as we are not interested in those values.
       case letter
       when 'A'
         # Syncword, all bits must be set to 1

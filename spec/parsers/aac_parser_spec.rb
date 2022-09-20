@@ -65,6 +65,6 @@ describe FormatParser::AACParser do
   include_examples 'invalid filetype', 'FLAC', '/FLAC/atc_fixture_vbr.flac'
   include_examples 'invalid filetype', 'MP3', '/MP3/Cassy.mp3'
   include_examples 'invalid filetype', 'MPG', '/MPG/video1.mpg'
-  include_examples 'invalid filetype', 'OGG', '/OGG/hi.ogg'
+  include_examples 'invalid filetype', 'OGG', '/Ogg/hi.ogg'
   include_examples 'invalid filetype', 'WAV', '/WAV/c_8kmp316.wav'
 end
