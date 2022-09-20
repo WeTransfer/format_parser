@@ -10,7 +10,8 @@ class FormatParser::AACParser
 
   def call(raw_io)
     io = FormatParser::IOConstraint.new(raw_io)
-    header_bits = io.read(9).unpack('B*').first.split('')
+    header = safe_read(io, 9)
+    header_bits = header.unpack('B*').first.split('')
 
     header_info = FormatParser::AdtsHeaderInfo.parse_adts_header(header_bits)
     return if header_info.nil?
