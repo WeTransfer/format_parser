@@ -31,16 +31,16 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'ks', '~> 0.0'
-  spec.add_dependency 'exifr', '~> 1', '>= 1.3.8'
-  spec.add_dependency 'id3tag', '~> 0.14', '>= 0.14.2'
-  spec.add_dependency 'faraday', '~> 0.13'
-  spec.add_dependency 'faraday_middleware', '~> 0.14'
-  spec.add_dependency 'measurometer', '~> 1'
+  spec.add_dependency 'exifr', '~> 1.3', '>= 1.3.9'
+  spec.add_dependency 'id3tag', '~> 1.0'
+  spec.add_dependency 'faraday', '~> 2.5', '>= 2.5.2'
+  spec.add_dependency 'faraday-follow_redirects', '~> 0.3'
+  spec.add_dependency 'measurometer', '~> 1.3'
 
-  spec.add_development_dependency 'rspec', '~> 3.0'
-  spec.add_development_dependency 'rake', '~> 12'
-  spec.add_development_dependency 'simplecov', '~> 0.15'
-  spec.add_development_dependency 'yard', '~> 0.9'
-  spec.add_development_dependency 'wetransfer_style', '0.5.0'
-  spec.add_development_dependency 'parallel_tests'
+  spec.add_development_dependency 'rspec', '~> 3.11'
+  spec.add_development_dependency 'rake', '~> 13.0'
+  spec.add_development_dependency 'simplecov', '~> 0.21'
+  spec.add_development_dependency 'yard', '~> 0.9', '>= 0.9.28'
+  spec.add_development_dependency 'wetransfer_style', '1.0.0'
+  spec.add_development_dependency 'parallel_tests', '~> 3.12'
 end

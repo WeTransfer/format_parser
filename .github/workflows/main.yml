@@ -14,9 +14,6 @@ jobs:
       matrix:
         ruby:
           - 2.7
-          - 2.6
-          - 2.5
-          - jruby
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -60,9 +57,6 @@ jobs:
       matrix:
         ruby:
           - 2.7
-          - 2.6
-          - 2.5
-          - jruby
         experimental: [false]
         include:
           - ruby: 3.1

@@ -1,3 +1,7 @@
+## 2.0.0
+* Dropping support for Ruby `<2.7`.
+* Upgrading all dependencies to latest versions.
+
 ## 1.5.0
 * Add support for `NEF` files.
 
