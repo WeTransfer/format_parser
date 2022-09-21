@@ -1,4 +1,5 @@
 require_relative 'aac_parser/adts_header_info'
+
 class FormatParser::AACParser
   include FormatParser::IOUtils
 
