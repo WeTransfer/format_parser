@@ -33,23 +33,17 @@ class FormatParser::AdtsHeaderInfo
   MPEG_VERSION_HASH = { 0 => 'MPEG-4', 1 => 'MPEG-2'}
 
   def mpeg4_sampling_frequency
-    if !@mpeg4_sampling_frequency_index.nil? && MPEG4_AUDIO_SAMPLING_FREQUENCY_HASH.key?(@mpeg4_sampling_frequency_index)
-      return MPEG4_AUDIO_SAMPLING_FREQUENCY_HASH[@mpeg4_sampling_frequency_index]
-    end
+    return MPEG4_AUDIO_SAMPLING_FREQUENCY_HASH[@mpeg4_sampling_frequency_index] if !@mpeg4_sampling_frequency_index.nil? && MPEG4_AUDIO_SAMPLING_FREQUENCY_HASH.key?(@mpeg4_sampling_frequency_index)
     nil
   end
 
   def profile_description
-    if !@profile.nil? && AAC_PROFILE_DESCRIPTION_HASH.key?(@profile)
-      return AAC_PROFILE_DESCRIPTION_HASH[@profile]
-    end
+    return AAC_PROFILE_DESCRIPTION_HASH[@profile] if !@profile.nil? && AAC_PROFILE_DESCRIPTION_HASH.key?(@profile)
     nil
   end
 
   def mpeg_version_description
-    if !@mpeg_version.nil? && MPEG_VERSION_HASH.key?(@mpeg_version)
-      return MPEG_VERSION_HASH[@mpeg_version]
-    end
+    return MPEG_VERSION_HASH[@mpeg_version] if !@mpeg_version.nil? && MPEG_VERSION_HASH.key?(@mpeg_version)
     nil
   end
 
