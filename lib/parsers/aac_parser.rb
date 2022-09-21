@@ -5,7 +5,7 @@ class FormatParser::AACParser
   AAC_MIME_TYPE = 'audio/aac'
 
   def likely_match?(filename)
-    filename =~ /\.aac?$/i
+    filename =~ /\.aac$/i
   end
 
   def call(raw_io)
