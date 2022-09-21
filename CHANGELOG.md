@@ -2,6 +2,9 @@
 * Dropping support for Ruby `<2.7`.
 * Upgrading all dependencies to latest versions.
 
+## 1.6.0
+* Add support for `AAC` files.
+
 ## 1.5.0
 * Add support for `NEF` files.
 
