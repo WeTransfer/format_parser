@@ -27,52 +27,43 @@ class FormatParser::ZIPParser::FileReader
   # To prevent too many tiny reads, read the maximum possible size of end of
   # central directory record upfront (all the fixed fields + at most 0xFFFF
   # bytes of the archive comment)
-  MAX_END_OF_CENTRAL_DIRECTORY_RECORD_SIZE =
-    begin
-      4 + # Offset of the start of central directory
-        4 + # Size of the central directory
-        2 + # Number of files in the cdir
-        4 + # End-of-central-directory signature
-        2 + # Number of this disk
-        2 + # Number of disk with the start of cdir
-        2 + # Number of files in the cdir of this disk
-        2 + # The comment size
-        0xFFFF # Maximum comment size
-    end
+  MAX_END_OF_CENTRAL_DIRECTORY_RECORD_SIZE = 4 + # Offset of the start of central directory
+    4 + # Size of the central directory
+    2 + # Number of files in the cdir
+    4 + # End-of-central-directory signature
+    2 + # Number of this disk
+    2 + # Number of disk with the start of cdir
+    2 + # Number of files in the cdir of this disk
+    2 + # The comment size
+    0xFFFF # Maximum comment size
 
   # To prevent too many tiny reads, read the maximum possible size of the local file header upfront.
   # The maximum size is all the usual items, plus the maximum size
   # of the filename (0xFFFF bytes) and the maximum size of the extras (0xFFFF bytes)
-  MAX_LOCAL_HEADER_SIZE =
-    begin
-      4 + # signature
-        2 + # Version needed to extract
-        2 + # gp flags
-        2 + # storage mode
-        2 + # dos time
-        2 + # dos date
-        4 + # CRC32
-        4 + # Comp size
-        4 + # Uncomp size
-        2 + # Filename size
-        2 + # Extra fields size
-        0xFFFF + # Maximum filename size
-        0xFFFF   # Maximum extra fields size
-    end
+  MAX_LOCAL_HEADER_SIZE = 4 + # signature
+    2 + # Version needed to extract
+    2 + # gp flags
+    2 + # storage mode
+    2 + # dos time
+    2 + # dos date
+    4 + # CRC32
+    4 + # Comp size
+    4 + # Uncomp size
+    2 + # Filename size
+    2 + # Extra fields size
+    0xFFFF + # Maximum filename size
+    0xFFFF # Maximum extra fields size
 
-  SIZE_OF_USABLE_EOCD_RECORD =
-    begin
-      4 + # Signature
-        2 + # Number of this disk
-        2 + # Number of the disk with the EOCD record
-        2 + # Number of entries in the central directory of this disk
-        2 + # Number of entries in the central directory total
-        4 + # Size of the central directory
-        4   # Start of the central directory offset
-    end
+  SIZE_OF_USABLE_EOCD_RECORD = 4 + # Signature
+    2 + # Number of this disk
+    2 + # Number of the disk with the EOCD record
+    2 + # Number of entries in the central directory of this disk
+    2 + # Number of entries in the central directory total
+    4 + # Size of the central directory
+    4 # Start of the central directory offset
 
   private_constant :C_UINT32LE, :C_UINT16LE, :C_UINT64LE, :MAX_END_OF_CENTRAL_DIRECTORY_RECORD_SIZE,
-                   :MAX_LOCAL_HEADER_SIZE, :SIZE_OF_USABLE_EOCD_RECORD
+    :MAX_LOCAL_HEADER_SIZE, :SIZE_OF_USABLE_EOCD_RECORD
 
   # Represents a file within the ZIP archive being read
   class ZipEntry
@@ -216,7 +207,7 @@ class FormatParser::ZIPParser::FileReader
     io.seek(absolute_pos)
     unless absolute_pos == io.pos
       raise ReadError,
-            "Expected to seek to #{absolute_pos} but only got to #{io.pos}"
+        "Expected to seek to #{absolute_pos} but only got to #{io.pos}"
     end
     nil
   end
@@ -235,18 +226,14 @@ class FormatParser::ZIPParser::FileReader
     io.seek(io.pos + n)
     pos_after = io.pos
     delta = pos_after - pos_before
-    unless delta == n
-      raise ReadError, "Expected to seek #{n} bytes ahead, but could only seek #{delta} bytes ahead"
-    end
+    raise ReadError, "Expected to seek #{n} bytes ahead, but could only seek #{delta} bytes ahead" unless delta == n
     nil
   end
 
   def read_n(io, n_bytes)
     io.read(n_bytes).tap do |d|
       raise ReadError, "Expected to read #{n_bytes} bytes, but the IO was at the end" if d.nil?
-      unless d.bytesize == n_bytes
-        raise ReadError, "Expected to read #{n_bytes} bytes, read #{d.bytesize}"
-      end
+      raise ReadError, "Expected to read #{n_bytes} bytes, read #{d.bytesize}" unless d.bytesize == n_bytes
     end
   end
 
@@ -310,15 +297,9 @@ class FormatParser::ZIPParser::FileReader
         #
         # It means that before we read this stuff we need to check if the previously-read
         # values are at overflow, and only _then_ proceed to read them. Bah.
-        if e.uncompressed_size == 0xFFFFFFFF
-          e.uncompressed_size = read_8b(zip64_extra)
-        end
-        if e.compressed_size == 0xFFFFFFFF
-          e.compressed_size = read_8b(zip64_extra)
-        end
-        if e.local_file_header_offset == 0xFFFFFFFF
-          e.local_file_header_offset = read_8b(zip64_extra)
-        end
+        e.uncompressed_size = read_8b(zip64_extra) if e.uncompressed_size == 0xFFFFFFFF
+        e.compressed_size = read_8b(zip64_extra) if e.compressed_size == 0xFFFFFFFF
+        e.local_file_header_offset = read_8b(zip64_extra) if e.local_file_header_offset == 0xFFFFFFFF
         # Disk number comes last and we can skip it anyway, since we do
         # not support multi-disk archives
       end
@@ -370,9 +351,7 @@ class FormatParser::ZIPParser::FileReader
       signature, *_rest, comment_size = maybe_record.unpack(unpack_pattern)
 
       # Check the only condition for the match
-      if signature == 0x06054b50 && (maybe_record.bytesize - minimum_record_size) == comment_size
-        return check_at # Found the EOCD marker location
-      end
+      return check_at if signature == 0x06054b50 && (maybe_record.bytesize - minimum_record_size) == comment_size
     end
     # If we haven't caught anything, return nil deliberately instead of returning the last statement
     nil
@@ -422,16 +401,12 @@ class FormatParser::ZIPParser::FileReader
 
     disk_n = read_4b(zip64_eocdr) # number of this disk
     disk_n_with_eocdr = read_4b(zip64_eocdr) # number of the disk with the EOCDR
-    if disk_n != disk_n_with_eocdr
-      raise UnsupportedFeature, 'The archive spans multiple disks'
-    end
+    raise UnsupportedFeature, 'The archive spans multiple disks' if disk_n != disk_n_with_eocdr
 
     num_files_this_disk = read_8b(zip64_eocdr) # number of files on this disk
-    num_files_total     = read_8b(zip64_eocdr) # files total in the central directory
+    num_files_total = read_8b(zip64_eocdr) # files total in the central directory
 
-    if num_files_this_disk != num_files_total
-      raise UnsupportedFeature, 'The archive spans multiple disks'
-    end
+    raise UnsupportedFeature, 'The archive spans multiple disks' if num_files_this_disk != num_files_total
 
     log do
       format(
@@ -439,8 +414,8 @@ class FormatParser::ZIPParser::FileReader
         num_files_total)
     end
 
-    central_dir_size    = read_8b(zip64_eocdr) # Size of the central directory
-    central_dir_offset  = read_8b(zip64_eocdr) # Where the central directory starts
+    central_dir_size = read_8b(zip64_eocdr) # Size of the central directory
+    central_dir_offset = read_8b(zip64_eocdr) # Where the central directory starts
 
     [num_files_total, central_dir_offset, central_dir_size]
   end
@@ -456,8 +431,8 @@ class FormatParser::ZIPParser::FileReader
     skip_ahead_2(io) # number_of_this_disk
     skip_ahead_2(io) # number of the disk with the EOCD record
     skip_ahead_2(io) # number of entries in the central directory of this disk
-    num_files = read_2b(io)   # number of entries in the central directory total
-    cdir_size = read_4b(io)   # size of the central directory
+    num_files = read_2b(io) # number of entries in the central directory total
+    cdir_size = read_4b(io) # size of the central directory
     cdir_offset = read_4b(io) # start of central directorty offset
     [num_files, cdir_offset, cdir_size]
   end

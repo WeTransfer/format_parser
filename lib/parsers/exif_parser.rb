@@ -125,9 +125,7 @@ module FormatParser::EXIFParser
       # those and return the _last_ non-0 orientation, or 0 otherwise
       @multiple_exif_results.reverse_each do |exif_tag_frame|
         orientation_value = exif_tag_frame.orientation
-        if !orientation_value.nil? && orientation_value != 0
-          return orientation_value
-        end
+        return orientation_value if !orientation_value.nil? && orientation_value != 0
       end
       0 # If none were found - the orientation is unknown
     end

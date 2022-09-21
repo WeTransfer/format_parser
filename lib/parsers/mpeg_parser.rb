@@ -44,9 +44,7 @@ class FormatParser::MPEGParser
       io.seek(pos + 1)
       horizontal_size, vertical_size = parse_image_size(io)
       ratio_code, rate_code = parse_rate_information(io)
-      if valid_aspect_ratio_code?(ratio_code) && valid_frame_rate_code?(rate_code)
-        return file_info(horizontal_size, vertical_size, ratio_code, rate_code)
-      end
+      return file_info(horizontal_size, vertical_size, ratio_code, rate_code) if valid_aspect_ratio_code?(ratio_code) && valid_frame_rate_code?(rate_code)
     end
     nil # otherwise the return value of Integer#times will be returned
   rescue FormatParser::IOUtils::InvalidRead

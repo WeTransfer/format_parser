@@ -93,12 +93,10 @@ class FormatParser::MOOVParser
   def parse_dimensions(decoder, atom_tree)
     video_trak_atom = decoder.find_video_trak_atom(atom_tree)
 
-    tkhd = begin
-      if video_trak_atom
-        decoder.find_first_atom_by_path([video_trak_atom], 'trak', 'tkhd')
-      else
-        decoder.find_first_atom_by_path(atom_tree, 'moov', 'trak', 'tkhd')
-      end
+    tkhd = if video_trak_atom
+      decoder.find_first_atom_by_path([video_trak_atom], 'trak', 'tkhd')
+    else
+      decoder.find_first_atom_by_path(atom_tree, 'moov', 'trak', 'tkhd')
     end
 
     if tkhd

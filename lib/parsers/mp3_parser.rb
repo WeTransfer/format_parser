@@ -179,13 +179,9 @@ class FormatParser::MP3Parser
         frame_data_str = io.read(frame_detail.frame_length)
         io.seek(io.pos - frame_detail.frame_length)
         xing_header = attempt_xing_header(frame_data_str)
-        if xing_header_usable_for_duration?(xing_header)
-          return [xing_header, mpeg_frames]
-        end
+        return [xing_header, mpeg_frames] if xing_header_usable_for_duration?(xing_header)
       end
-      if frame_detail.frame_length > 1 # jump over current frame body
-        io.seek(io.pos + frame_detail.frame_length - bytes_to_read)
-      end
+      io.seek(io.pos + frame_detail.frame_length - bytes_to_read) if frame_detail.frame_length > 1 # jump over current frame body
     end
     [nil, mpeg_frames]
   rescue InvalidDeepFetch # A frame was invalid - bail out since it's unlikely we can recover

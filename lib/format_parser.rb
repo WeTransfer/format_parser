@@ -177,9 +177,7 @@ module FormatParser
     # Convert the results from a lazy enumerator to an Array.
     results = results.to_a
 
-    if results.empty?
-      Measurometer.increment_counter('format_parser.unknown_files', 1)
-    end
+    Measurometer.increment_counter('format_parser.unknown_files', 1) if results.empty?
 
     amount == 1 ? results.first : results
   ensure
@@ -252,9 +250,7 @@ module FormatParser
     fitting_by_formats = assemble_parser_set[@parsers_per_format, desired_formats]
     parsers = fitting_by_natures & fitting_by_formats
 
-    if parsers.empty?
-      raise ArgumentError, "No parsers provide both natures #{desired_natures.inspect} and formats #{desired_formats.inspect}"
-    end
+    raise ArgumentError, "No parsers provide both natures #{desired_natures.inspect} and formats #{desired_formats.inspect}" if parsers.empty?
 
     # Order the parsers according to their priority value. The ones having a lower
     # value will sort higher and will be applied sooner

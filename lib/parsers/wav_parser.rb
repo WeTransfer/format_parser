@@ -34,9 +34,7 @@ class FormatParser::WAVParser
       case chunk_type
       when 'fmt ' # watch out: the chunk ID of the format chunk ends with a space
         fmt_data = unpack_fmt_chunk(io, chunk_size)
-        if fmt_data[:audio_format] != 1 and fact_processed
-          return process_non_pcm(fmt_data, total_sample_frames)
-        end
+        return process_non_pcm(fmt_data, total_sample_frames) if fmt_data[:audio_format] != 1 and fact_processed
         fmt_processed = true
       when 'data'
         return unless fmt_processed # the 'data' chunk cannot preceed the 'fmt ' chunk
@@ -45,11 +43,10 @@ class FormatParser::WAVParser
       when 'fact'
         total_sample_frames = safe_read(io, 4).unpack('l').first
         safe_skip(io, chunk_size - 4)
-        if fmt_processed and fmt_data[:audio_format] != 1
-          return process_non_pcm(fmt_data, total_sample_frames)
-        end
+        return process_non_pcm(fmt_data, total_sample_frames) if fmt_processed and fmt_data[:audio_format] != 1
         fact_processed = true
-      else # Skip this chunk until a known chunk is encountered
+      else
+        # Skip this chunk until a known chunk is encountered
         safe_skip(io, chunk_size)
       end
     end
@@ -70,11 +67,11 @@ class FormatParser::WAVParser
     safe_skip(io, chunk_size - 16) # skip the extra fields
 
     {
-      audio_format:    fmt_info[0],
-      channels:        fmt_info[1],
-      sample_rate:     fmt_info[2],
-      byte_rate:       fmt_info[3],
-      block_align:     fmt_info[4],
+      audio_format: fmt_info[0],
+      channels: fmt_info[1],
+      sample_rate: fmt_info[2],
+      byte_rate: fmt_info[3],
+      block_align: fmt_info[4],
       bits_per_sample: fmt_info[5],
     }
   end

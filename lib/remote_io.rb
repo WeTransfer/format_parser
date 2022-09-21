@@ -117,13 +117,13 @@ class FormatParser::RemoteIO
       # If we request a _larger_ range than what can be satisfied by the server,
       # the response is going to only contain what _can_ be sent and the status is also going
       # to be 206
-      return [size, response.body]
+      [size, response.body]
     when 416
       # We return `nil` if we tried to read past the end of the IO,
       # which satisfies the Ruby IO convention. The caller should deal with `nil` being the result of a read()
       # S3 will also handily _not_ supply us with the Content-Range of the actual resource, so we
       # cannot hint size with this response - at lease not when working with S3
-      return
+      nil
     when 500..599
       Measurometer.increment_counter('format_parser.RemoteIO.upstream50x_errors', 1)
       raise IntermittentFailure.new(response.status, "Server at #{@uri} replied with a #{response.status} and we might want to retry")

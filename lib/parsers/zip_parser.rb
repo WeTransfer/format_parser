@@ -34,7 +34,7 @@ class FormatParser::ZIPParser
     end
   rescue FileReader::Error
     # This is not a ZIP, or a broken ZIP.
-    return
+    nil
   end
 
   def directory?(zip_entry)

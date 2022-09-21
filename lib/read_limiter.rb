@@ -45,9 +45,7 @@ class FormatParser::ReadLimiter
   # @return Integer
   def seek(to)
     @seeks += 1
-    if @max_seeks && @seeks > @max_seeks
-      raise BudgetExceeded, 'Seek budget exceeded (%d seeks performed)' % @max_seeks
-    end
+    raise BudgetExceeded, 'Seek budget exceeded (%d seeks performed)' % @max_seeks if @max_seeks && @seeks > @max_seeks
     @io.seek(to)
   end
 
@@ -60,13 +58,8 @@ class FormatParser::ReadLimiter
     @bytes += n_bytes
     @reads += 1
 
-    if @max_bytes && @bytes > @max_bytes
-      raise BudgetExceeded, 'Read bytes budget (%d) exceeded' % @max_bytes
-    end
-
-    if @max_reads && @reads > @max_reads
-      raise BudgetExceeded, 'Number of read() calls exceeded (%d max)' % @max_reads
-    end
+    raise BudgetExceeded, 'Read bytes budget (%d) exceeded' % @max_bytes if @max_bytes && @bytes > @max_bytes
+    raise BudgetExceeded, 'Number of read() calls exceeded (%d max)' % @max_reads if @max_reads && @reads > @max_reads
 
     @io.read(n_bytes)
   end
