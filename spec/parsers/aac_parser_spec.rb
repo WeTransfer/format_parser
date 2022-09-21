@@ -4,18 +4,18 @@ describe FormatParser::AACParser do
   it 'should match filenames with valid AAC extensions' do
     filenames = ['audiofile', 'audio_file', 'audio-file', 'audio file', 'audio.file']
     extensions = ['.aac', '.AAC', '.Aac', '.AAc', '.aAc', '.aAC', '.aaC']
-    filenames.each { |filename|
-      extensions.each { |extension|
+    filenames.each do |filename|
+      extensions.each do |extension|
         expect(subject.likely_match?(filename + extension)).to be_truthy
-      }
-    }
+      end
+    end
   end
 
   it 'should not match filenames with invalid AAC extensions' do
     extensions = ['.aa', '.ac', '.acc', '.mp3', '.ogg', '.wav', '.flac', '.m4a', '.m4b', '.m4p', '.m4r', '.3gp']
-    extensions.each { |extension|
+    extensions.each do |extension|
       expect(subject.likely_match?('audiofile' + extension)).to be_falsey
-    }
+    end
   end
 
   it 'should parse a short sample, single channel audio, 16 kb/s, 44100 HZ' do
