@@ -9,33 +9,45 @@ class FormatParser::AdtsHeaderInfo
   # The chunks represented by these letters have specific meanings, as described here:
   # https://wiki.multimedia.cx/index.php/ADTS
 
-  AAC_ADTS_HEADER_BITS_CHUNK_SIZES = [['A', 12], ['B', 1], ['C', 2], ['D', 1], ['E', 2], ['F', 4], ['G', 1], ['H', 3], ['I', 1], ['J', 1], ['K', 1], ['L', 1], ['M', 13], ['O', 11], ['P', 2], ['Q', 16]]
+  AAC_ADTS_HEADER_BITS_CHUNK_SIZES = [
+    ['A', 12], ['B', 1], ['C', 2], ['D', 1],
+    ['E', 2], ['F', 4], ['G', 1], ['H', 3],
+    ['I', 1], ['J', 1], ['K', 1], ['L', 1],
+    ['M', 13], ['O', 11], ['P', 2], ['Q', 16]
+  ]
   MPEG4_AUDIO_OBJECT_TYPE_RANGE = 0..45
   MPEG4_AUDIO_SAMPLING_FREQUENCY_RANGE = 0..14
   MPEG4_AUDIO_SAMPLING_FREQUENCY_HASH = {
-    0 => 96000, 1 => 88200, 2 => 64000, 3 => 48000, 4 => 44100, 5 => 32000, 6 => 24000,
-    7 => 22050, 8 => 16000, 9 => 12000, 10 => 11025, 11 => 8000, 12 => 7350,
-    13 => 'Reserved', 14 => 'Reserved'
+    0 => 96000, 1 => 88200, 2 => 64000,
+    3 => 48000, 4 => 44100, 5 => 32000,
+    6 => 24000, 7 => 22050, 8 => 16000,
+    9 => 12000, 10 => 11025, 11 => 8000,
+    12 => 7350, 13 => 'Reserved', 14 => 'Reserved'
   }
-  AAC_PROFILE_DESCRIPTION_HASH = { 0 => 'AAC_MAIN', 1 => 'AAC_LC (Low Complexity)', 2 => 'AAC_SSR (Scaleable Sampling Rate)', 3 => 'AAC_LTP (Long Term Prediction)' }
+  AAC_PROFILE_DESCRIPTION_HASH = {
+    0 => 'AAC_MAIN',
+    1 => 'AAC_LC (Low Complexity)',
+    2 => 'AAC_SSR (Scaleable Sampling Rate)',
+    3 => 'AAC_LTP (Long Term Prediction)'
+  }
   MPEG_VERSION_HASH = { 0 => 'MPEG-4', 1 => 'MPEG-2'}
 
   def mpeg4_sampling_frequency
-    if !@mpeg4_sampling_frequency_index.nil? && MPEG4_AUDIO_SAMPLING_FREQUENCY_HASH.has_key?(@mpeg4_sampling_frequency_index)
+    if !@mpeg4_sampling_frequency_index.nil? && MPEG4_AUDIO_SAMPLING_FREQUENCY_HASH.key?(@mpeg4_sampling_frequency_index)
       return MPEG4_AUDIO_SAMPLING_FREQUENCY_HASH[@mpeg4_sampling_frequency_index]
     end
     nil
   end
 
   def profile_description
-    if !@profile.nil? && AAC_PROFILE_DESCRIPTION_HASH.has_key?(@profile)
+    if !@profile.nil? && AAC_PROFILE_DESCRIPTION_HASH.key?(@profile)
       return AAC_PROFILE_DESCRIPTION_HASH[@profile]
     end
     nil
   end
 
   def mpeg_version_description
-    if !@mpeg_version.nil? && MPEG_VERSION_HASH.has_key?(@mpeg_version)
+    if !@mpeg_version.nil? && MPEG_VERSION_HASH.key?(@mpeg_version)
       return MPEG_VERSION_HASH[@mpeg_version]
     end
     nil
