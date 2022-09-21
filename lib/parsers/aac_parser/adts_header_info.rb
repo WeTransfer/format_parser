@@ -90,7 +90,7 @@ class FormatParser::AdtsHeaderInfo
       case letter
       when 'A'
         # Syncword, all bits must be set to 1
-        return nil unless chunk.all? { |bit| bit == '1' }
+        return unless chunk.all? { |bit| bit == '1' }
       when 'B'
         # MPEG Version, set to 0 for MPEG-4 and 1 for MPEG-2
         result.mpeg_version = decimal_number
