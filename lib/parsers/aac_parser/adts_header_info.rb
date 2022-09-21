@@ -72,7 +72,7 @@ class FormatParser::AdtsHeaderInfo
       letter = letter_size[0]
       chunk_size = letter_size[1]
       chunk = header_bits.shift(chunk_size)
-      decimal_number = convert_binary_to_decimal(chunk)
+      decimal_number = chunk.join.to_i(2)
 
       # Skipping data represented by the letters G, K, L, Q, as we are not interested in those values.
       case letter
@@ -121,14 +121,6 @@ class FormatParser::AdtsHeaderInfo
       end
     end
 
-    result
-  end
-
-  # Converts a binary number given as a array of characters representing bits, into a decimal number.
-  def self.convert_binary_to_decimal(binary_number)
-    result = 0
-    reversed_binary_array = binary_number.reverse
-    reversed_binary_array.each_with_index { |num, index| result += num.to_i * (2**index) }
     result
   end
 end
