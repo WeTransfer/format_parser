@@ -66,8 +66,7 @@ class FormatParser::ReadLimiter
 
   # Sends the metrics about the state of this ReadLimiter to a Measurometer
   #
-  # @param parser[String] the prefix to set. For example, with prefix "TIFF" the metrics will be called
-  #   `format_parser.read_limiter.num_seeks` and so forth
+  # @param parser[String] the parser to add as a tag.
   # @return void
   def send_metrics(parser)
     Measurometer.add_distribution_value('format_parser.read_limiter.num_seeks', @seeks, parser: parser)
