@@ -34,7 +34,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'ks'
   spec.add_dependency 'exifr', '>= 1.3.8'
   spec.add_dependency 'id3tag', '>= 0.14.2'
-  spec.add_dependency 'faraday', '>= 1', '<3'
+  spec.add_dependency 'faraday', '~> 2'
   spec.add_dependency 'faraday-follow_redirects'
   spec.add_dependency 'measurometer'
 
