@@ -20,6 +20,7 @@ module FormatParser
   require_relative 'care'
   require_relative 'active_storage/blob_analyzer'
   require_relative 'text'
+  require_relative 'string'
 
   # Define Measurometer in the internal namespace as well
   # so that we stay compatible for the applications that use it
