@@ -57,12 +57,9 @@ jobs:
       matrix:
         ruby:
           - 2.7
+          - 3.0
+          - 3.1
         experimental: [false]
-        include:
-          - ruby: 3.1
-            experimental: true
-          - ruby: 3.0
-            experimental: true
     steps:
       - name: Checkout
         uses: actions/checkout@v2
