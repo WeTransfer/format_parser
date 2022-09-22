@@ -201,12 +201,12 @@ module FormatParser
   end
 
   def self.execute_parser_and_capture_expected_exceptions(parser, limited_io)
-    parser_name_for_instrumentation = parser.class.to_s.split('::').last
+    parser_name_for_instrumentation = parser.class.to_s.split('::').last.underscore
     Measurometer.instrument('format_parser.parser.%s' % parser_name_for_instrumentation) do
       parser.call(limited_io).tap do |result|
         if result
-          Measurometer.increment_counter('format_parser.detected_natures.%s' % result.nature, 1)
-          Measurometer.increment_counter('format_parser.detected_formats.%s' % result.format, 1)
+          Measurometer.increment_counter('format_parser.detected_natures', 1, nature: result.nature)
+          Measurometer.increment_counter('format_parser.detected_formats', 1, format: result.format)
         end
       end
     end
