@@ -1,6 +1,8 @@
 ## 2.0.0
-* Dropping support for Ruby `<2.7`.
-* Upgrading all dependencies to latest versions.
+* Drop support for Ruby `<2.7` and JRuby.
+* Upgrade faraday and wetransfer-style dependencies.
+* Loosen version constraints on other dependencies.
+* Update measurometer metrics for consistency and clarity.
 
 ## 1.6.0
 * Add support for `AAC` files.
