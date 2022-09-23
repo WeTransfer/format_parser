@@ -69,7 +69,7 @@ class FormatParser::JPEGParser
       end
     end
 
-    Measurometer.add_distribution_value('format_parser.JPEGParser.bytes_read_until_capture', @buf.pos)
+    Measurometer.add_distribution_value('format_parser.jpeg_parser.bytes_read_until_capture', @buf.pos)
 
     # A single file might contain multiple EXIF data frames. In a JPEG this would
     # manifest as multiple APP1 markers. The way different programs handle these
@@ -156,7 +156,7 @@ class FormatParser::JPEGParser
     # Use StringIO.new instead of #write - https://github.com/aws/aws-sdk-ruby/issues/785#issuecomment-95456838
     exif_buf = StringIO.new(safe_read(@buf, app1_frame_content_length - EXIF_MAGIC_STRING.bytesize))
 
-    Measurometer.add_distribution_value('format_parser.JPEGParser.bytes_sent_to_exif_parser', exif_buf.size)
+    Measurometer.add_distribution_value('format_parser.jpeg_parser.bytes_sent_to_exif_parser', exif_buf.size)
 
     @exif_data_frames << exif_from_tiff_io(exif_buf)
   rescue EXIFR::MalformedTIFF

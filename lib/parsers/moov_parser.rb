@@ -37,7 +37,7 @@ class FormatParser::MOOVParser
     # size that gets parsed just before.
     max_read_offset = 0xFFFFFFFF
     decoder = Decoder.new
-    atom_tree = Measurometer.instrument('format_parser.Decoder.extract_atom_stream') do
+    atom_tree = Measurometer.instrument('format_parser.decoder.extract_atom_stream') do
       decoder.extract_atom_stream(io, max_read_offset)
     end
 
