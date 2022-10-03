@@ -35,8 +35,6 @@ class FormatParser::RemoteIO
   # @param uri[URI, String] the remote URL to obtain
   # @param headers[Hash] (optional) the HTTP headers to be used in the HTTP request
   def initialize(uri, headers: {})
-    require 'faraday'
-    require 'faraday/follow_redirects'
     @headers = headers
     @uri = uri
     @pos = 0
