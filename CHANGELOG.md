@@ -1,3 +1,6 @@
+## 1.7.0
+* Add support for `ARW` files.
+
 ## 1.6.0
 * Add support for `AAC` files.
 

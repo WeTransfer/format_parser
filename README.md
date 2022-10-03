@@ -194,7 +194,7 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 - `IMG_9266_*.tif` and all it's variations were created by the project maintainers
 
 ### ARW
-- ARW example is downloaded from http://www.rawsamples.ch/ and is Creative Common Licensed.
+- ARW examples are downloaded from http://www.rawsamples.ch/ and are Creative Common Licensed.
 
 ### ZIP
 - The .zip fixture files have been created by the project maintainers
