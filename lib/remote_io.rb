@@ -1,3 +1,5 @@
+require 'net/http'
+
 # Acts as a wrapper for turning a given URL into an IO object
 # you can read from and seek in. Uses Faraday under the hood
 # to perform fetches, so if you apply Faraday configuration

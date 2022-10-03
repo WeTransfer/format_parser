@@ -4,130 +4,180 @@ describe FormatParser::RemoteIO do
   it_behaves_like 'an IO object compatible with IOConstraint'
 
   it 'returns the partial content when the server supplies a 206 status' do
-    rio = described_class.new('https://images.invalid/img.jpg')
+    url = 'https://images.invalid/img.jpg'
+    response_body = 'This is the response'
 
-    fake_resp = double(headers: {'Content-Range' => '10-109/2577'}, status: 206, body: 'This is the response')
-    faraday_conn = instance_double(Faraday::Connection, get: fake_resp)
-    allow(Faraday).to receive(:new).and_return(faraday_conn)
-    expect(faraday_conn).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=10-109')
+    fake_resp = double(code: '206', body: response_body)
+    allow(fake_resp).to receive(:[]).and_return('10-109/2577')
+    allow(Net::HTTP).to receive(:get_response).and_return(fake_resp)
 
+    expect(Net::HTTP).to receive(:get_response).with(
+      an_object_satisfying { |uri| uri.to_s == url },
+      a_hash_including('range' => 'bytes=10-109')
+    )
+
+    rio = described_class.new(url)
     rio.seek(10)
     read_result = rio.read(100)
-    expect(read_result).to eq('This is the response')
+
+    expect(read_result).to eq(response_body)
   end
 
   it 'returns the entire content when the server supplies the Content-Range response but sends a 200 status' do
-    rio = described_class.new('https://images.invalid/img.jpg')
+    url = 'https://images.invalid/img.jpg'
+    response_body = 'This is the response'
 
-    fake_resp = double(headers: {'Content-Range' => '10-109/2577'}, status: 200, body: 'This is the response')
-    faraday_conn = instance_double(Faraday::Connection, get: fake_resp)
-    allow(Faraday).to receive(:new).and_return(faraday_conn)
-    expect(faraday_conn).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=10-109')
+    fake_resp = double(code: '200', body: response_body)
+    allow(fake_resp).to receive(:[]).and_return('10-109/2577')
+    allow(Net::HTTP).to receive(:get_response).and_return(fake_resp)
 
+    expect(Net::HTTP).to receive(:get_response).with(
+      an_object_satisfying { |uri| uri.to_s == url },
+      a_hash_including('range' => 'bytes=10-109')
+    )
+
+    rio = described_class.new(url)
     rio.seek(10)
     read_result = rio.read(100)
-    expect(read_result).to eq('This is the response')
+
+    expect(read_result).to eq(response_body)
   end
 
   it 'raises a specific error for all 4xx responses except 416' do
-    rio = described_class.new('https://images.invalid/img.jpg')
+    url = 'https://images.invalid/img.jpg'
 
-    fake_resp = double(headers: {}, status: 403, body: 'Please log in')
-    faraday_conn = instance_double(Faraday::Connection, get: fake_resp)
-    allow(Faraday).to receive(:new).and_return(faraday_conn)
-    expect(faraday_conn).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=100-199')
+    fake_resp = double(headers: {}, code: '403', body: 'Please log in')
+    allow(Net::HTTP).to receive(:get_response).and_return(fake_resp)
 
+    expect(Net::HTTP).to receive(:get_response).with(
+      an_object_satisfying { |uri| uri.to_s == url },
+      a_hash_including('range' => 'bytes=100-199')
+    )
+
+    rio = described_class.new(url)
     rio.seek(100)
+
     expect { rio.read(100) }.to raise_error(/replied with a 403 and refused/)
   end
 
   it 'returns nil on a 416 response' do
-    rio = described_class.new('https://images.invalid/img.jpg')
+    url = 'https://images.invalid/img.jpg'
 
-    fake_resp = double(headers: {}, status: 416, body: 'You stepped off the ledge of the range')
-    faraday_conn = instance_double(Faraday::Connection, get: fake_resp)
-    allow(Faraday).to receive(:new).and_return(faraday_conn)
-    expect(faraday_conn).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=100-199')
+    fake_resp = double(headers: {}, code: '416', body: 'You stepped off the ledge of the range')
+    allow(Net::HTTP).to receive(:get_response).and_return(fake_resp)
 
+    expect(Net::HTTP).to receive(:get_response).with(
+      an_object_satisfying { |uri| uri.to_s == url },
+      a_hash_including('range' => 'bytes=100-199')
+    )
+
+    rio = described_class.new(url)
     rio.seek(100)
+
     expect(rio.read(100)).to be_nil
   end
 
   it 'sets the status_code of the exception on a 4xx response from upstream' do
-    rio = described_class.new('https://images.invalid/img.jpg')
+    url = 'https://images.invalid/img.jpg'
 
-    fake_resp = double(headers: {}, status: 403, body: 'Please log in')
-    faraday_conn = instance_double(Faraday::Connection, get: fake_resp)
-    allow(Faraday).to receive(:new).and_return(faraday_conn)
-    expect(faraday_conn).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=100-199')
+    fake_resp = double(headers: {}, code: '403', body: 'Please log in')
+    allow(Net::HTTP).to receive(:get_response).and_return(fake_resp)
 
+    expect(Net::HTTP).to receive(:get_response).with(
+      an_object_satisfying { |uri| uri.to_s == url },
+      a_hash_including('range' => 'bytes=100-199')
+    )
+
+    rio = described_class.new(url)
     rio.seek(100)
-    # rubocop: disable Lint/AmbiguousBlockAssociation
-    expect { rio.read(100) }.to raise_error { |e| expect(e.status_code).to eq(403) }
+    expect { rio.read(100) }.to(raise_error { |e| expect(e.status_code).to eq(403) })
   end
 
   it 'returns a nil when the range cannot be satisfied and the response is 416' do
-    rio = described_class.new('https://images.invalid/img.jpg')
+    url = 'https://images.invalid/img.jpg'
 
-    fake_resp = double(headers: {}, status: 416, body: 'You jumped off the end of the file maam')
-    faraday_conn = instance_double(Faraday::Connection, get: fake_resp)
-    allow(Faraday).to receive(:new).and_return(faraday_conn)
-    expect(faraday_conn).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=100-199')
+    fake_resp = double(headers: {}, code: '416', body: 'You jumped off the end of the file maam')
+    allow(Net::HTTP).to receive(:get_response).and_return(fake_resp)
 
+    expect(Net::HTTP).to receive(:get_response).with(
+      an_object_satisfying { |uri| uri.to_s == url },
+      a_hash_including('range' => 'bytes=100-199')
+    )
+
+    rio = described_class.new(url)
     rio.seek(100)
+
     expect(rio.read(100)).to be_nil
   end
 
   it 'does not overwrite size when the range cannot be satisfied and the response is 416' do
-    rio = described_class.new('https://images.invalid/img.jpg')
+    url = 'https://images.invalid/img.jpg'
 
-    fake_resp1 = double(headers: {'Content-Range' => 'bytes 0-0/13'}, status: 206, body: 'a')
-    fake_resp2 = double(headers: {}, status: 416, body: 'You jumped off the end of the file maam')
+    fake_resp1 = double(code: '206', body: 'a')
+    allow(fake_resp1).to receive(:[]).and_return('bytes 0-0/13')
+    fake_resp2 = double(headers: {}, code: '416', body: 'You jumped off the end of the file maam')
+    allow(Net::HTTP).to receive(:get_response).with(anything, a_hash_including('range' => 'bytes=0-0')).and_return(fake_resp1)
+    allow(Net::HTTP).to receive(:get_response).with(anything, a_hash_including('range' => 'bytes=100-199')).and_return(fake_resp2)
 
-    faraday_conn = instance_double(Faraday::Connection)
-    allow(Faraday).to receive(:new).and_return(faraday_conn)
-    expect(faraday_conn).to receive(:get)
-      .with('https://images.invalid/img.jpg', nil, range: 'bytes=0-0')
+    expect(Net::HTTP).to receive(:get_response)
+      .with(
+        an_object_satisfying { |uri| uri.to_s == url },
+        a_hash_including('range' => 'bytes=0-0')
+      )
       .ordered
-      .and_return(fake_resp1)
-    expect(faraday_conn).to receive(:get)
-      .with('https://images.invalid/img.jpg', nil, range: 'bytes=100-199')
+    expect(Net::HTTP).to receive(:get_response)
+      .with(
+        an_object_satisfying { |uri| uri.to_s == url },
+        a_hash_including('range' => 'bytes=100-199')
+      )
       .ordered
-      .and_return(fake_resp2)
 
+    rio = described_class.new(url)
     rio.read(1)
 
     expect(rio.size).to eq(13)
 
     rio.seek(100)
-    expect(rio.read(100)).to be_nil
 
+    expect(rio.read(100)).to be_nil
     expect(rio.size).to eq(13)
   end
 
   it 'raises a specific error for all 5xx responses' do
-    rio = described_class.new('https://images.invalid/img.jpg')
+    url = 'https://images.invalid/img.jpg'
 
-    fake_resp = double(headers: {}, status: 502, body: 'Guru meditation')
-    faraday_conn = instance_double(Faraday::Connection, get: fake_resp)
-    allow(Faraday).to receive(:new).and_return(faraday_conn)
-    expect(faraday_conn).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=100-199')
+    fake_resp = double(headers: {}, code: '502', body: 'Guru meditation')
+    allow(Net::HTTP).to receive(:get_response).and_return(fake_resp)
 
+    expect(Net::HTTP).to receive(:get_response).with(
+      an_object_satisfying { |uri| uri.to_s == url },
+      a_hash_including('range' => 'bytes=100-199')
+    )
+
+    rio = described_class.new(url)
     rio.seek(100)
+
     expect { rio.read(100) }.to raise_error(/replied with a 502 and we might want to retry/)
   end
 
   it 'maintains and exposes #pos' do
-    rio = described_class.new('https://images.invalid/img.jpg')
+    url = 'https://images.invalid/img.jpg'
+
+    rio = described_class.new(url)
 
     expect(rio.pos).to eq(0)
 
-    fake_resp = double(headers: {'Content-Range' => 'bytes 0-0/13'}, status: 206, body: 'a')
-    faraday_conn = instance_double(Faraday::Connection, get: fake_resp)
-    allow(Faraday).to receive(:new).and_return(faraday_conn)
-    expect(faraday_conn).to receive(:get).with('https://images.invalid/img.jpg', nil, range: 'bytes=0-0')
-    rio.read(1)
+    fake_resp = double(code: '206', body: 'a')
+    allow(fake_resp).to receive(:[]).and_return('bytes 0-0/13')
 
+    allow(Net::HTTP).to receive(:get_response).and_return(fake_resp)
+
+    expect(Net::HTTP).to receive(:get_response).with(
+      an_object_satisfying { |uri| uri.to_s == url },
+      a_hash_including('range' => 'bytes=0-0')
+    )
+
+    rio.read(1)
     expect(rio.pos).to eq(1)
   end
 end
