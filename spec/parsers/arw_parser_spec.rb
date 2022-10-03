@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe FormatParser::ARWParser do
-  describe 'matches filenames with valid extensions' do 
+  describe 'matches filenames with valid extensions' do
     filenames = ['raw_file', 'another raw file', 'and.another', 'one-more']
     extensions = ['.arw', '.Arw', '.aRw', '.arW', '.ARw', '.ArW', '.aRW', '.ARW']
     filenames.each do |filename|
@@ -13,7 +13,7 @@ describe FormatParser::ARWParser do
     end
   end
 
-  describe 'does not match filenames with invalid extensions' do 
+  describe 'does not match filenames with invalid extensions' do
     filenames = ['raw_file', 'another raw file', 'and.another', 'one-more']
     extensions = ['.tiff', '.cr2', '.new', '.jpeg']
     filenames.each do |filename|
@@ -27,21 +27,21 @@ describe FormatParser::ARWParser do
 
   describe 'parses Sony ARW fixtures as arw format file' do
     expected_parsed_dimensions = {
-      "RAW_SONY_A100.ARW" => {
+      'RAW_SONY_A100.ARW' => {
         width_px: 3872,
         height_px: 2592,
         display_width_px: 3872,
         display_height_px: 2592,
         orientation: :top_left
       },
-      "RAW_SONY_A700.ARW" => {
+      'RAW_SONY_A700.ARW' => {
         width_px: 4288,
         height_px: 2856,
         display_width_px: 4288,
         display_height_px: 2856,
         orientation: :top_left
       },
-      "RAW_SONY_A900.ARW" => {
+      'RAW_SONY_A900.ARW' => {
         width_px: 6080,
         height_px: 4048,
         display_width_px: 6080,
@@ -49,28 +49,28 @@ describe FormatParser::ARWParser do
         orientation: :top_left
       },
       # rotated 90 degree image
-      "RAW_SONY_DSC-RX100M2.ARW" => {
+      'RAW_SONY_DSC-RX100M2.ARW' => {
         width_px: 5472,
         height_px: 3648,
         display_width_px: 3648,
         display_height_px: 5472,
         orientation: :right_top,
       },
-      "RAW_SONY_ILCE-7RM2.ARW" => {
+      'RAW_SONY_ILCE-7RM2.ARW' => {
         width_px: 7952,
         height_px: 5304,
         display_width_px: 7952,
         display_height_px: 5304,
         orientation: :top_left,
       },
-      "RAW_SONY_NEX7.ARW" => {
+      'RAW_SONY_NEX7.ARW' => {
         width_px: 6000,
         height_px: 4000,
         display_width_px: 6000,
         display_height_px: 4000,
         orientation: :top_left,
       },
-      "RAW_SONY_SLTA55V.ARW" => {
+      'RAW_SONY_SLTA55V.ARW' => {
         width_px: 4928,
         height_px: 3280,
         display_width_px: 4928,

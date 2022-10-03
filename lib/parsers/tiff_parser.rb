@@ -27,7 +27,7 @@ class FormatParser::TIFFParser
     exif_data = exif_from_tiff_io(io)
     return unless exif_data
 
-    # arw files are now handled in separate arw_parser 
+    # arw files are now handled in separate arw_parser
     return if arw?(exif_data)
 
     w = exif_data.width || exif_data.pixel_x_dimension
