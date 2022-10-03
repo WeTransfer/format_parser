@@ -31,17 +31,15 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'ks'
   spec.add_dependency 'exifr', '>= 1.3.8'
   spec.add_dependency 'id3tag', '>= 0.14.2'
-  spec.add_dependency 'faraday', '~> 2'
-  spec.add_dependency 'faraday-follow_redirects'
+  spec.add_dependency 'ks'
   spec.add_dependency 'measurometer'
 
-  spec.add_development_dependency 'rspec'
-  spec.add_development_dependency 'rake'
-  spec.add_development_dependency 'simplecov'
-  spec.add_development_dependency 'yard'
-  spec.add_development_dependency 'wetransfer_style', '1.0.0'
   spec.add_development_dependency 'parallel_tests'
+  spec.add_development_dependency 'rake'
+  spec.add_development_dependency 'rspec'
+  spec.add_development_dependency 'simplecov'
+  spec.add_development_dependency 'wetransfer_style', '1.0.0'
+  spec.add_development_dependency 'yard'
 end

@@ -7,6 +7,7 @@ class FormatParser::RemoteIO
   class UpstreamError < StandardError
     # @return Integer
     attr_reader :status_code
+
     def initialize(status_code, message)
       @status_code = status_code
       super(message)
@@ -21,6 +22,14 @@ class FormatParser::RemoteIO
   # Represents a failure that should not be retried
   # (like a 4xx response or a DNS resolution error)
   class InvalidRequest < UpstreamError
+  end
+
+  # Represents a failure where the maximum amount of
+  # redirect requests are exceeded.
+  class RedirectLimitReached < UpstreamError
+    def initialize
+      super(504, "Too many redirects; last one to: #{@uri}")
+    end
   end
 
   # @param uri[URI, String] the remote URL to obtain
@@ -73,28 +82,38 @@ class FormatParser::RemoteIO
 
   protected
 
+  REDIRECT_LIMIT = 3
+  UNSAFE_URI_CHARS = %r{[^\-_.!~*'()a-zA-Z\d;/?:@&=+$,\[\]%]}
+
+  # Remove the fragment and escape any unsafe characters in the given URI.
+  #
+  # @param uri[String] The URI to be made safe.
+  # @return String A URI string with any unsafe characters escaped.
+  def escaped_uri(uri)
+    uri&.split('#')[0].to_s.gsub(UNSAFE_URI_CHARS) do |unsafe_char|
+      "%#{unsafe_char.unpack('H2' * unsafe_char.bytesize).join('%').upcase}"
+    end
+  end
+
   # Only used internally when reading the remote file
   #
-  # @param range[Range] the HTTP range of data to fetch from remote
-  # @return [String] the response body of the ranged request
-  def request_range(range)
+  # @param range[Range] The HTTP range of data to fetch from remote
+  # @param redirects[Integer] The amount of remaining permitted redirects
+  # @return [[Integer, String]] The response body of the ranged request
+  def request_range(range, redirects = REDIRECT_LIMIT)
     # We use a GET and not a HEAD request followed by a GET because
     # S3 does not allow HEAD requests if you only presigned your URL for GETs, so we
     # combine the first GET of a segment and retrieving the size of the resource
-    conn = Faraday.new(headers: @headers) do |faraday|
-      faraday.response :follow_redirects
-      # we still need the default adapter, more details: https://blog.thecodewhisperer.com/permalink/losing-time-to-faraday
-      faraday.adapter Faraday.default_adapter
-    end
-    response = conn.get(@uri, nil, range: 'bytes=%d-%d' % [range.begin, range.end])
-
-    case response.status
+    response = Net::HTTP.get_response(URI(@uri), @headers.merge({ 'range' => 'bytes=%d-%d' % [range.begin, range.end] }))
+    status = Integer(response.code)
+    body = response.body
+    case status
     when 200
       # S3 returns 200 when you request a Range that is fully satisfied by the entire object,
       # we take that into account here. Also, for very tiny responses (and also for empty responses)
       # the responses are going to be 200 which does not mean we cannot proceed
       # To have a good check for both of these conditions we need to know whether the ranges overlap fully
-      response_size = response.body.bytesize
+      response_size = body.bytesize
       requested_range_size = range.end - range.begin + 1
       if response_size > requested_range_size
         error_message = [
@@ -102,14 +121,14 @@ class FormatParser::RemoteIO
           "(#{response_size} bytes) - it likely has no `Range:` support.",
           "The error occurred when talking to #{@uri})"
         ]
-        raise InvalidRequest.new(response.status, error_message.join("\n"))
+        raise InvalidRequest.new(status, error_message.join("\n"))
       end
-      [response_size, response.body]
+      [response_size, body]
     when 206
       # Figure out of the server supports content ranges, if it doesn't we have no
       # business working with that server
-      range_header = response.headers['Content-Range']
-      raise InvalidRequest.new(response.status, "The server replied with 206 status but no Content-Range at #{@uri}") unless range_header
+      range_header = response['Content-Range']
+      raise InvalidRequest.new(status, "The server replied with 206 status but no Content-Range at #{@uri}") unless range_header
 
       # "Content-Range: bytes 0-0/307404381" is how the response header is structured
       size = range_header[/\/(\d+)$/, 1].to_i
@@ -117,7 +136,16 @@ class FormatParser::RemoteIO
       # If we request a _larger_ range than what can be satisfied by the server,
       # the response is going to only contain what _can_ be sent and the status is also going
       # to be 206
-      [size, response.body]
+      [size, body]
+    when 301, 302, 303, 307, 308
+      location = response['location']
+      if location
+        raise RedirectLimitReached if redirects == 0
+        @uri = escaped_uri(location)
+        request_range(range, redirects - 1)
+      else
+        raise InvalidRequest.new(status, "Server at #{@uri} replied with a #{status}, indicating redirection; however, the location header was empty.")
+      end
     when 416
       # We return `nil` if we tried to read past the end of the IO,
       # which satisfies the Ruby IO convention. The caller should deal with `nil` being the result of a read()
@@ -126,10 +154,10 @@ class FormatParser::RemoteIO
       nil
     when 500..599
       Measurometer.increment_counter('format_parser.remote_io.upstream50x_errors', 1)
-      raise IntermittentFailure.new(response.status, "Server at #{@uri} replied with a #{response.status} and we might want to retry")
+      raise IntermittentFailure.new(status, "Server at #{@uri} replied with a #{status} and we might want to retry")
     else
       Measurometer.increment_counter('format_parser.remote_io.invalid_request_errors', 1)
-      raise InvalidRequest.new(response.status, "Server at #{@uri} replied with a #{response.status} and refused our request")
+      raise InvalidRequest.new(status, "Server at #{@uri} replied with a #{status} and refused our request")
     end
   end
 end
