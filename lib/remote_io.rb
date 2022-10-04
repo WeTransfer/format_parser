@@ -34,11 +34,11 @@ class FormatParser::RemoteIO
     end
   end
 
-  # @param uri[URI, String] the remote URL to obtain
+  # @param uri[String, URI::Generic] the remote URL to obtain
   # @param headers[Hash] (optional) the HTTP headers to be used in the HTTP request
   def initialize(uri, headers: {})
     @headers = headers
-    @uri = escaped_uri(uri.to_s)
+    @uri = uri.is_a?(String) ? URI(uri) : uri
     @pos = 0
     @remote_size = false
   end
@@ -85,13 +85,18 @@ class FormatParser::RemoteIO
   REDIRECT_LIMIT = 3
   UNSAFE_URI_CHARS = %r{[^\-_.!~*'()a-zA-Z\d;/?:@&=+$,\[\]%]}
 
-  # Remove the fragment and escape any unsafe characters in the given URI.
+  # Remove the fragment and escape any unsafe characters in the given URI,
+  # retaining the prior host and scheme if the URI is relative.
   #
-  # @param uri[String] The URI to be made safe.
-  # @return String A URI string with any unsafe characters escaped.
-  def escaped_uri(uri)
-    uri&.split('#')[0].to_s.gsub(UNSAFE_URI_CHARS) do |unsafe_char|
+  # @param uri[String, URI::Generic] The URI to be made safe.
+  def uri=(uri)
+    safe_uri_string = uri.to_s.gsub(UNSAFE_URI_CHARS) do |unsafe_char|
       "%#{unsafe_char.unpack('H2' * unsafe_char.bytesize).join('%').upcase}"
+    end
+    if safe_uri_string.start_with?('/')
+      @uri.path = safe_uri_string
+    else
+      @uri = URI(safe_uri_string)
     end
   end
 
@@ -104,7 +109,7 @@ class FormatParser::RemoteIO
     # We use a GET and not a HEAD request followed by a GET because
     # S3 does not allow HEAD requests if you only presigned your URL for GETs, so we
     # combine the first GET of a segment and retrieving the size of the resource
-    response = Net::HTTP.get_response(URI(@uri), @headers.merge({ 'range' => 'bytes=%d-%d' % [range.begin, range.end] }))
+    response = Net::HTTP.get_response(@uri, @headers.merge({ 'range' => 'bytes=%d-%d' % [range.begin, range.end] }))
     status = Integer(response.code)
     body = response.body
     case status
@@ -138,10 +143,10 @@ class FormatParser::RemoteIO
       # to be 206
       [size, body]
     when 301, 302, 303, 307, 308
+      raise RedirectLimitReached if redirects == 0
       location = response['location']
       if location
-        raise RedirectLimitReached if redirects == 0
-        @uri = escaped_uri(location)
+        self.uri = location
         request_range(range, redirects - 1)
       else
         raise InvalidRequest.new(status, "Server at #{@uri} replied with a #{status}, indicating redirection; however, the location header was empty.")
