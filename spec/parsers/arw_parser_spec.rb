@@ -102,7 +102,6 @@ describe FormatParser::ARWParser do
       end
     end
 
-
     shared_examples 'invalid filetype' do |filetype, fixture_path|
       it "should fail to parse #{filetype}" do
         file_path = fixtures_dir + fixture_path
@@ -110,7 +109,7 @@ describe FormatParser::ARWParser do
         expect(parsed).to be_nil
       end
     end
-  
+
     include_examples 'invalid filetype', 'NEF', '/NEF/RAW_NIKON_1S2.NEF'
     include_examples 'invalid filetype', 'TIFF', '/TIFF/Shinbutsureijoushuincho.tiff'
     include_examples 'invalid filetype', 'JPG', '/JPEG/orient_6.jpg'
