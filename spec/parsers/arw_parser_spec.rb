@@ -1,26 +1,28 @@
 require 'spec_helper'
 
 describe FormatParser::ARWParser do
-  describe 'matches filenames with valid extensions' do
-    filenames = ['raw_file', 'another raw file', 'and.another', 'one-more']
-    extensions = ['.arw', '.Arw', '.aRw', '.arW', '.ARw', '.ArW', '.aRW', '.ARW']
-    filenames.each do |filename|
-      extensions.each do |extension|
-        it "matches '#{filename + extension}'" do
-          expect(subject.likely_match?(filename + extension)).to be_truthy
-        end
-      end
+  shared_examples 'likely_match for file' do |filename_with_extension|
+    it "matches '#{filename_with_extension}'" do
+      expect(subject.likely_match?(filename_with_extension)).to be_truthy
     end
   end
 
-  describe 'does not match filenames with invalid extensions' do
+  shared_examples 'no likely_match for file' do |filename_with_extension|
+    it "does not match '#{filename_with_extension}'" do
+      expect(subject.likely_match?(filename_with_extension)).to be_falsey
+    end
+  end
+
+  describe 'likely_match' do
     filenames = ['raw_file', 'another raw file', 'and.another', 'one-more']
-    extensions = ['.tiff', '.cr2', '.new', '.jpeg']
+    valid_extensions = ['.arw', '.Arw', '.aRw', '.arW', '.ARw', '.ArW', '.aRW', '.ARW']
+    invalid_extensions = ['.tiff', '.cr2', '.new', '.jpeg']
     filenames.each do |filename|
-      extensions.each do |extension|
-        it "does not match '#{filename + extension}'" do
-          expect(subject.likely_match?(filename + extension)).to be_falsey
-        end
+      valid_extensions.each do |extension|
+        include_examples 'likely_match for file', filename + extension
+      end
+      invalid_extensions.each do |extension|
+        include_examples 'no likely_match for file', filename + extension
       end
     end
   end
@@ -99,5 +101,20 @@ describe FormatParser::ARWParser do
         expect(parsed.orientation).to eq(expected_dimension[:orientation])
       end
     end
+
+
+    shared_examples 'invalid filetype' do |filetype, fixture_path|
+      it "should fail to parse #{filetype}" do
+        file_path = fixtures_dir + fixture_path
+        parsed = subject.call(File.open(file_path, 'rb'))
+        expect(parsed).to be_nil
+      end
+    end
+  
+    include_examples 'invalid filetype', 'NEF', '/NEF/RAW_NIKON_1S2.NEF'
+    include_examples 'invalid filetype', 'TIFF', '/TIFF/Shinbutsureijoushuincho.tiff'
+    include_examples 'invalid filetype', 'JPG', '/JPEG/orient_6.jpg'
+    include_examples 'invalid filetype', 'PNG', '/PNG/cat.png'
+    include_examples 'invalid filetype', 'CR2', '/CR2/RAW_CANON_1DM2.CR2'
   end
 end

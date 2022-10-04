@@ -27,7 +27,6 @@ class FormatParser::TIFFParser
     exif_data = exif_from_tiff_io(io)
     return unless exif_data
 
-    # arw files are now handled in separate arw_parser
     return if arw?(exif_data)
 
     w = exif_data.width || exif_data.pixel_x_dimension
@@ -54,7 +53,6 @@ class FormatParser::TIFFParser
 
   # Similar to how exiftool determines the image type as ARW, we are implementing a check here
   # https://github.com/exiftool/exiftool/blob/e969456372fbaf4b980fea8bb094d71033ac8bf7/lib/Image/ExifTool/Exif.pm#L929
-  # Change in version 1.7.0 to use start_with for make matching due to some sample images having a padded make
   def arw?(exif_data)
     exif_data.compression == 6 && exif_data.new_subfile_type == 1 && exif_data.make&.start_with?('SONY')
   end
