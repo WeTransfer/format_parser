@@ -1,6 +1,6 @@
 ## 2.0.0
-* Drop support for Ruby `<2.7` and JRuby.
-* Upgrade faraday and wetransfer-style dependencies.
+* Drop support for Ruby `<2.7`.
+* Drop faraday dependencies.
 * Loosen version constraints on other dependencies.
 * Update measurometer metrics for consistency and clarity.
 
