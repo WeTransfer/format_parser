@@ -47,21 +47,6 @@ describe FormatParser::TIFFParser do
     expect(parsed.intrinsics[:exif]).not_to be_nil
   end
 
-  it 'parses Sony ARW fixture as arw format file' do
-    arw_path = fixtures_dir + '/ARW/RAW_SONY_ILCE-7RM2.ARW'
-
-    parsed = subject.call(File.open(arw_path, 'rb'))
-
-    expect(parsed).not_to be_nil
-    expect(parsed.nature).to eq(:image)
-    expect(parsed.format).to eq(:arw)
-
-    expect(parsed.width_px).to eq(7952)
-    expect(parsed.height_px).to eq(5304)
-    expect(parsed.intrinsics[:exif]).not_to be_nil
-    expect(parsed.content_type).to eq('image/x-sony-arw')
-  end
-
   describe 'correctly extracts dimensions from various TIFF flavors of the same file' do
     Dir.glob(fixtures_dir + '/TIFF/IMG_9266*.tif').each do |tiff_path|
       it "is able to parse #{File.basename(tiff_path)}" do
@@ -96,6 +81,15 @@ describe FormatParser::TIFFParser do
     Dir.glob(fixtures_dir + '/CR2/*.CR2').each do |cr2_path|
       it "skips #{File.basename(cr2_path)}" do
         parsed = subject.call(File.open(cr2_path, 'rb'))
+        expect(parsed).to be_nil
+      end
+    end
+  end
+
+  describe 'bails out on ARW files, such as' do
+    Dir.glob(fixtures_dir + '/ARW/*.ARW').each do |arw_path|
+      it "skips #{File.basename(arw_path)}" do
+        parsed = subject.call(File.open(arw_path, 'rb'))
         expect(parsed).to be_nil
       end
     end

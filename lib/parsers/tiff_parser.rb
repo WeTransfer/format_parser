@@ -6,7 +6,6 @@ class FormatParser::TIFFParser
   MAGIC_BE = [0x4D, 0x4D, 0x0, 0x2A].pack('C4')
   HEADER_BYTES = [MAGIC_LE, MAGIC_BE]
   TIFF_MIME_TYPE = 'image/tiff'
-  ARW_MIME_TYPE = 'image/x-sony-arw'
 
   def likely_match?(filename)
     filename =~ /\.tiff?$/i
@@ -28,20 +27,20 @@ class FormatParser::TIFFParser
     exif_data = exif_from_tiff_io(io)
     return unless exif_data
 
+    return if arw?(exif_data)
+
     w = exif_data.width || exif_data.pixel_x_dimension
     h = exif_data.height || exif_data.pixel_y_dimension
 
-    format = arw?(exif_data) ? :arw : :tif
-    mime_type = arw?(exif_data) ? ARW_MIME_TYPE : TIFF_MIME_TYPE
     FormatParser::Image.new(
-      format: format,
+      format: :tif,
       width_px: w,
       height_px: h,
       display_width_px: exif_data.rotated? ? h : w,
       display_height_px: exif_data.rotated? ? w : h,
       orientation: exif_data.orientation_sym,
       intrinsics: {exif: exif_data},
-      content_type: mime_type,
+      content_type: TIFF_MIME_TYPE,
     )
   rescue EXIFR::MalformedTIFF
     nil
@@ -55,7 +54,7 @@ class FormatParser::TIFFParser
   # Similar to how exiftool determines the image type as ARW, we are implementing a check here
   # https://github.com/exiftool/exiftool/blob/e969456372fbaf4b980fea8bb094d71033ac8bf7/lib/Image/ExifTool/Exif.pm#L929
   def arw?(exif_data)
-    exif_data.compression == 6 && exif_data.new_subfile_type == 1 && exif_data.make == 'SONY'
+    exif_data.compression == 6 && exif_data.new_subfile_type == 1 && exif_data.make&.start_with?('SONY')
   end
 
   FormatParser.register_parser new, natures: :image, formats: :tif
