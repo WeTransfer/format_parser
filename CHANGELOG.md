@@ -4,6 +4,9 @@
 * Loosen version constraints on other dependencies.
 * Update measurometer metrics for consistency and clarity.
 
+## 1.7.0
+* Add support for `ARW` files.
+
 ## 1.6.0
 * Add support for `AAC` files.
 
