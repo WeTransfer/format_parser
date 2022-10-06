@@ -124,11 +124,6 @@ describe 'Fetching data from HTTP remotes' do
   end
 
   it 'sends provided HTTP headers in the request' do
-    # Faraday is required only after calling .parse_http
-    # This line is just to trigger this require, then it's possible to
-    # add an expectation of how Faraday is initialized after.
-    FormatParser.parse_http('invalid_url') rescue nil
-
     expect_any_instance_of(Net::HTTP)
       .to receive(:request_get)
       .with(anything, a_hash_including('test-header' => 'test-value'))

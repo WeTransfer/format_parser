@@ -1,10 +1,7 @@
 require 'net/http'
 
 # Acts as a wrapper for turning a given URL into an IO object
-# you can read from and seek in. Uses Faraday under the hood
-# to perform fetches, so if you apply Faraday configuration
-# tweaks using `Faraday.default_connection = ...` these will
-# take effect for these RemoteIO objects as well
+# you can read from and seek in.
 class FormatParser::RemoteIO
   class UpstreamError < StandardError
     # @return Integer
