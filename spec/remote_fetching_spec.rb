@@ -129,8 +129,8 @@ describe 'Fetching data from HTTP remotes' do
     # add an expectation of how Faraday is initialized after.
     FormatParser.parse_http('invalid_url') rescue nil
 
-    expect(Net::HTTP)
-      .to receive(:get_response)
+    expect_any_instance_of(Net::HTTP)
+      .to receive(:request_get)
       .with(anything, a_hash_including('test-header' => 'test-value'))
       .and_call_original
 

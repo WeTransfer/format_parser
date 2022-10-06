@@ -1,18 +1,24 @@
 require 'spec_helper'
 
 describe FormatParser::RemoteIO do
+  before do
+    @mock_http = double
+    allow(Net::HTTP).to receive(:start).and_yield(@mock_http).and_return(Net::HTTPResponse)
+    allow(@mock_http).to receive(:request_get).and_return(Net::HTTPResponse)
+  end
+
   it_behaves_like 'an IO object compatible with IOConstraint'
 
   it 'returns the partial content when the server supplies a 206 status' do
     url = 'https://images.invalid/img.jpg'
     response_body = 'This is the response'
 
-    fake_resp = double(code: '206', body: response_body)
-    allow(fake_resp).to receive(:[]).and_return('10-109/2577')
-    allow(Net::HTTP).to receive(:get_response).and_return(fake_resp)
+    allow(Net::HTTPResponse).to receive(:[]).and_return('10-109/2577')
+    allow(Net::HTTPResponse).to receive(:body).and_return(response_body)
+    allow(Net::HTTPResponse).to receive(:code).and_return('206')
 
-    expect(Net::HTTP).to receive(:get_response).with(
-      an_object_satisfying { |uri| uri.to_s == url },
+    expect(@mock_http).to receive(:request_get).with(
+      an_object_satisfying { |uri| URI::HTTPS === uri && uri.to_s == url },
       a_hash_including('range' => 'bytes=10-109')
     )
 
@@ -27,12 +33,12 @@ describe FormatParser::RemoteIO do
     url = 'https://images.invalid/img.jpg'
     response_body = 'This is the response'
 
-    fake_resp = double(code: '200', body: response_body)
-    allow(fake_resp).to receive(:[]).and_return('10-109/2577')
-    allow(Net::HTTP).to receive(:get_response).and_return(fake_resp)
+    allow(Net::HTTPResponse).to receive(:[]).and_return('10-109/2577')
+    allow(Net::HTTPResponse).to receive(:body).and_return(response_body)
+    allow(Net::HTTPResponse).to receive(:code).and_return('200')
 
-    expect(Net::HTTP).to receive(:get_response).with(
-      an_object_satisfying { |uri| uri.to_s == url },
+    expect(@mock_http).to receive(:request_get).with(
+      an_object_satisfying { |uri| URI::HTTPS === uri && uri.to_s == url },
       a_hash_including('range' => 'bytes=10-109')
     )
 
@@ -46,10 +52,11 @@ describe FormatParser::RemoteIO do
   it 'raises a specific error for all 4xx responses except 416' do
     url = 'https://images.invalid/img.jpg'
 
-    fake_resp = double(headers: {}, code: '403', body: 'Please log in')
-    allow(Net::HTTP).to receive(:get_response).and_return(fake_resp)
+    allow(Net::HTTPResponse).to receive(:body).and_return('Please log in')
+    allow(Net::HTTPResponse).to receive(:code).and_return('403')
+    allow(Net::HTTPResponse).to receive(:headers).and_return({})
 
-    expect(Net::HTTP).to receive(:get_response).with(
+    expect(@mock_http).to receive(:request_get).with(
       an_object_satisfying { |uri| uri.to_s == url },
       a_hash_including('range' => 'bytes=100-199')
     )
@@ -63,10 +70,11 @@ describe FormatParser::RemoteIO do
   it 'returns nil on a 416 response' do
     url = 'https://images.invalid/img.jpg'
 
-    fake_resp = double(headers: {}, code: '416', body: 'You stepped off the ledge of the range')
-    allow(Net::HTTP).to receive(:get_response).and_return(fake_resp)
+    allow(Net::HTTPResponse).to receive(:body).and_return('You went too far dumby')
+    allow(Net::HTTPResponse).to receive(:code).and_return('416')
+    allow(Net::HTTPResponse).to receive(:headers).and_return({})
 
-    expect(Net::HTTP).to receive(:get_response).with(
+    expect(@mock_http).to receive(:request_get).with(
       an_object_satisfying { |uri| uri.to_s == url },
       a_hash_including('range' => 'bytes=100-199')
     )
@@ -80,10 +88,11 @@ describe FormatParser::RemoteIO do
   it 'sets the status_code of the exception on a 4xx response from upstream' do
     url = 'https://images.invalid/img.jpg'
 
-    fake_resp = double(headers: {}, code: '403', body: 'Please log in')
-    allow(Net::HTTP).to receive(:get_response).and_return(fake_resp)
+    allow(Net::HTTPResponse).to receive(:body).and_return('Please log in')
+    allow(Net::HTTPResponse).to receive(:code).and_return('403')
+    allow(Net::HTTPResponse).to receive(:headers).and_return({})
 
-    expect(Net::HTTP).to receive(:get_response).with(
+    expect(@mock_http).to receive(:request_get).with(
       an_object_satisfying { |uri| uri.to_s == url },
       a_hash_including('range' => 'bytes=100-199')
     )
@@ -96,10 +105,11 @@ describe FormatParser::RemoteIO do
   it 'returns a nil when the range cannot be satisfied and the response is 416' do
     url = 'https://images.invalid/img.jpg'
 
-    fake_resp = double(headers: {}, code: '416', body: 'You jumped off the end of the file maam')
-    allow(Net::HTTP).to receive(:get_response).and_return(fake_resp)
+    allow(Net::HTTPResponse).to receive(:body).and_return('You went too far dumby')
+    allow(Net::HTTPResponse).to receive(:code).and_return('416')
+    allow(Net::HTTPResponse).to receive(:headers).and_return({})
 
-    expect(Net::HTTP).to receive(:get_response).with(
+    expect(@mock_http).to receive(:request_get).with(
       an_object_satisfying { |uri| uri.to_s == url },
       a_hash_including('range' => 'bytes=100-199')
     )
@@ -113,19 +123,17 @@ describe FormatParser::RemoteIO do
   it 'does not overwrite size when the range cannot be satisfied and the response is 416' do
     url = 'https://images.invalid/img.jpg'
 
-    fake_resp1 = double(code: '206', body: 'a')
-    allow(fake_resp1).to receive(:[]).and_return('bytes 0-0/13')
-    fake_resp2 = double(headers: {}, code: '416', body: 'You jumped off the end of the file maam')
-    allow(Net::HTTP).to receive(:get_response).with(anything, a_hash_including('range' => 'bytes=0-0')).and_return(fake_resp1)
-    allow(Net::HTTP).to receive(:get_response).with(anything, a_hash_including('range' => 'bytes=100-199')).and_return(fake_resp2)
+    allow(Net::HTTPResponse).to receive(:[]).and_return('bytes 0-0/13')
+    allow(Net::HTTPResponse).to receive(:body).and_return('a', 'You went too far dumby')
+    allow(Net::HTTPResponse).to receive(:code).and_return('206', '416')
 
-    expect(Net::HTTP).to receive(:get_response)
+    expect(@mock_http).to receive(:request_get)
       .with(
         an_object_satisfying { |uri| uri.to_s == url },
         a_hash_including('range' => 'bytes=0-0')
       )
       .ordered
-    expect(Net::HTTP).to receive(:get_response)
+    expect(@mock_http).to receive(:request_get)
       .with(
         an_object_satisfying { |uri| uri.to_s == url },
         a_hash_including('range' => 'bytes=100-199')
@@ -146,10 +154,11 @@ describe FormatParser::RemoteIO do
   it 'raises a specific error for all 5xx responses' do
     url = 'https://images.invalid/img.jpg'
 
-    fake_resp = double(headers: {}, code: '502', body: 'Guru meditation')
-    allow(Net::HTTP).to receive(:get_response).and_return(fake_resp)
+    allow(Net::HTTPResponse).to receive(:body).and_return('Oops. Our bad.')
+    allow(Net::HTTPResponse).to receive(:code).and_return('502')
+    allow(Net::HTTPResponse).to receive(:headers).and_return({})
 
-    expect(Net::HTTP).to receive(:get_response).with(
+    expect(@mock_http).to receive(:request_get).with(
       an_object_satisfying { |uri| uri.to_s == url },
       a_hash_including('range' => 'bytes=100-199')
     )
@@ -167,12 +176,11 @@ describe FormatParser::RemoteIO do
 
     expect(rio.pos).to eq(0)
 
-    fake_resp = double(code: '206', body: 'a')
-    allow(fake_resp).to receive(:[]).and_return('bytes 0-0/13')
+    allow(Net::HTTPResponse).to receive(:[]).and_return('bytes 0-0/13')
+    allow(Net::HTTPResponse).to receive(:body).and_return('a')
+    allow(Net::HTTPResponse).to receive(:code).and_return('206')
 
-    allow(Net::HTTP).to receive(:get_response).and_return(fake_resp)
-
-    expect(Net::HTTP).to receive(:get_response).with(
+    expect(@mock_http).to receive(:request_get).with(
       an_object_satisfying { |uri| uri.to_s == url },
       a_hash_including('range' => 'bytes=0-0')
     )

@@ -109,7 +109,9 @@ class FormatParser::RemoteIO
     # We use a GET and not a HEAD request followed by a GET because
     # S3 does not allow HEAD requests if you only presigned your URL for GETs, so we
     # combine the first GET of a segment and retrieving the size of the resource
-    response = Net::HTTP.get_response(@uri, @headers.merge({ 'range' => 'bytes=%d-%d' % [range.begin, range.end] }))
+    response = Net::HTTP.start(@uri.hostname, @uri.port, use_ssl: @uri.scheme == 'https') { |http|
+      http.request_get(@uri, @headers.merge({ 'range' => 'bytes=%d-%d' % [range.begin, range.end] }))
+    }
     status = Integer(response.code)
     body = response.body
     case status
