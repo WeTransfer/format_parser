@@ -26,8 +26,8 @@ class FormatParser::RemoteIO
   # Represents a failure where the maximum amount of
   # redirect requests are exceeded.
   class RedirectLimitReached < UpstreamError
-    def initialize
-      super(504, "Too many redirects; last one to: #{@uri}")
+    def initialize(uri)
+      super(504, "Too many redirects; last one to: #{uri}")
     end
   end
 
@@ -82,32 +82,33 @@ class FormatParser::RemoteIO
   REDIRECT_LIMIT = 3
   UNSAFE_URI_CHARS = %r{[^\-_.!~*'()a-zA-Z\d;/?:@&=+$,\[\]%]}
 
-  # Remove the fragment and escape any unsafe characters in the given URI,
-  # retaining the prior host and scheme if the URI is relative.
+  # Generate the URI to fetch from following a redirect response.
   #
-  # @param uri[String, URI::Generic] The URI to be made safe.
-  def uri=(uri)
-    safe_uri_string = uri.to_s.gsub(UNSAFE_URI_CHARS) do |unsafe_char|
+  # @param location[String] The new URI reference, as provided by the Location header of the previous response.
+  # @param previous_uri[URI] The URI used in the previous request.
+  def redirect_uri(location, previous_uri)
+    # Escape unsafe characters in location. Use location as new URI if absolute, otherwise use it to replace the path of
+    # the previous URI.
+    new_uri = previous_uri.merge(location.to_s.gsub(UNSAFE_URI_CHARS) do |unsafe_char|
       "%#{unsafe_char.unpack('H2' * unsafe_char.bytesize).join('%').upcase}"
-    end
-    if safe_uri_string.start_with?('/')
-      @uri.path = safe_uri_string
-    else
-      @uri = URI(safe_uri_string)
-    end
+    end)
+    # Keep previous URI's fragment if not present in location (https://www.rfc-editor.org/rfc/rfc9110.html#section-10.2.2-5)
+    new_uri.fragment = previous_uri.fragment unless new_uri.fragment
+    new_uri
   end
 
   # Only used internally when reading the remote file
   #
   # @param range[Range] The HTTP range of data to fetch from remote
+  # @param uri[URI] The URI to fetch from
   # @param redirects[Integer] The amount of remaining permitted redirects
   # @return [[Integer, String]] The response body of the ranged request
-  def request_range(range, redirects = REDIRECT_LIMIT)
+  def request_range(range, uri = @uri, redirects = REDIRECT_LIMIT)
     # We use a GET and not a HEAD request followed by a GET because
     # S3 does not allow HEAD requests if you only presigned your URL for GETs, so we
     # combine the first GET of a segment and retrieving the size of the resource
-    response = Net::HTTP.start(@uri.hostname, @uri.port, use_ssl: @uri.scheme == 'https') do |http|
-      http.request_get(@uri, @headers.merge({ 'range' => 'bytes=%d-%d' % [range.begin, range.end] }))
+    response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == 'https') do |http|
+      http.request_get(uri, @headers.merge({ 'range' => 'bytes=%d-%d' % [range.begin, range.end] }))
     end
     case response
     when Net::HTTPOK
@@ -121,7 +122,7 @@ class FormatParser::RemoteIO
         error_message = [
           "We requested #{requested_range_size} bytes, but the server sent us more",
           "(#{response_size} bytes) - it likely has no `Range:` support.",
-          "The error occurred when talking to #{@uri})"
+          "The error occurred when talking to #{uri})"
         ]
         raise InvalidRequest.new(response.code, error_message.join("\n"))
       end
@@ -130,7 +131,7 @@ class FormatParser::RemoteIO
       # Figure out of the server supports content ranges, if it doesn't we have no
       # business working with that server
       range_header = response['Content-Range']
-      raise InvalidRequest.new(response.code, "The server replied with 206 status but no Content-Range at #{@uri}") unless range_header
+      raise InvalidRequest.new(response.code, "The server replied with 206 status but no Content-Range at #{uri}") unless range_header
 
       # "Content-Range: bytes 0-0/307404381" is how the response header is structured
       size = range_header[/\/(\d+)$/, 1].to_i
@@ -140,13 +141,12 @@ class FormatParser::RemoteIO
       # to be 206
       [size, response.body]
     when Net::HTTPMovedPermanently, Net::HTTPFound, Net::HTTPSeeOther, Net::HTTPTemporaryRedirect, Net::HTTPPermanentRedirect
-      raise RedirectLimitReached if redirects == 0
+      raise RedirectLimitReached(uri) if redirects == 0
       location = response['location']
       if location
-        self.uri = location
-        request_range(range, redirects - 1)
+        request_range(range, redirect_uri(location, uri), redirects - 1)
       else
-        raise InvalidRequest.new(response.code, "Server at #{@uri} replied with a #{response.code}, indicating redirection; however, the location header was empty.")
+        raise InvalidRequest.new(response.code, "Server at #{uri} replied with a #{response.code}, indicating redirection; however, the location header was empty.")
       end
     when Net::HTTPRangeNotSatisfiable
       # We return `nil` if we tried to read past the end of the IO,
@@ -156,10 +156,10 @@ class FormatParser::RemoteIO
       nil
     when Net::HTTPServerError
       Measurometer.increment_counter('format_parser.remote_io.upstream50x_errors', 1)
-      raise IntermittentFailure.new(response.code, "Server at #{@uri} replied with a #{response.code} and we might want to retry")
+      raise IntermittentFailure.new(response.code, "Server at #{uri} replied with a #{response.code} and we might want to retry")
     else
       Measurometer.increment_counter('format_parser.remote_io.invalid_request_errors', 1)
-      raise InvalidRequest.new(response.code, "Server at #{@uri} replied with a #{response.code} and refused our request")
+      raise InvalidRequest.new(response.code, "Server at #{uri} replied with a #{response.code} and refused our request")
     end
   end
 end
