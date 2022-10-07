@@ -35,7 +35,7 @@ class FormatParser::RemoteIO
   # @param headers[Hash] (optional) the HTTP headers to be used in the HTTP request
   def initialize(uri, headers: {})
     @headers = headers
-    @uri = uri.is_a?(String) ? URI(uri) : uri
+    @uri = URI(uri)
     @pos = 0
     @remote_size = false
   end
