@@ -96,12 +96,8 @@ class Care
     # @return [String, nil] the content read from the IO or `nil` if no data was available
     # @raise ArgumentError
     def byteslice(io, at, n_bytes)
-      if n_bytes < 1
-        raise ArgumentError, "The number of bytes to fetch must be a positive Integer, but was #{n_bytes}"
-      end
-      if at < 0
-        raise ArgumentError, "Negative offsets are not supported (got #{at})"
-      end
+      raise ArgumentError, "The number of bytes to fetch must be a positive Integer, but was #{n_bytes}" if n_bytes < 1
+      raise ArgumentError, "Negative offsets are not supported (got #{at})" if at < 0
 
       first_page = at / @page_size
       last_page = (at + n_bytes) / @page_size
@@ -174,16 +170,14 @@ class Care
     # @param io[IO] the IO to read from
     # @param page_i[Integer] which page (zero-based) to read
     def read_page(io, page_i)
-      Measurometer.increment_counter('format_parser.parser.Care.page_reads_from_upsteam', 1)
+      Measurometer.increment_counter('format_parser.parser.care.page_reads_from_upsteam', 1)
 
       io.seek(page_i * @page_size)
-      read_result = Measurometer.instrument('format_parser.Care.read_page') { io.read(@page_size) }
+      read_result = Measurometer.instrument('format_parser.care.read_page') { io.read(@page_size) }
       if read_result.nil?
         # If the read went past the end of the IO the read result will be nil,
         # so we know our IO is exhausted here
-        if @lowest_known_empty_page.nil? || @lowest_known_empty_page > page_i
-          @lowest_known_empty_page = page_i
-        end
+        @lowest_known_empty_page = page_i if @lowest_known_empty_page.nil? || @lowest_known_empty_page > page_i
       elsif read_result.bytesize < @page_size
         # If we read less than we initially wanted we know there are no pages
         # to read following this one, so we can also optimize

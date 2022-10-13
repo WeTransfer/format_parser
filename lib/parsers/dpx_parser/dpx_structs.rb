@@ -201,7 +201,7 @@ class FormatParser::DPXParser
     blanking :reserve, 52
 
     # Only expose the elements present
-    def image_elements #:nodoc:
+    def image_elements # :nodoc:
       @image_elements[0...number_elements]
     end
   end

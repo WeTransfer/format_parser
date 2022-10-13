@@ -37,7 +37,7 @@ class FormatParser::MOOVParser
     # size that gets parsed just before.
     max_read_offset = 0xFFFFFFFF
     decoder = Decoder.new
-    atom_tree = Measurometer.instrument('format_parser.Decoder.extract_atom_stream') do
+    atom_tree = Measurometer.instrument('format_parser.decoder.extract_atom_stream') do
       decoder.extract_atom_stream(io, max_read_offset)
     end
 
@@ -93,12 +93,10 @@ class FormatParser::MOOVParser
   def parse_dimensions(decoder, atom_tree)
     video_trak_atom = decoder.find_video_trak_atom(atom_tree)
 
-    tkhd = begin
-      if video_trak_atom
-        decoder.find_first_atom_by_path([video_trak_atom], 'trak', 'tkhd')
-      else
-        decoder.find_first_atom_by_path(atom_tree, 'moov', 'trak', 'tkhd')
-      end
+    tkhd = if video_trak_atom
+      decoder.find_first_atom_by_path([video_trak_atom], 'trak', 'tkhd')
+    else
+      decoder.find_first_atom_by_path(atom_tree, 'moov', 'trak', 'tkhd')
     end
 
     if tkhd

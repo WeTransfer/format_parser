@@ -20,6 +20,7 @@ module FormatParser
   require_relative 'care'
   require_relative 'active_storage/blob_analyzer'
   require_relative 'text'
+  require_relative 'string'
 
   # Define Measurometer in the internal namespace as well
   # so that we stay compatible for the applications that use it
@@ -87,8 +88,8 @@ module FormatParser
   # Parses the resource at the given `url` and returns the results as if it were any IO
   # given to `.parse`. The accepted keyword arguments are the same as the ones for `parse`.
   #
-  # @param url[String, URI] the HTTP(S) URL to request the object from using Faraday and `Range:` requests
-  # @param headers[Hash] (optional) the HTTP headers to request the object from using Faraday
+  # @param url[String, URI] the HTTP(S) URL to request the object from using `Range:` requests
+  # @param headers[Hash] (optional) the HTTP headers to request the object from
   # @param kwargs the keyword arguments to be delegated to `.parse`
   # @see {.parse}
   def self.parse_http(url, headers: {}, **kwargs)
@@ -177,9 +178,7 @@ module FormatParser
     # Convert the results from a lazy enumerator to an Array.
     results = results.to_a
 
-    if results.empty?
-      Measurometer.increment_counter('format_parser.unknown_files', 1)
-    end
+    Measurometer.increment_counter('format_parser.unknown_files', 1) if results.empty?
 
     amount == 1 ? results.first : results
   ensure
@@ -202,12 +201,12 @@ module FormatParser
   end
 
   def self.execute_parser_and_capture_expected_exceptions(parser, limited_io)
-    parser_name_for_instrumentation = parser.class.to_s.split('::').last
+    parser_name_for_instrumentation = parser.class.to_s.split('::').last.underscore
     Measurometer.instrument('format_parser.parser.%s' % parser_name_for_instrumentation) do
       parser.call(limited_io).tap do |result|
         if result
-          Measurometer.increment_counter('format_parser.detected_natures.%s' % result.nature, 1)
-          Measurometer.increment_counter('format_parser.detected_formats.%s' % result.format, 1)
+          Measurometer.increment_counter('format_parser.detected_natures', 1, nature: result.nature)
+          Measurometer.increment_counter('format_parser.detected_formats', 1, format: result.format)
         end
       end
     end
@@ -252,9 +251,7 @@ module FormatParser
     fitting_by_formats = assemble_parser_set[@parsers_per_format, desired_formats]
     parsers = fitting_by_natures & fitting_by_formats
 
-    if parsers.empty?
-      raise ArgumentError, "No parsers provide both natures #{desired_natures.inspect} and formats #{desired_formats.inspect}"
-    end
+    raise ArgumentError, "No parsers provide both natures #{desired_natures.inspect} and formats #{desired_formats.inspect}" if parsers.empty?
 
     # Order the parsers according to their priority value. The ones having a lower
     # value will sort higher and will be applied sooner

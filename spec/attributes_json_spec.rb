@@ -106,9 +106,6 @@ describe FormatParser::AttributesJSON do
       struct: Struct.new(:key).new('Value'),
       content: "\x01\xFF\xFEb\x00i\x00r\x00d\x00s\x00 \x005\x00 \x00m\x00o\x00r\x00e\x00 \x00c\x00o\x00m\x00p\x00".b
     }
-    expect {
-      JSON.pretty_generate(nasty_hash) # Should not raise an error
-    }.to raise_error(Encoding::UndefinedConversionError)
 
     anon_class = Struct.new(:evil)
     anon_class.include FormatParser::AttributesJSON

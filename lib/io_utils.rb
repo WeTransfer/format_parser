@@ -9,12 +9,8 @@ module FormatParser::IOUtils
     raise ArgumentError, 'Unbounded reads are not supported' if n.nil?
     buf = io.read(n)
 
-    unless buf
-      raise InvalidRead, "We wanted to read #{n} bytes from the IO, but the IO is at EOF"
-    end
-    if buf.bytesize != n
-      raise InvalidRead, "We wanted to read #{n} bytes from the IO, but we got #{buf.bytesize} instead"
-    end
+    raise InvalidRead, "We wanted to read #{n} bytes from the IO, but the IO is at EOF" unless buf
+    raise InvalidRead, "We wanted to read #{n} bytes from the IO, but we got #{buf.bytesize} instead" if buf.bytesize != n
 
     buf
   end

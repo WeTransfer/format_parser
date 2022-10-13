@@ -125,9 +125,7 @@ module FormatParser::EXIFParser
       # those and return the _last_ non-0 orientation, or 0 otherwise
       @multiple_exif_results.reverse_each do |exif_tag_frame|
         orientation_value = exif_tag_frame.orientation
-        if !orientation_value.nil? && orientation_value != 0
-          return orientation_value
-        end
+        return orientation_value if !orientation_value.nil? && orientation_value != 0
       end
       0 # If none were found - the orientation is unknown
     end
@@ -175,7 +173,7 @@ module FormatParser::EXIFParser
   EXIFR.logger = Logger.new(nil)
 
   def exif_from_tiff_io(constrained_io, should_include_sub_ifds = false)
-    Measurometer.instrument('format_parser.EXIFParser.exif_from_tiff_io') do
+    Measurometer.instrument('format_parser.exif_parser.exif_from_tiff_io') do
       extended_io = IOExt.new(constrained_io)
       exif_raw_data = EXIFR::TIFF.new(extended_io)
 

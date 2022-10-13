@@ -24,9 +24,9 @@ class FormatParser::FDXParser
   def check_for_document_type(file_and_document_type)
     sanitized_data = file_and_document_type.downcase
     if sanitized_data.include?('finaldraft') && sanitized_data.include?('script')
-      return :fdx, :script
+      [:fdx, :script]
     else
-      return
+      nil
     end
   end
 

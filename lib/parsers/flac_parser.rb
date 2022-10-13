@@ -20,15 +20,11 @@ class FormatParser::FLACParser
 
     minimum_block_size = bytestring_to_int(safe_read(io, 2))
 
-    if minimum_block_size < 16
-      raise MalformedFile, 'FLAC file minimum block size must be larger than 16'
-    end
+    raise MalformedFile, 'FLAC file minimum block size must be larger than 16' if minimum_block_size < 16
 
     maximum_block_size = bytestring_to_int(safe_read(io, 2))
 
-    if maximum_block_size < minimum_block_size
-      raise MalformedFile, 'FLAC file maximum block size must be equal to or larger than minimum block size'
-    end
+    raise MalformedFile, 'FLAC file maximum block size must be equal to or larger than minimum block size' if maximum_block_size < minimum_block_size
 
     minimum_frame_size = bytestring_to_int(safe_read(io, 3))
     maximum_frame_size = bytestring_to_int(safe_read(io, 3))

@@ -45,9 +45,7 @@ class FormatParser::ReadLimiter
   # @return Integer
   def seek(to)
     @seeks += 1
-    if @max_seeks && @seeks > @max_seeks
-      raise BudgetExceeded, 'Seek budget exceeded (%d seeks performed)' % @max_seeks
-    end
+    raise BudgetExceeded, 'Seek budget exceeded (%d seeks performed)' % @max_seeks if @max_seeks && @seeks > @max_seeks
     @io.seek(to)
   end
 
@@ -60,26 +58,20 @@ class FormatParser::ReadLimiter
     @bytes += n_bytes
     @reads += 1
 
-    if @max_bytes && @bytes > @max_bytes
-      raise BudgetExceeded, 'Read bytes budget (%d) exceeded' % @max_bytes
-    end
-
-    if @max_reads && @reads > @max_reads
-      raise BudgetExceeded, 'Number of read() calls exceeded (%d max)' % @max_reads
-    end
+    raise BudgetExceeded, 'Read bytes budget (%d) exceeded' % @max_bytes if @max_bytes && @bytes > @max_bytes
+    raise BudgetExceeded, 'Number of read() calls exceeded (%d max)' % @max_reads if @max_reads && @reads > @max_reads
 
     @io.read(n_bytes)
   end
 
   # Sends the metrics about the state of this ReadLimiter to a Measurometer
   #
-  # @param prefix[String] the prefix to set. For example, with prefix "TIFF" the metrics will be called
-  #   `format_parser.TIFF.read_limiter.num_seeks` and so forth
+  # @param parser[String] the parser to add as a tag.
   # @return void
-  def send_metrics(prefix)
-    Measurometer.add_distribution_value('format_parser.%s.read_limiter.num_seeks' % prefix, @seeks)
-    Measurometer.add_distribution_value('format_parser.%s.read_limiter.num_reads' % prefix, @reads)
-    Measurometer.add_distribution_value('format_parser.%s.read_limiter.read_bytes' % prefix, @bytes)
+  def send_metrics(parser)
+    Measurometer.add_distribution_value('format_parser.read_limiter.num_seeks', @seeks, parser: parser)
+    Measurometer.add_distribution_value('format_parser.read_limiter.num_reads', @reads, parser: parser)
+    Measurometer.add_distribution_value('format_parser.read_limiter.read_bytes', @bytes, parser: parser)
   end
 
   # Resets all the recorded call counters so that the object can be reused for the next parser,
