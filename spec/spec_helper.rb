@@ -30,3 +30,5 @@ RSpec.shared_examples 'an IO object compatible with IOConstraint' do
     end
   end
 end
+
+RSpec::Matchers.define_negated_matcher :excluding, :include
