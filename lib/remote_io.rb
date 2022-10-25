@@ -141,7 +141,7 @@ class FormatParser::RemoteIO
       # to be 206
       [size, response.body]
     when Net::HTTPMovedPermanently, Net::HTTPFound, Net::HTTPSeeOther, Net::HTTPTemporaryRedirect, Net::HTTPPermanentRedirect
-      raise RedirectLimitReached.new(uri) if redirects == 0
+      raise RedirectLimitReached, uri if redirects == 0
       location = response['location']
       if location
         new_uri = redirect_uri(location, uri)
