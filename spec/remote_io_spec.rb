@@ -251,6 +251,7 @@ describe FormatParser::RemoteIO do
   end
 
   # 5XX
+
   (500..599).each do |code|
     context "when the response status code is #{code}" do
       it 'raises an error' do
