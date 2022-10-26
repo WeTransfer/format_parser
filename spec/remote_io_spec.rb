@@ -187,7 +187,6 @@ describe FormatParser::RemoteIO do
         end
       end
     end
-
   end
 
   # 4XX
