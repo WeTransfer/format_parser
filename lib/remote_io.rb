@@ -146,7 +146,7 @@ class FormatParser::RemoteIO
       if location
         new_uri = redirect_uri(location, uri)
         # Clear the Authorization header if the new URI has a different host.
-        @headers.delete('Authorization') unless [@uri.scheme, @uri.host, @uri.port] == [new_uri.scheme, new_uri.host, new_uri.port]
+        @headers.delete('Authorization') unless [uri.scheme, uri.host, uri.port] == [new_uri.scheme, new_uri.host, new_uri.port]
         request_range(range, new_uri, redirects - 1)
       else
         raise InvalidRequest.new(response.code, "Server at #{uri} replied with a #{response.code}, indicating redirection; however, the location header was empty.")
