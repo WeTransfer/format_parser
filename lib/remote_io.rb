@@ -122,7 +122,7 @@ class FormatParser::RemoteIO
         error_message = [
           "We requested #{requested_range_size} bytes, but the server sent us more",
           "(#{response_size} bytes) - it likely has no `Range:` support.",
-          "The error occurred when talking to #{uri})"
+          "The error occurred when talking to #{uri}"
         ]
         raise InvalidRequest.new(response.code, error_message.join("\n"))
       end
@@ -141,10 +141,13 @@ class FormatParser::RemoteIO
       # to be 206
       [size, response.body]
     when Net::HTTPMovedPermanently, Net::HTTPFound, Net::HTTPSeeOther, Net::HTTPTemporaryRedirect, Net::HTTPPermanentRedirect
-      raise RedirectLimitReached(uri) if redirects == 0
+      raise RedirectLimitReached, uri if redirects == 0
       location = response['location']
       if location
-        request_range(range, redirect_uri(location, uri), redirects - 1)
+        new_uri = redirect_uri(location, uri)
+        # Clear the Authorization header if the new URI has a different host.
+        @headers.delete('Authorization') unless [@uri.scheme, @uri.host, @uri.port] == [new_uri.scheme, new_uri.host, new_uri.port]
+        request_range(range, new_uri, redirects - 1)
       else
         raise InvalidRequest.new(response.code, "Server at #{uri} replied with a #{response.code}, indicating redirection; however, the location header was empty.")
       end

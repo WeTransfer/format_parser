@@ -1,4 +1,4 @@
-## 2.0.0.pre (Prerelease)
+## 2.0.0.pre.2 (Prerelease)
 * Drop support for Ruby `<2.7`.
 * Drop faraday dependencies.
 * Loosen version constraints on other dependencies.

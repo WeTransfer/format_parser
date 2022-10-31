@@ -7,6 +7,10 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 
 require 'rspec'
+require 'webmock/rspec'
+
+WebMock.disable_net_connect!(allow_localhost: true)
+
 require 'format_parser'
 
 module SpecHelpers
