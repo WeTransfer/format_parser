@@ -17,9 +17,8 @@ describe FormatParser::RemoteIO do
 
         rio = described_class.new(url)
         rio.seek(10)
-        read_result = rio.read(100)
 
-        expect(read_result).to eq(body)
+        expect(rio.read(100)).to eq(body)
         expect(stub).to have_been_requested
       end
     end
@@ -58,9 +57,8 @@ describe FormatParser::RemoteIO do
 
         rio = described_class.new(url)
         rio.seek(10)
-        read_result = rio.read(100)
 
-        expect(read_result).to eq(body)
+        expect(rio.read(100)).to eq(body)
         expect(stub).to have_been_requested
       end
 
@@ -119,9 +117,37 @@ describe FormatParser::RemoteIO do
 
             rio = described_class.new(redirecting_url, headers: { 'Authorization' => 'token' })
             rio.seek(10)
-            read_result = rio.read(100)
 
-            expect(read_result).to eq(body)
+            expect(rio.read(100)).to eq(body)
+            expect(redirect_stub).to have_been_requested
+            expect(destination_stub).to have_been_requested
+          end
+
+          it 'subsequent reads by the same object keep the Authorization header' do
+            redirecting_url = 'https://my_images.invalid/my_image'
+            destination_url = 'https://images.invalid/img.jpg'
+            body = 'response body'
+            auth_header = { 'Authorization' => 'token' }
+
+            redirect_stub = stub_request(:get, redirecting_url)
+              .with(headers: auth_header)
+              .to_return(headers: { 'location' => destination_url }, status: code)
+            destination_stub = stub_request(:get, destination_url)
+              .with { |request| !request.headers.key?('Authorization') }
+              .to_return(body: body, status: 200)
+
+            rio = described_class.new(redirecting_url, headers: auth_header)
+            rio.seek(10)
+            rio.read(100)
+
+            expect(redirect_stub).to have_been_requested
+            expect(destination_stub).to have_been_requested
+
+            WebMock.reset_executed_requests!
+
+            rio.seek(10)
+
+            expect(rio.read(100)).to eq(body)
             expect(redirect_stub).to have_been_requested
             expect(destination_stub).to have_been_requested
           end
@@ -145,9 +171,8 @@ describe FormatParser::RemoteIO do
 
             rio = described_class.new(redirecting_url, headers: { 'Authorization' => 'token' })
             rio.seek(10)
-            read_result = rio.read(100)
 
-            expect(read_result).to eq(body)
+            expect(rio.read(100)).to eq(body)
             expect(redirect_stub).to have_been_requested
             expect(destination_stub).to have_been_requested
           end
