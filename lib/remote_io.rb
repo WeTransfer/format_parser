@@ -103,12 +103,12 @@ class FormatParser::RemoteIO
   # @param uri[URI] The URI to fetch from
   # @param redirects[Integer] The amount of remaining permitted redirects
   # @return [[Integer, String]] The response body of the ranged request
-  def request_range(range, uri = @uri, redirects = REDIRECT_LIMIT)
+  def request_range(range, uri = @uri, headers = @headers.clone, redirects = REDIRECT_LIMIT)
     # We use a GET and not a HEAD request followed by a GET because
     # S3 does not allow HEAD requests if you only presigned your URL for GETs, so we
     # combine the first GET of a segment and retrieving the size of the resource
     response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == 'https') do |http|
-      http.request_get(uri, @headers.merge({ 'range' => 'bytes=%d-%d' % [range.begin, range.end] }))
+      http.request_get(uri, headers.merge({ 'range' => 'bytes=%d-%d' % [range.begin, range.end] }))
     end
     case response
     when Net::HTTPOK
@@ -146,8 +146,8 @@ class FormatParser::RemoteIO
       if location
         new_uri = redirect_uri(location, uri)
         # Clear the Authorization header if the new URI has a different host.
-        @headers.delete('Authorization') unless [uri.scheme, uri.host, uri.port] == [new_uri.scheme, new_uri.host, new_uri.port]
-        request_range(range, new_uri, redirects - 1)
+        headers.delete('Authorization') unless [uri.scheme, uri.host, uri.port] == [new_uri.scheme, new_uri.host, new_uri.port]
+        request_range(range, new_uri, headers, redirects - 1)
       else
         raise InvalidRequest.new(response.code, "Server at #{uri} replied with a #{response.code}, indicating redirection; however, the location header was empty.")
       end
