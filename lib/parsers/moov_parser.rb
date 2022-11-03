@@ -169,7 +169,7 @@ class FormatParser::MOOVParser
     cmt1_atom = decoder.find_first_atom_by_path(atom_tree, 'moov', 'uuid', 'CMT1')
     if cmt1_atom
       width = cmt1_atom.field_value(:image_width)
-      height = cmt1_atom.field_value(:image_height)
+      height = cmt1_atom.field_value(:image_length)
       rotated = cmt1_atom.field_value(:rotated)
       orientation = cmt1_atom.field_value(:orientation_sym)
       FormatParser::Image.new(
