@@ -6,19 +6,21 @@ class FormatParser::MOOVParser
   # we can reasonably call "file type" (something
   # usable as a filename extension)
   FTYP_MAP = {
-    'qt  ' => :mov,
-    'mp4 ' => :mp4,
+    'crx ' => :cr3,
     'm4a ' => :m4a,
+    'mp4 ' => :mp4,
+    'qt  ' => :mov,
   }
 
   # https://tools.ietf.org/html/rfc4337#section-2
   # There is also video/quicktime which we should be able to capture
   # here, but there is currently no detection for MOVs versus MP4s
+  CR3_MIME_TYPE = 'image/x-canon-cr3'
   MP4_AU_MIME_TYPE = 'audio/mp4'
   MP4_MIXED_MIME_TYPE = 'video/mp4'
 
   def likely_match?(filename)
-    filename =~ /\.(mov|m4a|ma4|mp4|aac|m4v)$/i
+    filename =~ /\.(aac|cr3|m4a|m4v|ma4|mov|mp4)$/i
   end
 
   def call(io)
@@ -42,7 +44,8 @@ class FormatParser::MOOVParser
     end
 
     ftyp_atom = decoder.find_first_atom_by_path(atom_tree, 'ftyp')
-    file_type = ftyp_atom.field_value(:major_brand)
+    file_type = ftyp_atom&.field_value(:major_brand)
+    format = format_from_moov_type(file_type)
 
     # Try to find the width and height in the tkhd
     width, height = parse_dimensions(decoder, atom_tree)
@@ -55,17 +58,18 @@ class FormatParser::MOOVParser
     end
 
     # M4A only contains audio, while MP4 and friends can contain video.
-    fmt = format_from_moov_type(file_type)
-    if fmt == :m4a
+    if format == :m4a
       FormatParser::Audio.new(
-        format: format_from_moov_type(file_type),
+        format: format,
         media_duration_seconds: media_duration_s,
         content_type: MP4_AU_MIME_TYPE,
         intrinsics: atom_tree,
       )
+    elsif format == :cr3
+      cr3(decoder, atom_tree, width, height)
     else
       FormatParser::Video.new(
-        format: format_from_moov_type(file_type),
+        format: format,
         width_px: width,
         height_px: height,
         frame_rate: parse_time_to_sample_atom(decoder, atom_tree)&.truncate(2),
@@ -161,5 +165,36 @@ class FormatParser::MOOVParser
     end
   end
 
-  FormatParser.register_parser new, natures: :video, formats: FTYP_MAP.values, priority: 3
+  def cr3(decoder, atom_tree, fallback_width, fallback_height)
+    cmt1_atom = decoder.find_first_atom_by_path(atom_tree, 'moov', 'uuid', 'CMT1')
+    if cmt1_atom
+      width = cmt1_atom.field_value(:image_width)
+      height = cmt1_atom.field_value(:image_height)
+      rotated = cmt1_atom.field_value(:rotated)
+      orientation = cmt1_atom.field_value(:orientation_sym)
+      FormatParser::Image.new(
+        format: :cr3,
+        content_type: CR3_MIME_TYPE,
+        width_px: width,
+        height_px: height,
+        orientation: orientation,
+        display_width_px: rotated ? height : width,
+        display_height_px: rotated ? width : height,
+        intrinsics: {
+          atom_tree: atom_tree,
+          exif: cmt1_atom.atom_fields,
+        },
+      )
+    else
+      FormatParser::Image.new(
+        format: :cr3,
+        content_type: CR3_MIME_TYPE,
+        width_px: fallback_width,
+        height_px: fallback_height,
+        intrinsics: { atom_tree: atom_tree },
+      )
+    end
+  end
+
+  FormatParser.register_parser new, natures: [:audio, :image, :video], formats: FTYP_MAP.values, priority: 3
 end
