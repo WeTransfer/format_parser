@@ -177,13 +177,14 @@ describe FormatParser do
     it 'sorts the parsers by priority and name' do
       parsers = FormatParser.parsers_for(
         [:audio, :image],
-        [:cr2, :dpx, :fdx, :flac, :gif, :jpg, :mov, :mp4, :m4a, :mp3, :mpg, :mpeg, :ogg, :png, :tif, :wav]
+        [:cr2, :cr3, :dpx, :fdx, :flac, :gif, :jpg, :mov, :mp4, :m4a, :mp3, :mpg, :mpeg, :ogg, :png, :tif, :wav]
       )
 
       expect(parsers.map { |parser| parser.class.name }).to eq([
         'FormatParser::GIFParser',
         'Class',
         'FormatParser::PNGParser',
+        'FormatParser::MOOVParser',
         'FormatParser::CR2Parser',
         'FormatParser::DPXParser',
         'FormatParser::FLACParser',
