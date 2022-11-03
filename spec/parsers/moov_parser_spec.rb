@@ -29,6 +29,19 @@ describe FormatParser::MOOVParser do
     end
   end
 
+  Dir.glob(fixtures_dir + '/MOOV/**/*.cr3').sort.each do |cr3_path|
+    it "is able to parse #{File.basename(cr3_path)}" do
+      result = subject.call(File.open(cr3_path, 'rb'))
+
+      expect(result).not_to be_nil
+      expect(result.nature).to eq(:image)
+      expect(result.width_px).to be > 0
+      expect(result.height_px).to be > 0
+      expect(result.content_type).to eq('image/x-canon-cr3')
+      expect(result.intrinsics).not_to be_nil
+    end
+  end
+
   Dir.glob(fixtures_dir + '/MOOV/**/*.m4a').sort.each do |m4a_path|
     it "is able to parse #{File.basename(m4a_path)}" do
       result = subject.call(File.open(m4a_path, 'rb'))

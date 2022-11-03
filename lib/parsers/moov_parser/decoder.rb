@@ -4,6 +4,7 @@
 # To know more about Atoms: https://developer.apple.com/library/archive/documentation/QuickTime/QTFF/QTFFChap2/qtff2.html
 class FormatParser::MOOVParser::Decoder
   include FormatParser::IOUtils
+  include FormatParser::EXIFParser
 
   class Atom < Struct.new(:at, :atom_size, :atom_type, :path, :children, :atom_fields)
     def to_s
@@ -321,6 +322,7 @@ class FormatParser::MOOVParser::Decoder
     fields = exif.to_hash
     fields[:rotated] = exif.rotated?
     fields[:orientation_sym] = exif.orientation_sym
+    fields
   end
 
   def parse_atom_fields_per_type(io, atom_size, atom_type)
