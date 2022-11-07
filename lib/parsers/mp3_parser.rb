@@ -1,4 +1,3 @@
-require 'ks'
 require 'id3tag'
 
 class FormatParser::MP3Parser
@@ -6,13 +5,13 @@ class FormatParser::MP3Parser
 
   require_relative 'mp3_parser/id3_extraction'
 
-  class MPEGFrame < Ks.strict(:offset_in_file, :mpeg_id, :channels, :sample_rate, :frame_length, :frame_bitrate)
+  class MPEGFrame < Struct.new(:offset_in_file, :mpeg_id, :channels, :sample_rate, :frame_length, :frame_bitrate, keyword_init: true)
   end
 
-  class VBRHeader < Ks.strict(:frames, :byte_count, :toc_entries, :vbr_scale)
+  class VBRHeader < Struct.new(:frames, :byte_count, :toc_entries, :vbr_scale, keyword_init: true)
   end
 
-  class MP3Info < Ks.strict(:duration_seconds, :num_channels, :sampling_rate)
+  class MP3Info < Struct.new(:duration_seconds, :num_channels, :sampling_rate, keyword_init: true)
   end
 
   class InvalidDeepFetch < KeyError
