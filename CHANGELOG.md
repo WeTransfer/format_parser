@@ -1,3 +1,7 @@
+## 2.1.0
+* Require minumum 2.7 ruby version.
+* Drop `ks` dependency.
+
 ## 2.0.0
 * Drop explicit support for Ruby `<2.7`.
 * Drop faraday dependencies.
