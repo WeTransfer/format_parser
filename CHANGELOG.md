@@ -1,5 +1,6 @@
 ## 2.1.0
-* Require minumum 2.7 ruby version.
+* Require minumum 2.6 ruby version.
+* Bring back 2.6 to test matrix, we have jruby there which is still compatible with 2.6
 * Drop `ks` dependency.
 
 ## 2.0.0

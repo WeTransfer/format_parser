@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
   minimum amount of data possible."
   spec.homepage      = 'https://github.com/WeTransfer/format_parser'
   spec.license       = 'MIT (Hippocratic)'
-  spec.required_ruby_version = Gem::Requirement.new(">= 2.7.0")
+  spec.required_ruby_version = Gem::Requirement.new(">= 2.6.0")
 
   # to allow pushing to a single host or delete this section to allow pushing to any host.
   if spec.respond_to?(:metadata)
