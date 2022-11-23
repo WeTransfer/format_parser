@@ -186,6 +186,7 @@ describe FormatParser do
         'FormatParser::PNGParser',
         'FormatParser::MOOVParser',
         'FormatParser::CR2Parser',
+        'FormatParser::CR3Parser',
         'FormatParser::DPXParser',
         'FormatParser::FLACParser',
         'FormatParser::MP3Parser',

@@ -6,7 +6,6 @@ class FormatParser::MOOVParser
   # we can reasonably call "file type" (something
   # usable as a filename extension)
   FTYP_MAP = {
-    'crx ' => :cr3,
     'm4a ' => :m4a,
     'mp4 ' => :mp4,
     'qt  ' => :mov,
@@ -15,12 +14,11 @@ class FormatParser::MOOVParser
   # https://tools.ietf.org/html/rfc4337#section-2
   # There is also video/quicktime which we should be able to capture
   # here, but there is currently no detection for MOVs versus MP4s
-  CR3_MIME_TYPE = 'image/x-canon-cr3'
   MP4_AU_MIME_TYPE = 'audio/mp4'
   MP4_MIXED_MIME_TYPE = 'video/mp4'
 
   def likely_match?(filename)
-    filename =~ /\.(aac|cr3|m4a|m4v|ma4|mov|mp4)$/i
+    filename =~ /\.(m4a|m4v|ma4|mov|mp4)$/i
   end
 
   def call(io)
@@ -65,8 +63,6 @@ class FormatParser::MOOVParser
         content_type: MP4_AU_MIME_TYPE,
         intrinsics: atom_tree,
       )
-    elsif format == :cr3
-      cr3(decoder, atom_tree, width, height)
     else
       FormatParser::Video.new(
         format: format,
@@ -165,36 +161,5 @@ class FormatParser::MOOVParser
     end
   end
 
-  def cr3(decoder, atom_tree, fallback_width, fallback_height)
-    cmt1_atom = decoder.find_first_atom_by_path(atom_tree, 'moov', 'uuid', 'CMT1')
-    if cmt1_atom
-      width = cmt1_atom.field_value(:image_width)
-      height = cmt1_atom.field_value(:image_length)
-      rotated = cmt1_atom.field_value(:rotated)
-      orientation = cmt1_atom.field_value(:orientation_sym)
-      FormatParser::Image.new(
-        format: :cr3,
-        content_type: CR3_MIME_TYPE,
-        width_px: width,
-        height_px: height,
-        orientation: orientation,
-        display_width_px: rotated ? height : width,
-        display_height_px: rotated ? width : height,
-        intrinsics: {
-          atom_tree: atom_tree,
-          exif: cmt1_atom.atom_fields,
-        },
-      )
-    else
-      FormatParser::Image.new(
-        format: :cr3,
-        content_type: CR3_MIME_TYPE,
-        width_px: fallback_width,
-        height_px: fallback_height,
-        intrinsics: { atom_tree: atom_tree },
-      )
-    end
-  end
-
-  FormatParser.register_parser new, natures: [:audio, :image, :video], formats: FTYP_MAP.values, priority: 3
+  FormatParser.register_parser new, natures: [:audio, :video], formats: FTYP_MAP.values, priority: 3
 end

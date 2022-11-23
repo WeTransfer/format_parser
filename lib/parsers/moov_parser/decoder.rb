@@ -4,7 +4,6 @@
 # To know more about Atoms: https://developer.apple.com/library/archive/documentation/QuickTime/QTFF/QTFFChap2/qtff2.html
 class FormatParser::MOOVParser::Decoder
   include FormatParser::IOUtils
-  include FormatParser::EXIFParser
 
   class Atom < Struct.new(:at, :atom_size, :atom_type, :path, :children, :atom_fields)
     def to_s
@@ -28,7 +27,7 @@ class FormatParser::MOOVParser::Decoder
   KNOWN_BRANCH_ATOM_TYPES = %w(moov mdia trak clip edts minf dinf stbl)
 
   # Mark that udta may contain both
-  KNOWN_BRANCH_AND_LEAF_ATOM_TYPES = %w[uuid] # %w(udta) # the udta.meta thing used by iTunes
+  KNOWN_BRANCH_AND_LEAF_ATOM_TYPES = [] # %w(udta) # the udta.meta thing used by iTunes
 
   # Limit how many atoms we scan in sequence, to prevent derailments
   MAX_ATOMS_AT_LEVEL = 128
@@ -310,19 +309,6 @@ class FormatParser::MOOVParser::Decoder
     return if atom_size == 0 # this atom can be empty
 
     parse_hdlr_atom(io, atom_size)
-  end
-
-  def parse_uuid_atom(io, _atom_size)
-    # We don't care about the actual UUID for now, we only care about the children, so let's skip it.
-    safe_skip(io, 16)
-  end
-
-  def parse_CMT1_atom(io, atom_size)
-    exif = exif_from_tiff_io(StringIO.new(safe_read(io, atom_size)))
-    fields = exif.to_hash
-    fields[:rotated] = exif.rotated?
-    fields[:orientation_sym] = exif.orientation_sym
-    fields
   end
 
   def parse_atom_fields_per_type(io, atom_size, atom_type)

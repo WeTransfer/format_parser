@@ -178,7 +178,7 @@ class FormatParser::JPEGParser
 
   def skip_frame
     length = read_short - 2
-    safe_skip(@buf, length)
+    skip_bytes(length)
   end
 
   FormatParser.register_parser self, natures: :image, formats: :jpg, priority: 0
