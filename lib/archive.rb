@@ -1,10 +1,8 @@
-require 'ks'
-
 module FormatParser
   class Archive
     include FormatParser::AttributesJSON
 
-    class Entry < Ks.strict(:type, :size, :filename)
+    class Entry < Struct.new(:type, :size, :filename, keyword_init: true)
       def to_json(*a)
         to_h.to_json(*a)
       end
