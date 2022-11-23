@@ -21,7 +21,7 @@ describe FormatParser::CR3Parser do
   it 'should return nil if no CMT1 atom is present' do
     # This is a MOV file with the ftyp header modified to masquerade as a CR3 file. It is therefore missing the
     # CR3-specific CMT1 atom containing the image metadata.
-    result = subject.call(File.open(fixtures_dir + '/CR3/invalid.mov'))
+    result = subject.call(File.open(fixtures_dir + '/CR3/foo.invalid'))
     expect(result).to be_nil
   end
 
