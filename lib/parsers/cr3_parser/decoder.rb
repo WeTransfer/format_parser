@@ -1,6 +1,6 @@
-require 'parsers/iso_base_file_format/decoder'
+require 'parsers/iso_base_media_file_format/decoder'
 
-class FormatParser::CR3Parser::Decoder < FormatParser::Decoder
+class FormatParser::CR3Parser::Decoder < FormatParser::ISOBaseMediaFileFormat::Decoder
   include FormatParser::EXIFParser
 
   protected
