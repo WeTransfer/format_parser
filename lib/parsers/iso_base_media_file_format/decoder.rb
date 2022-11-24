@@ -38,10 +38,10 @@ module FormatParser
         # @param [Array<String>] types
         # @return [Array<Atom>]
         def select_descendents(types)
-          children.filter_map do |child|
+          children.map do |child|
             descendents = child.select_descendents(types)
             types.include?(child.type) ? [child] + descendents : descendents
-          end.flatten
+          end.compact.flatten
         end
       end
 
