@@ -41,7 +41,7 @@ module FormatParser
           children.map do |child|
             descendents = child.select_descendents(types)
             types.include?(child.type) ? [child] + descendents : descendents
-          end.compact.flatten
+          end.flatten
         end
       end
 
