@@ -77,53 +77,6 @@ class FormatParser::MOOVParser::Decoder
     end
   end
 
-  # Recursive descent parser - will drill down to atoms which
-  # we know are permitted to have leaf/branch atoms within itself,
-  # and will attempt to recover the data fields for leaf atoms
-  #
-  # @param [IO] io
-  # @param [Integer] max_read
-  # @param [Array<String>] current_branch
-  # @return [Array<Atom>]
-  def extract_atom_stream(io, max_read, current_branch = [])
-    initial_pos = io.pos
-    atoms = []
-    MAX_ATOMS_AT_LEVEL.times do
-      atom_pos = io.pos
-      break if atom_pos - initial_pos >= max_read
-
-      size_and_type = io.read(4 + 4)
-      break if size_and_type.to_s.bytesize < 8
-
-      atom_size, atom_type = size_and_type.unpack('Na4')
-
-      # If atom_size is specified to be 1, it is larger than what fits into the
-      # 4 bytes and we need to read it right after the atom type
-      atom_size = read_64bit_uint(io) if atom_size == 1
-      atom_header_size = io.pos - atom_pos
-      atom_size_sans_header = atom_size - atom_header_size
-
-      fields, children = if KNOWN_BRANCH_AND_LEAF_ATOM_TYPES.include?(atom_type)
-        [
-          parse_atom_fields_per_type(io, atom_size_sans_header, atom_type),
-          extract_atom_stream(io, atom_size_sans_header, current_branch + [atom_type])
-        ]
-      elsif KNOWN_BRANCH_ATOM_TYPES.include?(atom_type)
-        [nil, extract_atom_stream(io, atom_size_sans_header, current_branch + [atom_type])]
-      else
-        # Assume leaf atom
-        [parse_atom_fields_per_type(io, atom_size_sans_header, atom_type), nil]
-      end
-
-      atoms << Atom.new(atom_pos, atom_size, atom_type, current_branch + [atom_type], children, fields)
-
-      io.seek(atom_pos + atom_size)
-    end
-    atoms
-  end
-
-  private
-
   def parse_ftyp_atom(io, atom_size)
     # Subtract 8 for the atom_size+atom_type,
     # and 8 once more for the major_brand and minor_version. The remaining
@@ -131,9 +84,9 @@ class FormatParser::MOOVParser::Decoder
     # brand.
     num_brands = (atom_size - 8 - 8) / 4
     {
-      major_brand: safe_read(io, 4),
+      major_brand: read_bytes(io, 4),
       minor_version: read_binary_coded_decimal(io),
-      compatible_brands: (1..num_brands).map { safe_read(io, 4) },
+      compatible_brands: (1..num_brands).map { read_bytes(io, 4) },
     }
   end
 
@@ -142,17 +95,17 @@ class FormatParser::MOOVParser::Decoder
     is_v1 = version == 1
     {
       version: version,
-      flags: safe_read(io, 3),
+      flags: read_chars(io, 3),
       ctime: is_v1 ? read_64bit_uint(io) : read_32bit_uint(io),
       mtime: is_v1 ? read_64bit_uint(io) : read_32bit_uint(io),
       trak_id: read_32bit_uint(io),
-      reserved_1: safe_read(io, 4),
+      reserved_1: read_chars(io, 4),
       duration: is_v1 ? read_64bit_uint(io) : read_32bit_uint(io),
-      reserved_2: safe_read(io, 8),
+      reserved_2: read_chars(io, 8),
       layer: read_16bit_uint(io),
       alternate_group: read_16bit_uint(io),
       volume: read_16bit_uint(io),
-      reserved_3: safe_read(io, 2),
+      reserved_3: read_chars(io, 2),
       matrix_structure: (1..9).map { read_32bit_fixed_point(io) },
       track_width: read_32bit_fixed_point(io),
       track_height: read_32bit_fixed_point(io),
@@ -164,7 +117,7 @@ class FormatParser::MOOVParser::Decoder
     is_v1 = version == 1
     stts = {
       version: version,
-      flags: safe_read(io, 3),
+      flags: read_bytes(io, 3),
       number_of_entries: is_v1 ? read_64bit_uint(io) : read_32bit_uint(io),
       entries: []
     }
@@ -182,13 +135,13 @@ class FormatParser::MOOVParser::Decoder
     is_v1 = version == 1
     stsd = {
       version: version,
-      flags: safe_read(io, 3),
+      flags: read_bytes(io, 3),
       number_of_entries: is_v1 ? read_64bit_uint(io) : read_32bit_uint(io),
       codecs: []
     }
     stsd[:number_of_entries].times {
       codec_length = read_32bit_uint(io)
-      stsd[:codecs] << safe_read(io, 4)
+      stsd[:codecs] << read_bytes(io, 4)
       io.seek(io.pos + codec_length - 8) # 8 bytes is the header length containing the codec length and the codec name that we just did read
     }
     stsd
@@ -199,7 +152,7 @@ class FormatParser::MOOVParser::Decoder
     is_v1 = version == 1
     {
       version: version,
-      flags: safe_read(io, 3),
+      flags: read_bytes(io, 3),
       ctime: is_v1 ? read_64bit_uint(io) : read_32bit_uint(io),
       mtime: is_v1 ? read_64bit_uint(io) : read_32bit_uint(io),
       tscale: read_32bit_uint(io),
@@ -212,8 +165,8 @@ class FormatParser::MOOVParser::Decoder
   def parse_vmhd_atom(io, _)
     {
       version: read_byte_value(io),
-      flags: safe_read(io, 3),
-      graphics_mode: safe_read(io, 2),
+      flags: read_bytes(io, 3),
+      graphics_mode: read_bytes(io, 2),
       opcolor_r: read_32bit_uint(io),
       opcolor_g: read_32bit_uint(io),
       opcolor_b: read_32bit_uint(io),
@@ -225,13 +178,13 @@ class FormatParser::MOOVParser::Decoder
     is_v1 = version == 1
     {
       version: version,
-      flags: safe_read(io, 3),
+      flags: read_bytes(io, 3),
       ctime: is_v1 ? read_64bit_uint(io) : read_32bit_uint(io),
       mtime: is_v1 ? read_64bit_uint(io) : read_32bit_uint(io),
       tscale: read_32bit_uint(io),
       duration: is_v1 ? read_64bit_uint(io) : read_32bit_uint(io),
       preferred_rate: read_32bit_uint(io),
-      reserved: safe_read(io, 10),
+      reserved: read_bytes(io, 10),
       matrix_structure: (1..9).map { read_32bit_fixed_point(io) },
       preview_time: read_32bit_uint(io),
       preview_duration: read_32bit_uint(io),
@@ -246,18 +199,18 @@ class FormatParser::MOOVParser::Decoder
   def parse_dref_atom(io, _)
     dict = {
       version: read_byte_value(io),
-      flags: safe_read(io, 3),
+      flags: read_bytes(io, 3),
       num_entries: read_32bit_uint(io),
     }
     num_entries = dict[:num_entries]
     entries = (1..num_entries).map do
       entry = {
         size: read_32bit_uint(io),
-        type: safe_read(io, 4),
-        version: safe_read(io, 1),
-        flags: safe_read(io, 3),
+        type: read_bytes(io, 4),
+        version: read_bytes(io, 1),
+        flags: read_bytes(io, 3),
       }
-      entry[:data] = safe_read(io, (entry[:size] - 12))
+      entry[:data] = read_bytes(io, entry[:size] - 12)
       entry
     end
     dict[:entries] = entries
@@ -267,7 +220,7 @@ class FormatParser::MOOVParser::Decoder
   def parse_elst_atom(io, _)
     dict = {
       version: read_byte_value(io),
-      flags: safe_read(io, 3),
+      flags: read_bytes(io, 3),
       num_entries: read_32bit_uint(io),
     }
     is_v1 = dict[:version] == 1 # Usual is 0, version 1 has 64bit durations
@@ -288,15 +241,15 @@ class FormatParser::MOOVParser::Decoder
     version = read_byte_value(sub_io)
     base_fields = {
       version: version,
-      flags: safe_read(sub_io, 3),
-      component_type: safe_read(sub_io, 4),
-      component_subtype: safe_read(sub_io, 4),
-      component_manufacturer: safe_read(sub_io, 4),
+      flags: read_bytes(sub_io, 3),
+      component_type: read_bytes(sub_io, 4),
+      component_subtype: read_bytes(sub_io, 4),
+      component_manufacturer: read_bytes(sub_io, 4),
     }
     if version == 1
       version1_fields = {
-        component_flags: safe_read(sub_io, 4),
-        component_flags_mask: safe_read(sub_io, 4),
+        component_flags: read_bytes(sub_io, 4),
+        component_flags_mask: read_bytes(sub_io, 4),
         component_name: sub_io.read,
       }
       base_fields.merge(version1_fields)
@@ -319,6 +272,48 @@ class FormatParser::MOOVParser::Decoder
     end
   end
 
+  def parse_atom_children_and_data_fields(io, atom_size_sans_header, atom_type, current_branch)
+    parse_atom_fields_per_type(io, atom_size_sans_header, atom_type)
+    extract_atom_stream(io, atom_size_sans_header, current_branch + [atom_type])
+  end
+
+  # Recursive descent parser - will drill down to atoms which
+  # we know are permitted to have leaf/branch atoms within itself,
+  # and will attempt to recover the data fields for leaf atoms
+  def extract_atom_stream(io, max_read, current_branch = [])
+    initial_pos = io.pos
+    atoms = []
+    MAX_ATOMS_AT_LEVEL.times do
+      atom_pos = io.pos
+
+      break if atom_pos - initial_pos >= max_read
+
+      size_and_type = io.read(4 + 4)
+      break if size_and_type.to_s.bytesize < 8
+
+      atom_size, atom_type = size_and_type.unpack('Na4')
+
+      # If atom_size is specified to be 1, it is larger than what fits into the
+      # 4 bytes and we need to read it right after the atom type
+      atom_size = read_64bit_uint(io) if atom_size == 1
+      atom_header_size = io.pos - atom_pos
+      atom_size_sans_header = atom_size - atom_header_size
+
+      children, fields = if KNOWN_BRANCH_AND_LEAF_ATOM_TYPES.include?(atom_type)
+        parse_atom_children_and_data_fields(io, atom_size_sans_header, atom_type, current_branch)
+      elsif KNOWN_BRANCH_ATOM_TYPES.include?(atom_type)
+        [extract_atom_stream(io, atom_size_sans_header, current_branch + [atom_type]), nil]
+      else # Assume leaf atom
+        [nil, parse_atom_fields_per_type(io, atom_size_sans_header, atom_type)]
+      end
+
+      atoms << Atom.new(atom_pos, atom_size, atom_type, current_branch + [atom_type], children, fields)
+
+      io.seek(atom_pos + atom_size)
+    end
+    atoms
+  end
+
   def read_16bit_fixed_point(io)
     _whole, _fraction = safe_read(io, 2).unpack('CC')
   end
@@ -327,8 +322,16 @@ class FormatParser::MOOVParser::Decoder
     _whole, _fraction = safe_read(io, 4).unpack('nn')
   end
 
+  def read_chars(io, n)
+    safe_read(io, n)
+  end
+
   def read_byte_value(io)
     safe_read(io, 1).unpack('C').first
+  end
+
+  def read_bytes(io, n)
+    safe_read(io, n)
   end
 
   def read_16bit_uint(io)
