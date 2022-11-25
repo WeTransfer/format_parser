@@ -129,7 +129,7 @@ end
 describe FormatParser::ISOBaseMediaFileFormat::Decoder::Atom do
   context 'when initialized' do
     context 'without fields and/or children' do
-      subject { FormatParser::ISOBaseMediaFileFormat::Decoder::Atom.new('foo', 0, 0) }
+      subject { described_class.new('foo', 0, 0) }
 
       it 'sets them as an empty array/hash' do
         expect(subject.type).to eq('foo')
@@ -142,9 +142,9 @@ describe FormatParser::ISOBaseMediaFileFormat::Decoder::Atom do
 
     context 'with fields and/or children' do
       let(:fields) { { foo: 1, bar: 'bar' } }
-      let(:children) { [FormatParser::ISOBaseMediaFileFormat::Decoder::Atom.new('bar', 0, 0)] }
+      let(:children) { [described_class.new('bar', 0, 0)] }
 
-      subject { FormatParser::ISOBaseMediaFileFormat::Decoder::Atom.new('foo', 0, 0, fields, children) }
+      subject { described_class.new('foo', 0, 0, fields, children) }
 
       it 'sets them correctly' do
         expect(subject.type).to eq('foo')
@@ -158,7 +158,7 @@ describe FormatParser::ISOBaseMediaFileFormat::Decoder::Atom do
 
   context 'when find_first_descendent is called' do
     context 'with no children' do
-      subject { FormatParser::ISOBaseMediaFileFormat::Decoder::Atom.new('root', 0, 0) }
+      subject { described_class.new('root', 0, 0) }
       it 'returns nil' do
         expect(subject.find_first_descendent(%w[root foo])).to be_nil
       end
@@ -166,10 +166,10 @@ describe FormatParser::ISOBaseMediaFileFormat::Decoder::Atom do
 
     context 'with no descendents of the given type(s)' do
       subject do
-        FormatParser::ISOBaseMediaFileFormat::Decoder::Atom.new('root', 0, 0, nil, [
-          FormatParser::ISOBaseMediaFileFormat::Decoder::Atom.new('foo', 0, 0),
-          FormatParser::ISOBaseMediaFileFormat::Decoder::Atom.new('bar', 0, 0, nil, [
-            FormatParser::ISOBaseMediaFileFormat::Decoder::Atom.new('baz', 0, 0)
+        described_class.new('root', 0, 0, nil, [
+          described_class.new('foo', 0, 0),
+          described_class.new('bar', 0, 0, nil, [
+            described_class.new('baz', 0, 0)
           ])
         ])
       end
@@ -180,14 +180,14 @@ describe FormatParser::ISOBaseMediaFileFormat::Decoder::Atom do
     end
 
     context 'with multiple descendents of the given type(s)' do
-      let(:descendent) { FormatParser::ISOBaseMediaFileFormat::Decoder::Atom.new('bar', 0, 0) }
+      let(:descendent) { described_class.new('bar', 0, 0) }
 
       subject do
-        FormatParser::ISOBaseMediaFileFormat::Decoder::Atom.new('root', 0, 0, nil, [
-          FormatParser::ISOBaseMediaFileFormat::Decoder::Atom.new('foo', 0, 0, nil, [
+        described_class.new('root', 0, 0, nil, [
+          described_class.new('foo', 0, 0, nil, [
             descendent
           ]),
-          FormatParser::ISOBaseMediaFileFormat::Decoder::Atom.new('bar', 0, 0),
+          described_class.new('bar', 0, 0),
         ])
       end
 
@@ -199,7 +199,7 @@ describe FormatParser::ISOBaseMediaFileFormat::Decoder::Atom do
 
   context 'when select_descendents is called' do
     context 'with no children' do
-      subject { FormatParser::ISOBaseMediaFileFormat::Decoder::Atom.new('root', 0, 0) }
+      subject { described_class.new('root', 0, 0) }
       it 'returns an empty array' do
         expect(subject.select_descendents(%w[root foo])).to eq([])
       end
@@ -207,10 +207,10 @@ describe FormatParser::ISOBaseMediaFileFormat::Decoder::Atom do
 
     context 'with no descendents of the given type(s)' do
       subject do
-        FormatParser::ISOBaseMediaFileFormat::Decoder::Atom.new('root', 0, 0, nil, [
-          FormatParser::ISOBaseMediaFileFormat::Decoder::Atom.new('foo', 0, 0),
-          FormatParser::ISOBaseMediaFileFormat::Decoder::Atom.new('bar', 0, 0, nil, [
-            FormatParser::ISOBaseMediaFileFormat::Decoder::Atom.new('baz', 0, 0)
+        described_class.new('root', 0, 0, nil, [
+          described_class.new('foo', 0, 0),
+          described_class.new('bar', 0, 0, nil, [
+            described_class.new('baz', 0, 0)
           ])
         ])
       end
@@ -221,13 +221,13 @@ describe FormatParser::ISOBaseMediaFileFormat::Decoder::Atom do
     end
 
     context 'with multiple descendents of the given type(s)' do
-      let(:descendent_1) { FormatParser::ISOBaseMediaFileFormat::Decoder::Atom.new('bar', 0, 0) }
-      let(:descendent_3) { FormatParser::ISOBaseMediaFileFormat::Decoder::Atom.new('bar', 20, 20) }
-      let(:descendent_2) { FormatParser::ISOBaseMediaFileFormat::Decoder::Atom.new('baz', 10, 10, nil, [descendent_3]) }
+      let(:descendent_1) { described_class.new('bar', 0, 0) }
+      let(:descendent_3) { described_class.new('bar', 20, 20) }
+      let(:descendent_2) { described_class.new('baz', 10, 10, nil, [descendent_3]) }
 
       subject do
-        FormatParser::ISOBaseMediaFileFormat::Decoder::Atom.new('root', 0, 0, nil, [
-          FormatParser::ISOBaseMediaFileFormat::Decoder::Atom.new('foo', 0, 0, nil, [
+        described_class.new('root', 0, 0, nil, [
+          described_class.new('foo', 0, 0, nil, [
             descendent_1
           ]),
           descendent_2,

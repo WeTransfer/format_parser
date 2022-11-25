@@ -4,8 +4,10 @@
 # For more information on atoms, see https://developer.apple.com/library/archive/documentation/QuickTime/QTFF/QTFFChap1/qtff1.html
 # or https://b.goeswhere.com/ISO_IEC_14496-12_2015.pdf.
 #
-# The vast majority of the methods have been commented out here. This decision was taken to expedite the release of
-# support for the CR3 format, such that it was not blocked by the undertaking of testing this class in its entirety.
+# TODO: The vast majority of the methods have been commented out here. This decision was taken to expedite the release
+#   of support for the CR3 format, such that it was not blocked by the undertaking of testing this class in its
+#   entirety. We should migrate existing formats that are based on the ISO base media file format and reintroduce these
+#   methods with tests down-the-line.
 
 module FormatParser
   module ISOBaseMediaFileFormat
@@ -324,7 +326,7 @@ module FormatParser
       #   fields.merge!({
       #     item_id: version == 0 ? read_int_16 : read_int_32,
       #     packet_payload_size: read_int_16,
-      #     fec_encoding_id: skip_bytes_then(1) { read_int_8 },
+      #     fec_encoding_id: skip_bytes(1) { read_int_8 },
       #     fec_instance_id: read_int_16,
       #     max_source_block_length: read_int_16,
       #     encoding_symbol_length: read_int_16,
@@ -351,8 +353,8 @@ module FormatParser
       # Parse a handler atom.
       # def hdlr(size)
       #   fields = read_version_and_flags.merge({
-      #     handler_type: skip_bytes_then(4) { read_int_32 },
-      #     name: skip_bytes_then(12) { read_string(size - 24) }
+      #     handler_type: skip_bytes(4) { read_int_32 },
+      #     name: skip_bytes(12) { read_string(size - 24) }
       #   })
       #   [fields, nil]
       # end
@@ -532,8 +534,8 @@ module FormatParser
       #     duration: version == 1 ? read_int_64 : read_int_32,
       #     rate: read_fixed_point_32,
       #     volume: read_fixed_point_16,
-      #     matrix: skip_bytes_then(10) { read_matrix },
-      #     next_trak_id: skip_bytes_then(24) { read_int_32 },
+      #     matrix: skip_bytes(10) { read_matrix },
+      #     next_trak_id: skip_bytes(24) { read_int_32 },
       #   })
       #   [fields, nil]
       # end
@@ -708,7 +710,7 @@ module FormatParser
       #     earliest_presentation_time: version == 0 ? read_int_32 : read_int_64,
       #     first_offset: version == 0 ? read_int_32 : read_int_64,
       #   })
-      #   reference_count = skip_bytes_then(2) { read_int_16 }
+      #   reference_count = skip_bytes(2) { read_int_16 }
       #   fields.merge!({
       #     reference_count: reference_count,
       #     references: reference_count.times.map do
@@ -873,7 +875,7 @@ module FormatParser
       # Parse a compact sample size atom.
       # def stz2(size)
       #   fields = read_version_and_flags.merge({
-      #     field_size: skip_bytes_then(3) { read_int_8 },
+      #     field_size: skip_bytes(3) { read_int_8 },
       #     sample_count: read_int_32
       #   })
       #   # TODO: Handling for parsing entry sizes dynamically based on field size.
@@ -941,11 +943,11 @@ module FormatParser
       #     creation_time: version == 1 ? read_int_64 : read_int_32,
       #     modification_time: version == 1 ? read_int_64 : read_int_32,
       #     track_id: read_int_32,
-      #     duration: skip_bytes_then(4) { version == 1 ? read_int_64 : read_int_32 },
-      #     layer: skip_bytes_then(8) { read_int_16 },
+      #     duration: skip_bytes(4) { version == 1 ? read_int_64 : read_int_32 },
+      #     layer: skip_bytes(8) { read_int_16 },
       #     alternate_group: read_int_16,
       #     volume: read_fixed_point_16,
-      #     matrix: skip_bytes_then(2) { read_matrix },
+      #     matrix: skip_bytes(2) { read_matrix },
       #     width: read_fixed_point_32,
       #     height: read_fixed_point_32
       #   })

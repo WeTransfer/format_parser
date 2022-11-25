@@ -3,6 +3,7 @@ class FormatParser::CR3Parser
   require_relative 'cr3_parser/decoder'
 
   CR3_MIME_TYPE = 'image/x-canon-cr3'
+  MAGIC_BYTES = 'ftypcrx '
 
   def likely_match?(filename)
     filename =~ /\.cr3$/i
@@ -40,7 +41,8 @@ class FormatParser::CR3Parser
   private
 
   def matches_cr3_definition?
-    matches = skip_bytes_then(4) { read_string(8) } == 'ftypcrx '
+    skip_bytes(4)
+    matches = read_string(8) == MAGIC_BYTES
     @buf.seek(0)
     matches
   end

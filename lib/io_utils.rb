@@ -63,22 +63,16 @@ module FormatParser::IOUtils
     [n >> 30, n & 0x3fffffff]
   end
 
-  def read_string(n)
-    safe_read(@buf, n)
-  end
-
   # 'n' is the number of bytes to read
   def read_bytes(n)
     safe_read(@buf, n)
   end
 
+  alias_method :read_string, :read_bytes
+
   def skip_bytes(n)
     safe_skip(@buf, n)
-  end
-
-  def skip_bytes_then(n)
-    skip_bytes(n)
-    yield
+    yield if block_given?
   end
 
   ### TODO: Some kind of built-in offset for the read
