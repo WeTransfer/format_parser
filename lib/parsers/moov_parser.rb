@@ -107,12 +107,12 @@ class FormatParser::MOOVParser
   end
 
   # An MPEG4/MOV/M4A will start with the "ftyp" atom. The atom must have a length
-  # of at least 8 (to accomodate the atom size and the atom type itself) plus the major
+  # of at least 16 (to accomodate the atom size and the atom type itself) plus the major brand
   # and minor version fields. If we cannot find it we can be certain this is not our file.
   def matches_moov_definition?(io)
-    maybe_atom_size, maybe_ftyp_atom_signature = safe_read(io, 8).unpack('N1a4')
+    maybe_atom_size, maybe_ftyp_atom_signature, maybe_major_brand = safe_read(io, 12).unpack('N1a4a4')
     minimum_ftyp_atom_size = 4 + 4 + 4 + 4
-    maybe_atom_size >= minimum_ftyp_atom_size && maybe_ftyp_atom_signature == 'ftyp'
+    maybe_atom_size >= minimum_ftyp_atom_size && maybe_ftyp_atom_signature == 'ftyp' && maybe_major_brand != 'crx '
   end
 
   # Sample information is found in the 'time-to-sample' stts atom.
