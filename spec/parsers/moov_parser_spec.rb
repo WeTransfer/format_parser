@@ -135,4 +135,10 @@ describe FormatParser::MOOVParser do
     expect(result).not_to be_nil
     expect(result.format).to eq(:mov)
   end
+
+  it 'does not parse CR3 files' do
+    cr3_path = fixtures_dir + '/CR3/Canon EOS R10 (RAW).CR3'
+    result = subject.call(File.open(cr3_path, 'rb'))
+    expect(result).to be_nil
+  end
 end

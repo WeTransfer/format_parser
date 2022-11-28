@@ -1,3 +1,6 @@
+## 2.2.1
+* Bug fix for `CR3` files being misidentified as `MOOV`.
+
 ## 2.2.0
 * Add support for `CR3` files.
 * Add ISO base file format decoding functionality.
