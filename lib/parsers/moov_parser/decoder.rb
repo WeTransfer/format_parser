@@ -63,7 +63,7 @@ class FormatParser::MOOVParser::Decoder
   end
 
   # A file can have multiple tracks. To identify the type it is necessary to check
-  # the fields `omponent_subtype` in hdlr atom under the trak atom
+  # the fields `component_subtype` in hdlr atom under the trak atom
   # More details in https://developer.apple.com/library/archive/documentation/QuickTime/QTFF/QTFFChap2/qtff2.html#//apple_ref/doc/uid/TP40000939-CH204-DontLinkElementID_147
   def find_video_trak_atom(atoms)
     trak_atoms = find_atoms_by_path(atoms, ['moov', 'trak'])

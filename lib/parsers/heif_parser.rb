@@ -179,7 +179,7 @@ class FormatParser::HEIFParser
 
   def read_item_info_box
     version = read_int_8
-    safe_skip(@buf, 3) # 0 flags
+    skip_bytes(3) # 0 flags
     entry_count = if version == 0
       read_int_16
     else
@@ -191,7 +191,7 @@ class FormatParser::HEIFParser
       return unless read_string(4) == ITEM_INFO_ENTRY
       item_info_end_pos = @buf.pos + item_info_entry_length - HEADER_LENGTH
       version = read_int_8
-      safe_skip(@buf, 3) # 0 flags
+      skip_bytes(3) # 0 flags
       case version
       when 2
         item_id = read_int_16
@@ -200,7 +200,7 @@ class FormatParser::HEIFParser
       else
         return # wrong version according to standards, hence return
       end
-      safe_skip(@buf, 2) # not interested in the item_protection_index
+      skip_bytes(2) # not interested in the item_protection_index
       item_type = read_string(4)
       content_encoding = ''
       if item_type == MIME_MARKER
@@ -212,13 +212,13 @@ class FormatParser::HEIFParser
   end
 
   def read_nil_version_and_flag
-    safe_skip(@buf, 1) # version, always 0 in this current box
-    safe_skip(@buf, 3) # flags, always 0 in this current box
+    skip_bytes(1) # version, always 0 in this current box
+    skip_bytes(3) # flags, always 0 in this current box
   end
 
   def read_primary_item_box
     version = read_int_8
-    safe_read(@buf, 3) # flags, always 0 in this current box
+    skip_bytes(3) # flags, always 0 in this current box
     @primary_item_id = if version == 0
       read_int_16
     else
@@ -332,7 +332,7 @@ class FormatParser::HEIFParser
 
   def read_item_properties_association_box
     version = read_int_8
-    safe_read(@buf, 2) # we skip the first 2 bytes of the flags (total of 3 bytes) cause we care only about the least significant bit
+    skip_bytes(2) # we skip the first 2 bytes of the flags (total of 3 bytes) cause we care only about the least significant bit
     flags = read_int_8
     entry_count = read_int_32
     item_id = 0

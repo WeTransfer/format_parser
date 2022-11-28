@@ -54,7 +54,7 @@ class FormatParser::WebpParser
     # Encoded as a single VP8 key frame - a 10-byte uncompressed chunk followed by 2+ partitions of compressed data.
     # The first 6 bytes of this chunk contains information that is mostly relevant when using VP8 as a video
     # compression format, and can be ignored.
-    safe_skip(@buf, 6)
+    skip_bytes(6)
 
     # The subsequent 4 bytes contain the image width and height, respectively, as 16-bit unsigned little endian
     # integers.
@@ -64,7 +64,7 @@ class FormatParser::WebpParser
 
   def read_lossless_data
     # There is a single byte signature, 0x2F, that we can disregard.
-    safe_skip(@buf, 1)
+    skip_bytes(1)
 
     # The subsequent 4 bytes contain the image width and height, respectively, as 14-bit unsigned little endian
     # integers (minus one). The 4 remaining bits consist of a 1-bit flag indicating whether alpha is used, and a 3-bit
@@ -100,7 +100,7 @@ class FormatParser::WebpParser
 
     # The flags are followed by three reserved bytes of zeros, and then by the width and height, respectively - each
     # occupying three bytes and each one less than the actual canvas measurements.
-    safe_skip(@buf, 3)
+    skip_bytes(3)
     dimensions = safe_read(@buf, 6).unpack('VS')
     width = (dimensions[0] & 0xffffff) + 1
     height = (dimensions[0] >> 24 | dimensions[1] << 8 & 0xffffff) + 1
@@ -134,7 +134,7 @@ class FormatParser::WebpParser
       end
 
       # Padding byte of 0 added if chunk size is odd.
-      safe_skip(@buf, 1) if chunk_size.odd?
+      skip_bytes(1) if chunk_size.odd?
 
       case fourcc
       when 'EXIF'
@@ -155,9 +155,9 @@ class FormatParser::WebpParser
         intrinsics[:xmp] ||= safe_read(@buf, chunk_size)
       when 'ANMF'
         num_frames += 1 if image.has_multiple_frames
-        safe_skip(@buf, chunk_size)
+        skip_bytes(chunk_size)
       else
-        safe_skip(@buf, chunk_size)
+        skip_bytes(chunk_size)
       end
     end
 

@@ -1,5 +1,9 @@
+## 2.2.0
+* Add support for `CR3` files.
+* Add ISO base file format decoding functionality.
+
 ## 2.1.0
-* Require minumum 2.6 ruby version.
+* Require minimum 2.6 ruby version.
 * Bring back 2.6 to test matrix, we have jruby there which is still compatible with 2.6
 * Drop `ks` dependency.
 

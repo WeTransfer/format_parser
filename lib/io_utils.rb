@@ -27,28 +27,52 @@ module FormatParser::IOUtils
   end
 
   def read_int_8
-    safe_read(@buf, 1).unpack('C').first
+    read_bytes(1).unpack('C').first
   end
 
   def read_int_16
-    safe_read(@buf, 2).unpack('n').first
+    read_bytes(2).unpack('n').first
   end
 
   def read_int_32
-    safe_read(@buf, 4).unpack('N').first
+    read_bytes(4).unpack('N').first
+  end
+
+  def read_int_64
+    read_bytes(8).unpack('Q>').first
   end
 
   def read_little_endian_int_16
-    safe_read(@buf, 2).unpack('v').first
+    read_bytes(2).unpack('v').first
   end
 
   def read_little_endian_int_32
-    safe_read(@buf, 4).unpack('V').first
+    read_bytes(4).unpack('V').first
+  end
+
+  def read_fixed_point_16
+    read_bytes(2).unpack('C2')
+  end
+
+  def read_fixed_point_32
+    read_bytes(4).unpack('n2')
+  end
+
+  def read_fixed_point_32_2_30
+    n = read_int_32
+    [n >> 30, n & 0x3fffffff]
   end
 
   # 'n' is the number of bytes to read
-  def read_string(n)
+  def read_bytes(n)
     safe_read(@buf, n)
+  end
+
+  alias_method :read_string, :read_bytes
+
+  def skip_bytes(n)
+    safe_skip(@buf, n)
+    yield if block_given?
   end
 
   ### TODO: Some kind of built-in offset for the read

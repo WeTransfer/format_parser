@@ -6,9 +6,9 @@ class FormatParser::MOOVParser
   # we can reasonably call "file type" (something
   # usable as a filename extension)
   FTYP_MAP = {
-    'qt  ' => :mov,
-    'mp4 ' => :mp4,
     'm4a ' => :m4a,
+    'mp4 ' => :mp4,
+    'qt  ' => :mov,
   }
 
   # https://tools.ietf.org/html/rfc4337#section-2
@@ -18,7 +18,7 @@ class FormatParser::MOOVParser
   MP4_MIXED_MIME_TYPE = 'video/mp4'
 
   def likely_match?(filename)
-    filename =~ /\.(mov|m4a|ma4|mp4|aac|m4v)$/i
+    filename =~ /\.(m4a|m4v|ma4|mov|mp4)$/i
   end
 
   def call(io)
@@ -42,7 +42,8 @@ class FormatParser::MOOVParser
     end
 
     ftyp_atom = decoder.find_first_atom_by_path(atom_tree, 'ftyp')
-    file_type = ftyp_atom.field_value(:major_brand)
+    file_type = ftyp_atom&.field_value(:major_brand)
+    format = format_from_moov_type(file_type)
 
     # Try to find the width and height in the tkhd
     width, height = parse_dimensions(decoder, atom_tree)
@@ -55,17 +56,16 @@ class FormatParser::MOOVParser
     end
 
     # M4A only contains audio, while MP4 and friends can contain video.
-    fmt = format_from_moov_type(file_type)
-    if fmt == :m4a
+    if format == :m4a
       FormatParser::Audio.new(
-        format: format_from_moov_type(file_type),
+        format: format,
         media_duration_seconds: media_duration_s,
         content_type: MP4_AU_MIME_TYPE,
         intrinsics: atom_tree,
       )
     else
       FormatParser::Video.new(
-        format: format_from_moov_type(file_type),
+        format: format,
         width_px: width,
         height_px: height,
         frame_rate: parse_time_to_sample_atom(decoder, atom_tree)&.truncate(2),
@@ -161,5 +161,5 @@ class FormatParser::MOOVParser
     end
   end
 
-  FormatParser.register_parser new, natures: :video, formats: FTYP_MAP.values, priority: 3
+  FormatParser.register_parser new, natures: [:audio, :video], formats: FTYP_MAP.values, priority: 3
 end
