@@ -20,7 +20,7 @@ describe FormatParser::RW2Parser do
   end
 
   context 'when call is called' do
-    %w[rw2 raw rwl].map { |extension| Dir.glob(fixtures_dir + "/RW2/*.#{extension}") }.flatten.sort.each do |path|
+    Dir.glob(fixtures_dir + '/RW2/*.*').sort.each do |path|
       it "should successfully parse #{path}" do
         result = subject.call(File.open(path, 'rb'))
 
