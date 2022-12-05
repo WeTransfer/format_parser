@@ -13,7 +13,7 @@ describe FormatParser::RW2Parser do
     ['', 'foo', 'rw2', 'foorw2', 'foo.rw', 'foo.rw2.bar'].each do |filename|
       context "with a file named #{filename}" do
         it 'should return false' do
-          expect(subject.likely_match?("#{filename}")).to be_falsey
+          expect(subject.likely_match?(filename)).to be_falsey
         end
       end
     end
