@@ -18,9 +18,9 @@ describe FormatParser::CR3Parser do
     expect(result).to be_nil
   end
 
-  it 'should return nil if no CMT1 atom is present' do
+  it 'should return nil if no CMT1 box is present' do
     # This is a MOV file with the ftyp header modified to masquerade as a CR3 file. It is therefore missing the
-    # CR3-specific CMT1 atom containing the image metadata.
+    # CR3-specific CMT1 box containing the image metadata.
     result = subject.call(File.open(fixtures_dir + '/CR3/invalid'))
     expect(result).to be_nil
   end
@@ -50,7 +50,7 @@ describe FormatParser::CR3Parser do
     expect(result.display_height_px).to eq(4000)
     expect(result.content_type).to eq('image/x-canon-cr3')
     expect(result.intrinsics).not_to be_nil
-    expect(result.intrinsics[:atom_tree]).not_to be_nil
+    expect(result.intrinsics[:box_tree]).not_to be_nil
     expect(result.intrinsics[:exif]).not_to be_nil
     expect(result.intrinsics[:exif][:image_length]).to eq(result.height_px)
     expect(result.intrinsics[:exif][:image_width]).to eq(result.width_px)

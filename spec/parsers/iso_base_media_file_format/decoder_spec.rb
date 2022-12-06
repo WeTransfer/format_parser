@@ -1,10 +1,10 @@
 require 'spec_helper'
 
 describe FormatParser::ISOBaseMediaFileFormat::Decoder do
-  context 'when build_atom_tree is called' do
+  context 'when build_box_tree is called' do
     context 'with no io' do
       it 'raises an error' do
-        expect { subject.build_atom_tree(0x0) }.to raise_error(/IO missing - supply a valid IO object/)
+        expect { subject.build_box_tree(0x0) }.to raise_error(/IO missing - supply a valid IO object/)
       end
     end
 
@@ -17,19 +17,19 @@ describe FormatParser::ISOBaseMediaFileFormat::Decoder do
       end
 
       it 'stops building the tree' do
-        expect(subject.build_atom_tree(0x0, io).length).to eq(0)
+        expect(subject.build_box_tree(0x0, io).length).to eq(0)
         expect(io.pos).to eq(0)
 
-        expect(subject.build_atom_tree(0x8, io).length).to eq(1)
+        expect(subject.build_box_tree(0x8, io).length).to eq(1)
         expect(io.pos).to eq(0x8)
         io.seek(0)
 
-        expect(subject.build_atom_tree(0x10, io).length).to eq(2)
+        expect(subject.build_box_tree(0x10, io).length).to eq(2)
         expect(io.pos).to eq(0x10)
       end
     end
 
-    context 'when parsing an unknown atom' do
+    context 'when parsing an unknown box' do
       let(:io) do
         # foo
         # |-> moov
@@ -38,20 +38,20 @@ describe FormatParser::ISOBaseMediaFileFormat::Decoder do
       end
 
       it 'parses only the type, position and size, and skips any fields and children' do
-        result = subject.build_atom_tree(0xFF, io)
+        result = subject.build_box_tree(0xFF, io)
         expect(result.length).to eq(1)
         expect(io.pos).to eq(0x14)
 
-        foo_atom = result[0]
-        expect(foo_atom.type).to eq('foo ')
-        expect(foo_atom.position).to eq(0)
-        expect(foo_atom.size).to eq(0x14)
-        expect(foo_atom.fields).to eq({})
-        expect(foo_atom.children).to eq([])
+        foo_box = result[0]
+        expect(foo_box.type).to eq('foo ')
+        expect(foo_box.position).to eq(0)
+        expect(foo_box.size).to eq(0x14)
+        expect(foo_box.fields).to eq({})
+        expect(foo_box.children).to eq([])
       end
     end
 
-    context 'when parsing a container atom' do
+    context 'when parsing a container box' do
       let(:io) do
         # moov
         # |-> foo
@@ -61,20 +61,20 @@ describe FormatParser::ISOBaseMediaFileFormat::Decoder do
       end
 
       it 'parses type, position, size and children' do
-        result = subject.build_atom_tree(0xFF, io)
+        result = subject.build_box_tree(0xFF, io)
         expect(result.length).to eq(1)
         expect(io.pos).to eq(0x18)
 
-        moov_atom = result[0]
-        expect(moov_atom.type).to eq('moov')
-        expect(moov_atom.position).to eq(0)
-        expect(moov_atom.size).to eq(0x18)
-        expect(moov_atom.fields).to eq({})
-        expect(moov_atom.children.length).to eq(2)
+        moov_box = result[0]
+        expect(moov_box.type).to eq('moov')
+        expect(moov_box.position).to eq(0)
+        expect(moov_box.size).to eq(0x18)
+        expect(moov_box.fields).to eq({})
+        expect(moov_box.children.length).to eq(2)
       end
     end
 
-    context 'when parsing an empty atom' do
+    context 'when parsing an empty box' do
       let(:io) do
         # nmhd
         # |-> foo
@@ -83,23 +83,23 @@ describe FormatParser::ISOBaseMediaFileFormat::Decoder do
       end
 
       it 'parses type, position, size, version and flags, and skips any other fields or children' do
-        result = subject.build_atom_tree(0xFF, io)
+        result = subject.build_box_tree(0xFF, io)
         expect(result.length).to eq(1)
         expect(io.pos).to eq(0x18)
 
-        nmhd_atom = result[0]
-        expect(nmhd_atom.type).to eq('nmhd')
-        expect(nmhd_atom.position).to eq(0)
-        expect(nmhd_atom.size).to eq(0x18)
-        expect(nmhd_atom.fields).to include({
+        nmhd_box = result[0]
+        expect(nmhd_box.type).to eq('nmhd')
+        expect(nmhd_box.position).to eq(0)
+        expect(nmhd_box.size).to eq(0x18)
+        expect(nmhd_box.fields).to include({
           version: 1,
           flags: 'fla'
         })
-        expect(nmhd_atom.children).to eq([])
+        expect(nmhd_box.children).to eq([])
       end
     end
 
-    context 'when parsing a uuid atom' do
+    context 'when parsing a uuid box' do
       let(:usertype) { '90f7c66ec2db476b977461e796f0dd4b' }
       let(:io) do
         input = [0x20].pack('N') + 'uuid' + [usertype].pack('H*') + [0x8].pack('N') + 'foo '
@@ -109,24 +109,24 @@ describe FormatParser::ISOBaseMediaFileFormat::Decoder do
       it 'parses type, position, size and usertype, and skips any other fields or children' do
         # uuid
         # |-> foo
-        result = subject.build_atom_tree(0xFF, io)
+        result = subject.build_box_tree(0xFF, io)
         expect(result.length).to eq(1)
         expect(io.pos).to eq(0x20)
 
-        nmhd_atom = result[0]
-        expect(nmhd_atom.type).to eq('uuid')
-        expect(nmhd_atom.position).to eq(0)
-        expect(nmhd_atom.size).to eq(0x20)
-        expect(nmhd_atom.fields).to include({
+        nmhd_box = result[0]
+        expect(nmhd_box.type).to eq('uuid')
+        expect(nmhd_box.position).to eq(0)
+        expect(nmhd_box.size).to eq(0x20)
+        expect(nmhd_box.fields).to include({
           usertype: usertype,
         })
-        expect(nmhd_atom.children).to eq([])
+        expect(nmhd_box.children).to eq([])
       end
     end
   end
 end
 
-describe FormatParser::ISOBaseMediaFileFormat::Decoder::Atom do
+describe FormatParser::ISOBaseMediaFileFormat::Decoder::Box do
   context 'when initialized' do
     context 'without fields and/or children' do
       subject { described_class.new('foo', 0, 0) }
