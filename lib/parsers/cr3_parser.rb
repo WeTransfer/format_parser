@@ -19,10 +19,10 @@ class FormatParser::CR3Parser
     cmt1_box = moov_box&.find_first_descendent(['CMT1'])
     return unless cmt1_box
 
-    width = cmt1_box.fields[:image_width]
-    height = cmt1_box.fields[:image_length]
-    rotated = cmt1_box.fields[:rotated]
-    orientation = cmt1_box.fields[:orientation_sym]
+    width = cmt1_box[:image_width]
+    height = cmt1_box[:image_length]
+    rotated = cmt1_box[:rotated]
+    orientation = cmt1_box[:orientation_sym]
     FormatParser::Image.new(
       format: :cr3,
       content_type: CR3_MIME_TYPE,

@@ -21,6 +21,10 @@ module FormatParser
           self.children ||= []
         end
 
+        def [](index)
+          index.is_a?(Symbol) ? fields[index] : children[index]
+        end
+
         # Find and return the first descendent (using depth-first search) of a given type.
         #
         # @param [Array<String>] types
