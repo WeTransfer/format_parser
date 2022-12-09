@@ -32,11 +32,11 @@ class FormatParser::RW2Parser
     # top/bottom/left/right border tags. See https://exiftool.org/TagNames/PanasonicRaw.html for more.
     left_sensor_border = sensor_border(exif, :left)
     right_sensor_border = sensor_border(exif, :right)
-    w = left_sensor_border && right_sensor_border && right_sensor_border - left_sensor_border
+    w = right_sensor_border - left_sensor_border if left_sensor_border && right_sensor_border
 
     top_sensor_border = sensor_border(exif, :top)
     bottom_sensor_border = sensor_border(exif, :bottom)
-    h = top_sensor_border && bottom_sensor_border && bottom_sensor_border - top_sensor_border
+    h = bottom_sensor_border - top_sensor_border if top_sensor_border && bottom_sensor_border
 
     FormatParser::Image.new(
       format: :rw2,
