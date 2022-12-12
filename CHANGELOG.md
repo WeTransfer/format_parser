@@ -1,3 +1,6 @@
+## 2.3.0
+* Add support for `RW2` files.
+
 ## 2.2.1
 * Bug fix for `CR3` files being misidentified as `MOOV`.
 
