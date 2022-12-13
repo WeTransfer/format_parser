@@ -26,7 +26,6 @@ describe FormatParser::RW2Parser do
 
         expect(result).not_to be_nil
         expect(result.nature).to eq(:image)
-        expect(result.format).to eq(:rw2)
         expect(result.width_px).to be > 0
         expect(result.height_px).to be > 0
         expect(result.content_type).to eq('image/x-panasonic-raw')
@@ -46,7 +45,6 @@ describe FormatParser::RW2Parser do
 
       result = subject.call(File.open(file_path, 'rb'))
       expect(result.nature).to eq(:image)
-      expect(result.format).to eq(:rw2)
       expect(result.width_px).to eq(4000)
       expect(result.height_px).to eq(2248)
       expect(result.orientation).to eq(:top_left)
