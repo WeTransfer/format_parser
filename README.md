@@ -38,6 +38,7 @@ and [dimensions,](https://github.com/sstephenson/dimensions) borrowing from them
 * PNG
 * PPTX
 * PSD
+* RW2
 * TIFF
 * WAV
 * WEBP
@@ -216,6 +217,9 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 
 ### PNG
 - `simulator_screenie.png` provided by [Rens Verhoeven](https://github.com/renssies)
+
+### RW2
+- RW2 examples are downloaded from https://raw.pixls.us/ and are in the public domain (CC0).
 
 ### TIFF
 - `Shinbutsureijoushuincho.tiff` is obtained from Wikimedia Commons and is Creative Commons licensed
