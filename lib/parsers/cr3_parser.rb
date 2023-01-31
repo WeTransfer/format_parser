@@ -14,7 +14,9 @@ class FormatParser::CR3Parser
 
     return unless matches_cr3_definition?
 
-    box_tree = Decoder.new.build_box_tree(0xffffffff, @buf)
+    box_tree = Measurometer.instrument('format_parser.cr3_parser.decoder.build_box_tree') do
+      Decoder.new.build_box_tree(0xffffffff, @buf)
+    end
     moov_box = box_tree.find { |box| box.type == 'moov' }
     cmt1_box = moov_box&.find_first_descendent(['CMT1'])
     return unless cmt1_box

@@ -22,7 +22,13 @@ module FormatParser
         end
 
         def [](index)
-          index.is_a?(Symbol) ? fields[index] : children[index]
+          if index.is_a?(Symbol)
+            fields[index]
+          elsif index.is_a?(String)
+            children.find { |child| child.type == index }
+          else
+            children[index]
+          end
         end
 
         # Find and return the first descendent (using depth-first search) of a given type.
@@ -51,8 +57,10 @@ module FormatParser
         end
       end
 
+      # Attempt to build the ISOBMFF box tree represented in the given IO object.
+      #
       # @param [Integer] max_read
-      # @param [IO, FormatParser::IOConstraint] io
+      # @param [IO, StringIO, FormatParser::IOConstraint] io
       # @return [Array<Box>]
       def build_box_tree(max_read, io = nil)
         @buf = FormatParser::IOConstraint.new(io) if io
@@ -85,9 +93,9 @@ module FormatParser
         # 'fiin' => :fiin,
         # 'fire' => :fire,
         # 'fpar' => :fpar,
-        # 'ftyp' => :typ,
+        'ftyp' => :typ,
         # 'gitn' => :gitn,
-        # 'hdlr' => :hdlr,
+        'hdlr' => :hdlr,
         # 'hmhd' => :hmhd,
         # 'iinf' => :iinf,
         # 'iloc' => :iloc,
@@ -108,7 +116,7 @@ module FormatParser
         'moof' => :container,
         'moov' => :container,
         'mvex' => :container,
-        # 'mvhd' => :mvhd,
+        'mvhd' => :mvhd,
         'nmhd' => :empty,
         # 'padb' => :padb,
         'paen' => :container,
@@ -135,16 +143,16 @@ module FormatParser
         # 'stri' => :stri,
         'strk' => :container,
         # 'stsc' => :stsc,
-        # 'stsd' => :stsd,
+        'stsd' => :stsd,
         # 'stsh' => :stsh,
         # 'stss' => :stss,
         # 'stsz' => :stsz,
-        # 'stts' => :stts,
+        'stts' => :stts,
         # 'styp' => :typ,
         # 'stz2' => :stz2,
         # 'subs' => :subs,
         # 'tfra' => :tfra,
-        # 'tkhd' => :tkhd,
+        'tkhd' => :tkhd,
         'trak' => :container,
         # 'trex' => :trex,
         # 'tsel' => :tsel,
@@ -355,13 +363,13 @@ module FormatParser
       # end
 
       # Parse a handler box.
-      # def hdlr(size)
-      #   fields = read_version_and_flags.merge({
-      #     handler_type: skip_bytes(4) { read_int_32 },
-      #     name: skip_bytes(12) { read_string(size - 24) }
-      #   })
-      #   [fields, nil]
-      # end
+      def hdlr(size)
+        fields = read_version_and_flags.merge({
+          handler_type: skip_bytes(4) { read_int_32 },
+          name: skip_bytes(12) { read_string(size - 24) }
+        })
+        [fields, nil]
+      end
 
       # Parse a hint media header box.
       # def hmhd(_)
@@ -528,21 +536,21 @@ module FormatParser
       # end
 
       # Parse a movie header box.
-      # def mvhd(_)
-      #   fields = read_version_and_flags
-      #   version = fields[:version]
-      #   fields.merge!({
-      #     creation_time: version == 1 ? read_int_64 : read_int_32,
-      #     modification_time: version == 1 ? read_int_64 : read_int_32,
-      #     timescale: read_int_32,
-      #     duration: version == 1 ? read_int_64 : read_int_32,
-      #     rate: read_fixed_point_32,
-      #     volume: read_fixed_point_16,
-      #     matrix: skip_bytes(10) { read_matrix },
-      #     next_trak_id: skip_bytes(24) { read_int_32 },
-      #   })
-      #   [fields, nil]
-      # end
+      def mvhd(_)
+        fields = read_version_and_flags
+        version = fields[:version]
+        fields.merge!({
+          creation_time: version == 1 ? read_int_64 : read_int_32,
+          modification_time: version == 1 ? read_int_64 : read_int_32,
+          timescale: read_int_32,
+          duration: version == 1 ? read_int_64 : read_int_32,
+          rate: read_fixed_point_32,
+          volume: read_fixed_point_16,
+          matrix: skip_bytes(10) { read_matrix },
+          next_trak_id: skip_bytes(24) { read_int_32 },
+        })
+        [fields, nil]
+      end
 
       # Parse a padding bits box.
       # def padb(_)
@@ -813,12 +821,12 @@ module FormatParser
       # end
 
       # Parse a sample descriptions box.
-      # def stsd(size)
-      #   fields = read_version_and_flags.merge({
-      #     entry_count: read_int_32
-      #   })
-      #   [fields, build_box_tree(size - 8)]
-      # end
+      def stsd(size)
+        fields = read_version_and_flags.merge({
+          entry_count: read_int_32
+        })
+        [fields, build_box_tree(size - 8)]
+      end
 
       # Parse a shadow sync sample box.
       # def stsh(_)
@@ -861,20 +869,20 @@ module FormatParser
       # end
 
       # Parse a decoding time to sample box.
-      # def stts(_)
-      #   fields = read_version_and_flags
-      #   entry_count = read_int_32
-      #   fields.merge!({
-      #     entry_count: entry_count,
-      #     entries: entry_count.times.map do
-      #       {
-      #         sample_count: read_int_32,
-      #         sample_delta: read_int_32
-      #       }
-      #     end
-      #   })
-      #   [fields, nil]
-      # end
+      def stts(_)
+        fields = read_version_and_flags
+        entry_count = read_int_32
+        fields.merge!({
+          entry_count: entry_count,
+          entries: entry_count.times.map do
+            {
+              sample_count: read_int_32,
+              sample_delta: read_int_32
+            }
+          end
+        })
+        [fields, nil]
+      end
 
       # Parse a compact sample size box.
       # def stz2(size)
@@ -940,23 +948,23 @@ module FormatParser
       # end
 
       # Parse a track header box.
-      # def tkhd(_)
-      #   fields = read_version_and_flags
-      #   version = fields[:version]
-      #   fields.merge!({
-      #     creation_time: version == 1 ? read_int_64 : read_int_32,
-      #     modification_time: version == 1 ? read_int_64 : read_int_32,
-      #     track_id: read_int_32,
-      #     duration: skip_bytes(4) { version == 1 ? read_int_64 : read_int_32 },
-      #     layer: skip_bytes(8) { read_int_16 },
-      #     alternate_group: read_int_16,
-      #     volume: read_fixed_point_16,
-      #     matrix: skip_bytes(2) { read_matrix },
-      #     width: read_fixed_point_32,
-      #     height: read_fixed_point_32
-      #   })
-      #   [fields, nil]
-      # end
+      def tkhd(_)
+        fields = read_version_and_flags
+        version = fields[:version]
+        fields.merge!({
+          creation_time: version == 1 ? read_int_64 : read_int_32,
+          modification_time: version == 1 ? read_int_64 : read_int_32,
+          track_id: read_int_32,
+          duration: skip_bytes(4) { version == 1 ? read_int_64 : read_int_32 },
+          layer: skip_bytes(8) { read_int_16 },
+          alternate_group: read_int_16,
+          volume: read_fixed_point_16,
+          matrix: skip_bytes(2) { read_matrix },
+          width: read_fixed_point_32,
+          height: read_fixed_point_32
+        })
+        [fields, nil]
+      end
 
       # Parse a track extends box.
       # def trex(_)
@@ -980,15 +988,15 @@ module FormatParser
       # end
 
       # Parse a file/segment type compatibility box.
-      # def typ(size)
-      #   compatible_brands_count = (size - 8) / 4
-      #   fields = {
-      #     major_brand: read_string(4),
-      #     minor_version: read_int_32,
-      #     compatible_brands: compatible_brands_count.times.map { read_string(4) }
-      #   }
-      #   [fields, nil]
-      # end
+      def typ(size)
+        compatible_brands_count = (size - 8) / 4
+        fields = {
+          major_brand: read_string(4),
+          minor_version: read_int_32,
+          compatible_brands: compatible_brands_count.times.map { read_string(4) }
+        }
+        [fields, nil]
+      end
 
       # Parse a UUID box.
       def uuid(size)
