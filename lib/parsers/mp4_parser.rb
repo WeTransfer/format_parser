@@ -2,6 +2,7 @@ require_relative 'iso_base_media_file_format/decoder'
 
 class FormatParser::MP4Parser
   include FormatParser::IOUtils
+  include FormatParser::ISOBaseMediaFileFormat
   include FormatParser::ISOBaseMediaFileFormat::Utils
 
   MAGIC_BYTES = /^ftyp(iso[m2]|mp4[12]|m4[abprv] )$/i
@@ -17,12 +18,11 @@ class FormatParser::MP4Parser
     'm4r ' => :m4r, # iTunes ringtones
     'm4v ' => :m4v, # iTunes video
   }
+  AUDIO_FORMATS = Set[:m4a, :m4b, :m4p, :m4r]
+  VIDEO_FORMATS = Set[:mp4, :m4v]
 
   AUDIO_MIMETYPE = 'audio/mp4'
   VIDEO_MIMETYPE = 'video/mp4'
-
-  AUDIO_BRANDS = Set['m4a ', 'm4b ', 'm4p ', 'm4r ']
-  VIDEO_BRANDS = Set['isom', 'iso2', 'mp41', 'mp42', 'm4v ']
 
   def likely_match?(filename)
     /\.(mp4|m4[abprv])$/i.match?(filename)
@@ -37,24 +37,23 @@ class FormatParser::MP4Parser
       Decoder.new.build_box_tree(0xffffffff, @buf)
     end
 
-    major_brand = box_tree.find { |box| box.type == 'ftyp' }[:major_brand]
-    case major_brand
-    when VIDEO_BRANDS
+    case file_format = file_format(box_tree)
+    when VIDEO_FORMATS
       width, height = dimensions(box_tree)
       FormatParser::Video.new(
         codecs: codecs(box_tree),
         content_type: VIDEO_MIMETYPE,
-        format: BRAND_FORMATS[major_brand],
+        format: file_format,
         frame_rate: frame_rate(box_tree),
         height_px: height,
         intrinsics: box_tree,
         media_duration_seconds: duration(box_tree),
         width_px: width,
       )
-    when AUDIO_BRANDS
+    when AUDIO_FORMATS
       FormatParser::Audio.new(
         content_type: AUDIO_MIMETYPE,
-        format: BRAND_FORMATS[major_brand],
+        format: file_format,
         intrinsics: box_tree,
         media_duration_seconds: duration(box_tree),
       )
@@ -65,14 +64,8 @@ class FormatParser::MP4Parser
 
   private
 
-  def format_variation(box_tree)
-    ftyp_box = box_tree.find { |box| box.type == 'ftyp' }
-    BRAND_FORMATS[ftyp_box[:major_brand]]
-  end
-
-  def major_brand(box_tree)
-    ftyp_box = box_tree.find { |box| box.type == 'ftyp' }
-    ftyp_box[:major_brand]
+  def file_format(box_tree)
+    BRAND_FORMATS[box_tree.find { |box| box.type == 'ftyp' }[:major_brand]]
   end
 
   def matches_mp4_definition?
