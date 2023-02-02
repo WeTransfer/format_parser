@@ -99,5 +99,16 @@ describe FormatParser::MP4Parser do
       it('should have the correct height') { expect(result.height_px).to eq(640) }
       it('should have the correct width') { expect(result.width_px).to eq(360) }
     end
+
+    context "for a multi-track MP4 video" do
+      let(:result) do
+        path = fixtures_dir + '/MP4/valid/video/multi-track.mp4'
+        subject.call(File.open(path, 'rb'))
+      end
+
+      it('should have the correct height') { expect(result.height_px).to eq(1280) }
+      it('should have the correct width') { expect(result.width_px).to eq(1024) }
+      it('should have the correct frame rate') { expect(result.frame_rate).to eq(24) }
+    end
   end
 end
