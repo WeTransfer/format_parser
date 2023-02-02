@@ -3,6 +3,7 @@ require 'parsers/iso_base_media_file_format/utils'
 class FormatParser::MOVParser
   include FormatParser::IOUtils
   include FormatParser::ISOBaseMediaFileFormat::Utils
+  require_relative 'mov_parser/decoder'
 
   MAGIC_BYTES = 'ftypqt  '
   MOV_MIME_TYPE = 'video/quicktime'

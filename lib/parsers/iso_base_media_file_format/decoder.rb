@@ -47,6 +47,16 @@ module FormatParser
           nil
         end
 
+        def include?(key)
+          if key.is_a?(Symbol)
+            fields.include?(key)
+          elsif key.is_a?(String)
+            children.include?(key)
+          else
+            false
+          end
+        end
+
         # Find and return all descendents of a given type.
         #
         # @param [Array<String>] types

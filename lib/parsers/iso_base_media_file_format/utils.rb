@@ -22,7 +22,7 @@ module FormatParser::ISOBaseMediaFileFormat::Utils
         [tkhd_box[:width], 0],
         [tkhd_box[:width], tkhd_box[:height]]
       ].each do |coordinates|
-        x, y = (Matrix[[*coordinates, 1]] * track_matrix * movie_matrix).to_a[0][..1]
+        x, y = (Matrix[[*coordinates, 1]] * track_matrix * movie_matrix).to_a[0][0..1]
         extreme_coordinates[:min_x] = x if !extreme_coordinates[:min_x] || x < extreme_coordinates[:min_x]
         extreme_coordinates[:max_x] = x if !extreme_coordinates[:max_x] || x > extreme_coordinates[:max_x]
         extreme_coordinates[:min_y] = y if !extreme_coordinates[:min_y] || y < extreme_coordinates[:min_y]
