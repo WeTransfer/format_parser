@@ -18,7 +18,7 @@ describe FormatParser::ISOBaseMediaFileFormat::Decoder do
       end
     end
 
-    context('when max_read smaller than IO length') do
+    context 'when max_read smaller than IO length' do
       let(:io) do
         # moov
         # moov
@@ -178,6 +178,71 @@ describe FormatParser::ISOBaseMediaFileFormat::Decoder::Box do
       it 'returns first matching descendent' do
         expect(subject.find_first_descendent(%w[bar])).to be(descendent)
       end
+    end
+  end
+
+  describe '#include?' do
+    context 'with symbol' do
+      context 'when no fields' do
+        subject { described_class.new('root', 0, 0) }
+
+        it('returns false') { expect(subject.include?(:foo)).to eq(false) }
+      end
+
+      context 'when no matching field' do
+        let(:fields) { { foo: 'bar' } }
+        subject { described_class.new('root', 0, 0, fields) }
+
+        it('returns false') { expect(subject.include?(:baz)).to eq(false) }
+      end
+
+      context 'when matching field' do
+        let(:fields) { { foo: 'bar', baz: 'qux' } }
+        subject { described_class.new('root', 0, 0, fields) }
+
+        it('returns true') { expect(subject.include?(:baz)).to eq(true) }
+      end
+    end
+
+    context 'with string' do
+      context 'when no children' do
+        subject do
+          described_class.new('root', 0, 0)
+        end
+
+        it('returns false') { expect(subject.include?('foo')).to eq(false) }
+      end
+
+      context 'when no matching child' do
+        subject do
+          described_class.new('root', 0, 0, nil, [
+            described_class.new('foo', 0, 0),
+          ])
+        end
+
+        it('returns false') { expect(subject.include?('bar')).to eq(false) }
+      end
+
+      context 'when matching child' do
+        subject do
+          described_class.new('root', 0, 0, nil, [
+            described_class.new('foo', 0, 0),
+            described_class.new('bar', 0, 0)
+          ])
+        end
+
+        it('returns false') { expect(subject.include?('bar')).to eq(false) }
+      end
+    end
+
+    context 'with something else' do
+      subject do
+        described_class.new('root', 0, 0, { foo: 'bar' }, [
+          described_class.new('foo', 0, 0),
+        ])
+      end
+
+      it('returns false') { expect(subject.include?(0)).to eq(false) }
     end
   end
 
