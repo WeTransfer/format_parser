@@ -29,10 +29,14 @@ module FormatParser::ISOBaseMediaFileFormat::Utils
         extreme_coordinates[:max_y] = y if !extreme_coordinates[:max_y] || y > extreme_coordinates[:max_y]
       end
     end
-    [
-      extreme_coordinates[:max_x] - extreme_coordinates[:min_x],
-      extreme_coordinates[:max_y] - extreme_coordinates[:min_y]
-    ]
+    if extreme_coordinates.empty?
+      [nil, nil]
+    else
+      [
+        extreme_coordinates[:max_x] - extreme_coordinates[:min_x],
+        extreme_coordinates[:max_y] - extreme_coordinates[:min_y]
+      ]
+    end
   end
 
   def duration(box_tree)
