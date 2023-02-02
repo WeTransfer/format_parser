@@ -1,3 +1,9 @@
+## 2.4.0
+* Adapt the ISOBMFF based decoder for parsing MOV and MP4 parsing.
+* Fix MOV/MP4 issues:
+  * MP4 files being misidentified as MOV files.
+  * Dimensions being miscalculated when files include multiple tracks or transformations.
+
 ## 2.3.0
 * Add support for `RW2` files.
 
