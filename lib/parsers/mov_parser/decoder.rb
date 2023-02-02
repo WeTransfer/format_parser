@@ -17,36 +17,36 @@ class FormatParser::MOVParser::Decoder < FormatParser::ISOBaseMediaFileFormat::D
 
   def mvhd(_)
     fields = read_version_and_flags.merge({
-      creation_time: read_int_32,
-      modification_time: read_int_32,
-      timescale: read_int_32,
-      duration: read_int_32,
-      rate: read_fixed_point_32,
-      volume: read_fixed_point_16,
+      creation_time: read_int,
+      modification_time: read_int,
+      timescale: read_int,
+      duration: read_int,
+      rate: read_fixed_point(n: 4),
+      volume: read_fixed_point(n: 2, signed: true),
       matrix: skip_bytes(10) { read_matrix },
-      preview_time: read_int_32,
-      preview_duration: read_int_32,
-      poster_time: read_int_32,
-      selection_time: read_int_32,
-      selection_duration: read_int_32,
-      current_time: read_int_32,
-      next_trak_id: read_int_32,
+      preview_time: read_int,
+      preview_duration: read_int,
+      poster_time: read_int,
+      selection_time: read_int,
+      selection_duration: read_int,
+      current_time: read_int,
+      next_trak_id: read_int,
     })
     [fields, nil]
   end
 
   def tkhd(_)
     fields = read_version_and_flags.merge({
-      creation_time: read_int_32,
-      modification_time: read_int_32,
-      track_id: read_int_32,
-      duration: skip_bytes(4) { read_int_32 },
-      layer: skip_bytes(8) { read_int_16 },
-      alternate_group: read_int_16,
-      volume: read_fixed_point_16,
+      creation_time: read_int,
+      modification_time: read_int,
+      track_id: read_int,
+      duration: skip_bytes(4) { read_int },
+      layer: skip_bytes(8) { read_int(n: 2) },
+      alternate_group: read_int(n: 2),
+      volume: read_fixed_point(n: 2, signed: true),
       matrix: skip_bytes(2) { read_matrix },
-      width: read_fixed_point_32,
-      height: read_fixed_point_32
+      width: read_fixed_point(n: 4),
+      height: read_fixed_point(n: 4)
     })
     [fields, nil]
   end

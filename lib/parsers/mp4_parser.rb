@@ -65,7 +65,8 @@ class FormatParser::MP4Parser
   private
 
   def file_format(box_tree)
-    BRAND_FORMATS[box_tree.find { |box| box.type == 'ftyp' }[:major_brand]]
+    major_brand = box_tree.find { |box| box.type == 'ftyp' }[:major_brand]
+    BRAND_FORMATS[major_brand.downcase]
   end
 
   def matches_mp4_definition?

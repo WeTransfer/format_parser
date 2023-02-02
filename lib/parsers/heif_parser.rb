@@ -121,7 +121,7 @@ class FormatParser::HEIFParser
   end
 
   def scan_file_type_box
-    file_type_box_length = read_int_32
+    file_type_box_length = read_int
     return unless read_string(4) == FILE_TYPE_BOX_MARKER
     @major_brand = read_string(4)
     return unless @major_brand == HEIF_MARKER || @major_brand == MIF1_MARKER
@@ -138,7 +138,7 @@ class FormatParser::HEIFParser
   end
 
   def scan_meta_level_box
-    metadata_length = read_int_32
+    metadata_length = read_int
     return unless read_string(4) == META_BOX_MARKER
     @metadata_start_pos = @buf.pos
     @metadata_end_pos = @buf.pos + metadata_length - HEADER_LENGTH # the real data is always without the 8 initial bytes of the handler
@@ -146,7 +146,7 @@ class FormatParser::HEIFParser
 
     # we are looking for box/containers right beneath the Meta box
     # we start with the HDLR (Handler) box..
-    handler_length = read_int_32
+    handler_length = read_int
     return unless read_string(4) == HANDLER_MARKER
     handler_length -= HEADER_LENGTH # subtract the header as usual (will not be mentioned anymore from now on)
     handler_start = @buf.pos
@@ -158,7 +158,7 @@ class FormatParser::HEIFParser
     @buf.seek(handler_start + handler_length) # the remaining part is reserved
 
     # ..continue looking for the IINF box and especially for the IPRP box, containing info about the image itself
-    next_box_length = read_int_32
+    next_box_length = read_int
     next_box = read_string(4)
     next_box_start_pos = @buf.pos
     while @buf.pos < @metadata_end_pos # we iterate over all next incoming boxed but without going outside the meta-box
@@ -178,25 +178,25 @@ class FormatParser::HEIFParser
   end
 
   def read_item_info_box
-    version = read_int_8
+    version = read_int(n: 1)
     skip_bytes(3) # 0 flags
     entry_count = if version == 0
-      read_int_16
+      read_int(n: 2)
     else
-      read_int_32
+      read_int
     end
     @sub_items = []
     entry_count.times {
-      item_info_entry_length = read_int_32
+      item_info_entry_length = read_int
       return unless read_string(4) == ITEM_INFO_ENTRY
       item_info_end_pos = @buf.pos + item_info_entry_length - HEADER_LENGTH
-      version = read_int_8
+      version = read_int(n: 1)
       skip_bytes(3) # 0 flags
       case version
       when 2
-        item_id = read_int_16
+        item_id = read_int(n: 2)
       when 3
-        item_id = read_int_32
+        item_id = read_int
       else
         return # wrong version according to standards, hence return
       end
@@ -217,12 +217,12 @@ class FormatParser::HEIFParser
   end
 
   def read_primary_item_box
-    version = read_int_8
+    version = read_int(n: 1)
     skip_bytes(3) # flags, always 0 in this current box
     @primary_item_id = if version == 0
-      read_int_16
+      read_int(n: 2)
     else
-      read_int_32
+      read_int
     end
   end
 
@@ -232,17 +232,17 @@ class FormatParser::HEIFParser
   # and in order to output relevant data from the format_parser we need all the properties associated to the primary_item.
   # Hence the need of the association between an item and its properties, found in the ITEM_PROPERTIES_ASSOCIATION_BOX
   def read_item_properties_box
-    ipco_length = read_int_32
+    ipco_length = read_int
     return unless read_string(4) == ITEM_PROPERTIES_CONTAINER_BOX
     read_item_properties_container_box(ipco_length)
-    read_int_32 # ipma_length
+    read_int # ipma_length
     return unless read_string(4) == ITEM_PROPERTIES_ASSOCIATION_BOX
     read_item_properties_association_box
   end
 
   def read_item_properties_container_box(box_length)
     end_of_ipco_box = @buf.pos + box_length - HEADER_LENGTH
-    item_prop_length = read_int_32
+    item_prop_length = read_int
     item_prop_name = read_string(4)
     item_prop_start_pos = @buf.pos
     item_prop_index = 1
@@ -250,16 +250,16 @@ class FormatParser::HEIFParser
       case item_prop_name
       when IMAGE_SPATIAL_EXTENTS_BOX
         read_nil_version_and_flag
-        width = read_int_32
-        height = read_int_32
+        width = read_int
+        height = read_int
         @item_props[item_prop_index] = {
           type: IMAGE_SPATIAL_EXTENTS_BOX,
           width: width,
           height: height
         }
       when PIXEL_ASPECT_RATIO_BOX
-        h_spacing = read_int_32
-        v_spacing = read_int_32
+        h_spacing = read_int
+        v_spacing = read_int
         pixel_aspect_ratio = "#{h_spacing}/#{v_spacing}"
         @item_props[item_prop_index] = {
           type: PIXEL_ASPECT_RATIO_BOX,
@@ -267,9 +267,9 @@ class FormatParser::HEIFParser
         }
       when COLOUR_INFO_BOX
         colour_info = {
-          colour_primaries: read_int_16,
-          transfer_characteristics: read_int_16,
-          matrix_coefficients: read_int_16
+          colour_primaries: read_int(n: 2),
+          transfer_characteristics: read_int(n: 2),
+          matrix_coefficients: read_int(n: 2)
         }
         @item_props[item_prop_index] = {
           type: COLOUR_INFO_BOX,
@@ -278,12 +278,12 @@ class FormatParser::HEIFParser
       when PIXEL_INFO_BOX
         pixel_info = []
         read_nil_version_and_flag
-        num_channels = read_int_8
+        num_channels = read_int(n: 1)
         channel = 1
         while channel <= num_channels
           channel += 1
           pixel_info << {
-            "bits_in_channel_#{channel}": read_int_8
+            "bits_in_channel_#{channel}": read_int(n: 1)
           }
         end
         @item_props[item_prop_index] = {
@@ -292,8 +292,8 @@ class FormatParser::HEIFParser
         }
       when RELATIVE_LOCATION_BOX
         read_nil_version_and_flag
-        horizontal_offset = read_int_32
-        vertical_offset = read_int_32
+        horizontal_offset = read_int
+        vertical_offset = read_int
         @item_props[item_prop_index] = {
           type: RELATIVE_LOCATION_BOX,
           horizontal_offset: horizontal_offset,
@@ -302,14 +302,14 @@ class FormatParser::HEIFParser
       when CLEAN_APERTURE_BOX
         clean_aperture = []
         clean_aperture << {
-          clean_aperture_width_n: read_int_32,
-          clean_aperture_width_d: read_int_32,
-          clean_aperture_height_n: read_int_32,
-          clean_aperture_height_d: read_int_32,
-          horiz_off_n: read_int_32,
-          horiz_off_d: read_int_32,
-          vert_off_n: read_int_32,
-          vert_off_d: read_int_32
+          clean_aperture_width_n: read_int,
+          clean_aperture_width_d: read_int,
+          clean_aperture_height_n: read_int,
+          clean_aperture_height_d: read_int,
+          horiz_off_n: read_int,
+          horiz_off_d: read_int,
+          vert_off_n: read_int,
+          vert_off_d: read_int
         }
         @item_props[item_prop_index] = {
           type: CLEAN_APERTURE_BOX,
@@ -317,7 +317,7 @@ class FormatParser::HEIFParser
         }
       when IMAGE_ROTATION_BOX
         read_nil_version_and_flag
-        binary = convert_byte_to_binary(read_int_8)
+        binary = convert_byte_to_binary(read_int(n: 1))
         # we need only the last 2 bits to retrieve the angle multiplier. angle multiplier * 90 specifies the angle
         rotation = binary.slice(6, 2).join.to_i(2) * 90
         @item_props[item_prop_index] = {
@@ -331,24 +331,24 @@ class FormatParser::HEIFParser
   end
 
   def read_item_properties_association_box
-    version = read_int_8
+    version = read_int(n: 1)
     skip_bytes(2) # we skip the first 2 bytes of the flags (total of 3 bytes) cause we care only about the least significant bit
-    flags = read_int_8
-    entry_count = read_int_32
+    flags = read_int(n: 1)
+    entry_count = read_int
     item_id = 0
     entry_count.times do
       item_id = if version == 0
-        read_int_16
+        read_int(n: 2)
       else
-        read_int_32
+        read_int
       end
 
-      association_count = read_int_8
+      association_count = read_int(n: 1)
       association_count.times do
         # we need to retrieve the "essential" bit wich is just the first bit in the next byte
-        binary = convert_byte_to_binary(read_int_8)
+        binary = convert_byte_to_binary(read_int(n: 1))
         # essential_bit = binary[0] # uncomment if needed
-        binary.concat(convert_byte_to_binary(read_int_8)) if (flags & 1) == 1 # if flag is 1 we need the next 15 bits instead of only the next 7 bits
+        binary.concat(convert_byte_to_binary(read_int(n: 1))) if (flags & 1) == 1 # if flag is 1 we need the next 15 bits instead of only the next 7 bits
         # we need to nullify the 1st bit since that one was the essential bit and doesn't count now to calculate the property index
         binary[0] = 0
         item_property_index = binary.join.to_i(2)
@@ -401,7 +401,7 @@ class FormatParser::HEIFParser
     skip_pos = box_start_pos + box_length - HEADER_LENGTH
     @buf.seek(skip_pos)
     return if skip_pos >= end_pos_upper_box
-    next_box_length = read_int_32
+    next_box_length = read_int
     next_box_name = read_string(4)
     [next_box_length, next_box_name, @buf.pos]
   end

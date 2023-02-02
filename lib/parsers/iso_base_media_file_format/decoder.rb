@@ -9,6 +9,8 @@
 #   entirety. We should migrate existing formats that are based on the ISO base media file format and reintroduce these
 #   methods with tests down-the-line.
 
+require 'matrix'
+
 module FormatParser
   module ISOBaseMediaFileFormat
     class Decoder
@@ -103,7 +105,7 @@ module FormatParser
         # 'ipro' => :ipro,
         # 'iref' => :iref,
         # 'leva' => :leva,
-        # 'mdhd' => :mdhd,
+        'mdhd' => :mdhd,
         'mdia' => :container,
         'meco' => :container,
         # 'mehd' => :mehd,
@@ -170,9 +172,9 @@ module FormatParser
       def parse_box
         position = @buf.pos
 
-        size = read_int_32
+        size = read_int
         type = read_string(4)
-        size = read_int_64 if size == 1
+        size = read_int(n: 8) if size == 1
         body_size = size - (@buf.pos - position)
         next_box_position = position + size
 
@@ -207,7 +209,7 @@ module FormatParser
       # Parse a binary XML box.
       # def bxml(size)
       #   fields = read_version_and_flags.merge({
-      #     data: (size - 4).times.map { read_int_8 }
+      #     data: (size - 4).times.map { read_int(n: 1) }
       #   })
       #   [fields, nil]
       # end
@@ -215,10 +217,10 @@ module FormatParser
       # Parse a chunk large offset box.
       # def co64(_)
       #   fields = read_version_and_flags
-      #   entry_count = read_int_32
+      #   entry_count = read_int
       #   fields.merge!({
       #     entry_count: entry_count,
-      #     entries: entry_count.times.map { { chunk_offset: read_int_64 } }
+      #     entries: entry_count.times.map { { chunk_offset: read_int(n: 8) } }
       #   })
       #   [fields, nil]
       # end
@@ -226,7 +228,7 @@ module FormatParser
       # Parse a copyright box.
       # def cprt(size)
       #   fields = read_version_and_flags
-      #   tmp = read_int_16
+      #   tmp = read_int(n: 2)
       #   fields.merge!({
       #     language: [(tmp >> 10) & 0x1F, (tmp >> 5) & 0x1F, tmp & 0x1F],
       #     notice: read_string(size - 6)
@@ -239,11 +241,11 @@ module FormatParser
       #   fields = read_version_and_flags
       #   version = fields[:version]
       #   fields.merge!({
-      #     composition_to_dts_shift: version == 1 ? read_int_64 : read_int_32,
-      #     least_decode_to_display_delta: version == 1 ? read_int_64 : read_int_32,
-      #     greatest_decode_to_display_delta: version == 1 ? read_int_64 : read_int_32,
-      #     composition_start_time: version == 1 ? read_int_64 : read_int_32,
-      #     composition_end_time: version == 1 ? read_int_64 : read_int_32,
+      #     composition_to_dts_shift: version == 1 ? read_int(n: 8) : read_int,
+      #     least_decode_to_display_delta: version == 1 ? read_int(n: 8) : read_int,
+      #     greatest_decode_to_display_delta: version == 1 ? read_int(n: 8) : read_int,
+      #     composition_start_time: version == 1 ? read_int(n: 8) : read_int,
+      #     composition_end_time: version == 1 ? read_int(n: 8) : read_int,
       #   })
       #   [fields, nil]
       # end
@@ -251,13 +253,13 @@ module FormatParser
       # Parse a composition time to sample box.
       # def ctts(_)
       #   fields = read_version_and_flags
-      #   entry_count = read_int_32
+      #   entry_count = read_int
       #   fields.merge!({
       #     entry_count: entry_count,
       #     entries: entry_count.times.map do
       #       {
-      #         sample_count: read_int_32,
-      #         sample_offset: read_int_32
+      #         sample_count: read_int,
+      #         sample_offset: read_int
       #       }
       #     end
       #   })
@@ -267,7 +269,7 @@ module FormatParser
       # Parse a data reference box.
       # def dref(size)
       #   fields = read_version_and_flags.merge({
-      #     entry_count: read_int_32
+      #     entry_count: read_int
       #   })
       #   [fields, build_box_tree(size - 8)]
       # end
@@ -295,13 +297,13 @@ module FormatParser
       # def fecr(_)
       #   fields = read_version_and_flags
       #   version = fields[:version]
-      #   entry_count = version == 0 ? read_int_16 : read_int_32
+      #   entry_count = version == 0 ? read_int(n: 2) : read_int
       #   fields.merge!({
       #     entry_count: entry_count,
       #     entries: entry_count.times.map do
       #       {
-      #         item_id: version == 0 ? read_int_16 : read_int_32,
-      #         symbol_count: read_int_8
+      #         item_id: version == 0 ? read_int(n: 2) : read_int,
+      #         symbol_count: read_int(n: 1)
       #       }
       #     end
       #   })
@@ -310,7 +312,7 @@ module FormatParser
       # Parse an FD item information box.
       # def fiin(size)
       #   fields = read_version_and_flags.merge({
-      #     entry_count: read_int_16
+      #     entry_count: read_int(n: 2)
       #   })
       #   [fields, build_box_tree(size - 6)]
       # end
@@ -318,13 +320,13 @@ module FormatParser
       # Parse a file reservoir box.
       # def fire(_)
       #   fields = read_version_and_flags
-      #   entry_count = version == 0 ? read_int_16 : read_int_32
+      #   entry_count = version == 0 ? read_int(n: 2) : read_int
       #   fields.merge!({
       #     entry_count: entry_count,
       #     entries: entry_count.times.map do
       #       {
-      #         item_id: version == 0 ? read_int_16 : read_int_32,
-      #         symbol_count: read_int_32
+      #         item_id: version == 0 ? read_int(n: 2) : read_int,
+      #         symbol_count: read_int
       #       }
       #     end
       #   })
@@ -336,13 +338,13 @@ module FormatParser
       #   fields = read_version_and_flags
       #   version = fields[:version]
       #   fields.merge!({
-      #     item_id: version == 0 ? read_int_16 : read_int_32,
-      #     packet_payload_size: read_int_16,
-      #     fec_encoding_id: skip_bytes(1) { read_int_8 },
-      #     fec_instance_id: read_int_16,
-      #     max_source_block_length: read_int_16,
-      #     encoding_symbol_length: read_int_16,
-      #     max_number_of_encoding_symbols: read_int_16,
+      #     item_id: version == 0 ? read_int(n: 2) : read_int,
+      #     packet_payload_size: read_int(n: 2),
+      #     fec_encoding_id: skip_bytes(1) { read_int(n: 1) },
+      #     fec_instance_id: read_int(n: 2),
+      #     max_source_block_length: read_int(n: 2),
+      #     encoding_symbol_length: read_int(n: 2),
+      #     max_number_of_encoding_symbols: read_int(n: 2),
       #   })
       #   # TODO: Parse scheme_specific_info, entry_count and entries { block_count, block_size }.
       #   skip_bytes(size - 20)
@@ -353,7 +355,7 @@ module FormatParser
       # Parse a group ID to name box.
       # def gitn(size)
       #   fields = read_version_and_flags
-      #   entry_count = read_int_16
+      #   entry_count = read_int(n: 2)
       #   fields.merge!({
       #     entry_count: entry_count
       #   })
@@ -365,7 +367,7 @@ module FormatParser
       # Parse a handler box.
       def hdlr(size)
         fields = read_version_and_flags.merge({
-          handler_type: skip_bytes(4) { read_int_32 },
+          handler_type: skip_bytes(4) { read_string(4) },
           name: skip_bytes(12) { read_string(size - 24) }
         })
         [fields, nil]
@@ -374,10 +376,10 @@ module FormatParser
       # Parse a hint media header box.
       # def hmhd(_)
       #   fields = read_version_and_flags.merge({
-      #     max_pdu_size: read_int_16,
-      #     avg_pdu_size: read_int_16,
-      #     max_bitrate: read_int_32,
-      #     avg_bitrate: read_int_32
+      #     max_pdu_size: read_int(n: 2),
+      #     avg_pdu_size: read_int(n: 2),
+      #     max_bitrate: read_int,
+      #     avg_bitrate: read_int
       #   })
       #   skip_bytes(4)
       #   [fields, nil]
@@ -386,7 +388,7 @@ module FormatParser
       # Parse an item info box.
       # def iinf(size)
       #   fields = read_version_and_flags.merge({
-      #     entry_count: version == 0 ? read_int_16 : read_int_32
+      #     entry_count: version == 0 ? read_int(n: 2) : read_int
       #   })
       #   [fields, build_box_tree(size - 8)]
       # end
@@ -394,11 +396,11 @@ module FormatParser
       # Parse an item location box.
       # def iloc(_)
       #   fields = read_version_and_flags
-      #   tmp = read_int_16
+      #   tmp = read_int(n: 2)
       #   item_count = if version < 2
-      #     read_int_16
+      #     read_int(n: 2)
       #   elsif version == 2
-      #     read_int_32
+      #     read_int
       #   end
       #   offset_size = (tmp >> 12) & 0x7
       #   length_size = (tmp >> 8) & 0x7
@@ -412,15 +414,15 @@ module FormatParser
       #     items: item_count.times.map do
       #       item = {
       #         item_id: if version < 2
-      #           read_int_16
+      #           read_int(n: 2)
       #         elsif version == 2
-      #           read_int_32
+      #           read_int
       #         end
       #       }
-      #       item[:construction_method] = read_int_16 & 0x7 if version == 1 || version == 2
-      #       item[:data_reference_index] = read_int_16
+      #       item[:construction_method] = read_int(n: 2) & 0x7 if version == 1 || version == 2
+      #       item[:data_reference_index] = read_int(n: 2)
       #       skip_bytes(base_offset_size) # TODO: Dynamically parse base_offset based on base_offset_size
-      #       extent_count = read_int_16
+      #       extent_count = read_int(n: 2)
       #       item[:extent_count] = extent_count
       #       # TODO: Dynamically parse extent_index, extent_offset and extent_length based on their respective sizes.
       #       skip_bytes(extent_count * (offset_size + length_size))
@@ -438,7 +440,7 @@ module FormatParser
       # Parse an item protection box.
       # def ipro(size)
       #   fields = read_version_and_flags.merge({
-      #     protection_count: read_int_16
+      #     protection_count: read_int(n: 2)
       #   })
       #   [fields, build_box_tree(size - 6)]
       # end
@@ -451,12 +453,12 @@ module FormatParser
       # Parse a level assignment box.
       # def leva(_)
       #   fields = read_version_and_flags
-      #   level_count = read_int_8
+      #   level_count = read_int(n: 1)
       #   fields.merge!({
       #     level_count: level_count,
       #     levels: level_count.times.map do
-      #       track_id = read_int_32
-      #       tmp = read_int_8
+      #       track_id = read_int
+      #       tmp = read_int(n: 1)
       #       assignment_type = tmp & 0x7F
       #       level = {
       #         track_id: track_id,
@@ -464,14 +466,14 @@ module FormatParser
       #         assignment_type: assignment_type
       #       }
       #       if assignment_type == 0
-      #         level[:grouping_type] = read_int_32
+      #         level[:grouping_type] = read_int
       #       elsif assignment_type == 1
       #         level.merge!({
-      #           grouping_type: read_int_32,
-      #           grouping_type_parameter: read_int_32
+      #           grouping_type: read_int,
+      #           grouping_type_parameter: read_int
       #         })
       #       elsif assignment_type == 4
-      #         level[:sub_track_id] = read_int_32
+      #         level[:sub_track_id] = read_int
       #       end
       #       level
       #     end
@@ -480,35 +482,35 @@ module FormatParser
       # end
 
       # Parse a media header box.
-      # def mdhd(_)
-      #   fields = read_version_and_flags
-      #   version = fields[:version]
-      #   fields.merge!({
-      #     creation_time: version == 1 ? read_int_64 : read_int_32,
-      #     modification_time: version == 1 ? read_int_64 : read_int_32,
-      #     timescale: read_int_32,
-      #     duration: version == 1 ? read_int_64 : read_int_32,
-      #   })
-      #   tmp = read_int_16
-      #   fields[:language] = [(tmp >> 10) & 0x1F, (tmp >> 5) & 0x1F, tmp & 0x1F]
-      #   skip_bytes(2)
-      #   [fields, nil]
-      # end
+      def mdhd(_)
+        fields = read_version_and_flags
+        version = fields[:version]
+        fields.merge!({
+          creation_time: version == 1 ? read_int(n: 8) : read_int,
+          modification_time: version == 1 ? read_int(n: 8) : read_int,
+          timescale: read_int,
+          duration: version == 1 ? read_int(n: 8) : read_int,
+        })
+        tmp = read_int(n: 2)
+        fields[:language] = [(tmp >> 10) & 0x1F, (tmp >> 5) & 0x1F, tmp & 0x1F]
+        skip_bytes(2)
+        [fields, nil]
+      end
 
       # Parse a movie extends header box.
       # def mehd(_)
       #   fields = read_version_and_flags
       #   version = fields[:version]
-      #   fields[:fragment_duration] = version == 1 ? read_int_64 : read_int_32
+      #   fields[:fragment_duration] = version == 1 ? read_int(n: 8) : read_int
       #   [fields, nil]
       # end
 
       # Parse an metabox relation box.
       # def mere(_)
       #   fields = read_version_and_flags.merge({
-      #     first_metabox_handler_type: read_int_32,
-      #     second_metabox_handler_type: read_int_32,
-      #     metabox_relation: read_int_8
+      #     first_metabox_handler_type: read_int,
+      #     second_metabox_handler_type: read_int,
+      #     metabox_relation: read_int(n: 1)
       #   })
       #   [fields, nil]
       # end
@@ -522,7 +524,7 @@ module FormatParser
       # Parse a movie fragment header box.
       # def mfhd(_)
       #   fields = read_version_and_flags.merge({
-      #     sequence_number: read_int_32
+      #     sequence_number: read_int
       #   })
       #   [fields, nil]
       # end
@@ -530,7 +532,7 @@ module FormatParser
       # Parse a movie fragment random access offset box.
       # def mfro(_)
       #   fields = read_version_and_flags.merge({
-      #     size: read_int_32
+      #     size: read_int
       #   })
       #   [fields, nil]
       # end
@@ -540,14 +542,14 @@ module FormatParser
         fields = read_version_and_flags
         version = fields[:version]
         fields.merge!({
-          creation_time: version == 1 ? read_int_64 : read_int_32,
-          modification_time: version == 1 ? read_int_64 : read_int_32,
-          timescale: read_int_32,
-          duration: version == 1 ? read_int_64 : read_int_32,
-          rate: read_fixed_point_32,
-          volume: read_fixed_point_16,
+          creation_time: version == 1 ? read_int(n: 8) : read_int,
+          modification_time: version == 1 ? read_int(n: 8) : read_int,
+          timescale: read_int,
+          duration: version == 1 ? read_int(n: 8) : read_int,
+          rate: read_fixed_point(n: 4),
+          volume: read_fixed_point(n: 2, signed: true),
           matrix: skip_bytes(10) { read_matrix },
-          next_trak_id: skip_bytes(24) { read_int_32 },
+          next_trak_id: skip_bytes(24) { read_int },
         })
         [fields, nil]
       end
@@ -555,11 +557,11 @@ module FormatParser
       # Parse a padding bits box.
       # def padb(_)
       #   fields = read_version_and_flags
-      #   sample_count = read_int_32
+      #   sample_count = read_int
       #   fields.merge!({
       #     sample_count: sample_count,
       #     padding: ((sample_count + 1) / 2).times.map do
-      #       tmp = read_int_8
+      #       tmp = read_int(n: 1)
       #       {
       #         padding_1: tmp >> 4,
       #         padding_2: tmp & 0x07
@@ -574,8 +576,8 @@ module FormatParser
       #   fields = read_version_and_flags.merge({
       #     entries: ((size - 4) / 8).times.map do
       #       {
-      #         rate: read_int_32,
-      #         initial_delay: read_int_32
+      #         rate: read_int,
+      #         initial_delay: read_int
       #       }
       #     end
       #   })
@@ -585,7 +587,7 @@ module FormatParser
       # Parse a primary item box.
       # def pitm(_)
       #   fields = read_version_and_flags.merge({
-      #     item_id: version == 0 ? read_int_16 : read_int_32
+      #     item_id: version == 0 ? read_int(n: 2) : read_int
       #   })
       #   [fields, nil]
       # end
@@ -595,9 +597,9 @@ module FormatParser
       #   fields = read_version_and_flags
       #   version = fields[:version]
       #   fields.merge!({
-      #     reference_track_id: read_int_32,
-      #     ntp_timestamp: read_int_64,
-      #     media_time: version == 0 ? read_int_32 : read_int_64
+      #     reference_track_id: read_int,
+      #     ntp_timestamp: read_int(n: 8),
+      #     media_time: version == 0 ? read_int : read_int(n: 8)
       #   })
       #   [fields, nil]
       # end
@@ -608,13 +610,13 @@ module FormatParser
       #   version = field[:version]
       #   flags = fields[:flags]
       #   fields.merge!({
-      #     aux_info_type: read_int_32,
-      #     aux_info_type_parameter: read_int_32
+      #     aux_info_type: read_int,
+      #     aux_info_type_parameter: read_int
       #   }) if flags & 0x1
-      #   entry_count = read_int_32
+      #   entry_count = read_int
       #   fields.merge!({
       #     entry_count: entry_count,
-      #     offsets: entry_count.times.map { version == 0 ? read_int_32 : read_int_64 }
+      #     offsets: entry_count.times.map { version == 0 ? read_int : read_int(n: 8) }
       #   })
       #   [fields, nil]
       # end
@@ -624,31 +626,31 @@ module FormatParser
       #   fields = read_version_and_flags
       #   flags = fields[:flags]
       #   fields.merge!({
-      #     aux_info_type: read_int_32,
-      #     aux_info_type_parameter: read_int_32
+      #     aux_info_type: read_int,
+      #     aux_info_type_parameter: read_int
       #   }) if flags & 0x1
-      #   default_sample_info_size = read_int_8
-      #   sample_count = read_int_32
+      #   default_sample_info_size = read_int(n: 1)
+      #   sample_count = read_int
       #   fields.merge!({
       #     default_sample_info_size: default_sample_info_size,
       #     sample_count: sample_count
       #   })
-      #   fields[:sample_info_sizes] = sample_count.times.map { read_int_8 } if default_sample_info_size == 0
+      #   fields[:sample_info_sizes] = sample_count.times.map { read_int(n: 1) } if default_sample_info_size == 0
       #   [fields, nil]
       # end
 
       # Parse a sample to group box.
       # def sbgp(_)
       #   fields = read_version_and_flags
-      #   fields[:grouping_type] = read_int_32
-      #   fields[:grouping_type_parameter] = read_int_32 if fields[:version] == 1
-      #   entry_count = read_int_32
+      #   fields[:grouping_type] = read_int
+      #   fields[:grouping_type_parameter] = read_int if fields[:version] == 1
+      #   entry_count = read_int
       #   fields.merge!({
       #     entry_count: entry_count,
       #     entries: entry_count.times.map do
       #       {
-      #         sample_count: read_int_32,
-      #         group_description_index: read_int_32
+      #         sample_count: read_int,
+      #         group_description_index: read_int
       #       }
       #     end
       #   })
@@ -659,9 +661,9 @@ module FormatParser
       # def schm(_)
       #   fields = read_version_and_flags.merge({
       #     scheme_type: read_string(4),
-      #     scheme_version: read_int_32,
+      #     scheme_version: read_int,
       #   })
-      #   fields[:scheme_uri] = (size - 12).times.map { read_int_8 } if flags & 0x1 != 0
+      #   fields[:scheme_uri] = (size - 12).times.map { read_int(n: 1) } if flags & 0x1 != 0
       #   [fields, nil]
       # end
 
@@ -673,19 +675,19 @@ module FormatParser
 
       # Parse an FD session group box.
       # def segr(_)
-      #   num_session_groups = read_int_16
+      #   num_session_groups = read_int(n: 2)
       #   fields = {
       #     num_session_groups: num_session_groups,
       #     session_groups: num_session_groups.times.map do
-      #       entry_count = read_int_8
+      #       entry_count = read_int(n: 1)
       #       session_group = {
       #         entry_count: entry_count,
-      #         entries: entry_count.times.map { { group_id: read_int_32 } }
+      #         entries: entry_count.times.map { { group_id: read_int } }
       #       }
-      #       num_channels_in_session_group = read_int_16
+      #       num_channels_in_session_group = read_int(n: 2)
       #       session_group.merge({
       #         num_channels_in_session_group: num_channels_in_session_group,
-      #         channels: num_channels_in_session_group.times.map { { hint_track_id: read_int_32 } }
+      #         channels: num_channels_in_session_group.times.map { { hint_track_id: read_int } }
       #       })
       #     end
       #   }
@@ -696,15 +698,15 @@ module FormatParser
       # def sgpd(_)
       #   fields = read_version_and_flags
       #   version = fields[:version]
-      #   fields[:grouping_type] = read_int_32
-      #   fields[:default_length] = read_int_32 if version == 1
-      #   fields[:default_sample_description_index] = read_int_32 if version >= 2
-      #   entry_count = read_int_32
+      #   fields[:grouping_type] = read_int
+      #   fields[:default_length] = read_int if version == 1
+      #   fields[:default_sample_description_index] = read_int if version >= 2
+      #   entry_count = read_int
       #   fields.merge!({
       #     entry_count: entry_count,
       #     entries: entry_count.times.map do
       #       entry = {}
-      #       entry[:description_length] = read_int_32 if version == 1 && fields[:default_length] == 0
+      #       entry[:description_length] = read_int if version == 1 && fields[:default_length] == 0
       #       entry[:box] = parse_box
       #     end
       #   })
@@ -714,25 +716,25 @@ module FormatParser
       # Parse a segment index box.
       # def sidx(_)
       #   fields = read_version_and_flags.merge({
-      #     reference_id: read_int_32,
-      #     timescale: read_int_32
+      #     reference_id: read_int,
+      #     timescale: read_int
       #   })
       #   version = fields[:version]
       #   fields.merge!({
-      #     earliest_presentation_time: version == 0 ? read_int_32 : read_int_64,
-      #     first_offset: version == 0 ? read_int_32 : read_int_64,
+      #     earliest_presentation_time: version == 0 ? read_int : read_int(n: 8),
+      #     first_offset: version == 0 ? read_int : read_int(n: 8),
       #   })
-      #   reference_count = skip_bytes(2) { read_int_16 }
+      #   reference_count = skip_bytes(2) { read_int(n: 2) }
       #   fields.merge!({
       #     reference_count: reference_count,
       #     references: reference_count.times.map do
-      #       tmp = read_int_32
+      #       tmp = read_int
       #       reference = {
       #         reference_type: tmp >> 31,
       #         referenced_size: tmp & 0x7FFFFFFF,
-      #         subsegment_duration: read_int_32
+      #         subsegment_duration: read_int
       #       }
-      #       tmp = read_int_32
+      #       tmp = read_int
       #       reference.merge({
       #         starts_with_sap: tmp >> 31,
       #         sap_type: (tmp >> 28) & 0x7,
@@ -746,7 +748,7 @@ module FormatParser
       # Parse a sound media header box.
       # def smhd(_)
       #   fields = read_version_and_flags.merge({
-      #     balance: read_fixed_point_16,
+      #     balance: read_fixed_point(n: 2, signed: true),
       #   })
       #   skip_bytes(2)
       #   [fields, nil]
@@ -755,15 +757,15 @@ module FormatParser
       # Parse a subsegment index box.
       # def ssix(_)
       #   fields = read_version_and_flags
-      #   subsegment_count = read_int_32
+      #   subsegment_count = read_int
       #   fields.merge!({
       #     subsegment_count: subsegment_count,
       #     subsegments: subsegment_count.times.map do
-      #       range_count = read_int_32
+      #       range_count = read_int
       #       {
       #         range_count: range_count,
       #         ranges: range_count.times.map do
-      #           tmp = read_int_32
+      #           tmp = read_int
       #           {
       #             level: tmp >> 24,
       #             range_size: tmp & 0x00FFFFFF
@@ -778,10 +780,10 @@ module FormatParser
       # Parse a chunk offset box.
       # def stco(_)
       #   fields = read_version_and_flags
-      #   entry_count = read_int_32
+      #   entry_count = read_int
       #   fields.merge!({
       #     entry_count: entry_count,
-      #     entries: entry_count.times.map { { chunk_offset: read_int_32 } }
+      #     entries: entry_count.times.map { { chunk_offset: read_int } }
       #   })
       #   [fields, nil]
       # end
@@ -795,10 +797,10 @@ module FormatParser
       # Parse a sub track information box.
       # def stri(size)
       #   fields = read_version_and_flags.merge({
-      #     switch_group: read_int_16,
-      #     alternate_group: read_int_16,
-      #     sub_track_id: read_int_32,
-      #     attribute_list: ((size - 12) / 4).times.map { read_int_32 }
+      #     switch_group: read_int(n: 2),
+      #     alternate_group: read_int(n: 2),
+      #     sub_track_id: read_int,
+      #     attribute_list: ((size - 12) / 4).times.map { read_int }
       #   })
       #   [fields, nil]
       # end
@@ -806,14 +808,14 @@ module FormatParser
       # Parse a sample to chunk box.
       # def stsc(_)
       #   fields = read_version_and_flags
-      #   entry_count = read_int_32
+      #   entry_count = read_int
       #   fields.merge!({
       #     entry_count: entry_count,
       #     entries: entry_count.times.map do
       #       {
-      #         first_chunk: read_int_32,
-      #         samples_per_chunk: read_int_32,
-      #         sample_description_index: read_int_32
+      #         first_chunk: read_int,
+      #         samples_per_chunk: read_int,
+      #         sample_description_index: read_int
       #       }
       #     end
       #   })
@@ -823,7 +825,7 @@ module FormatParser
       # Parse a sample descriptions box.
       def stsd(size)
         fields = read_version_and_flags.merge({
-          entry_count: read_int_32
+          entry_count: read_int
         })
         [fields, build_box_tree(size - 8)]
       end
@@ -831,13 +833,13 @@ module FormatParser
       # Parse a shadow sync sample box.
       # def stsh(_)
       #   fields = read_version_and_flags
-      #   entry_count = read_int_32
+      #   entry_count = read_int
       #   fields.merge!({
       #     entry_count: entry_count,
       #     entries: entry_count.times.map {
       #       {
-      #         shadowed_sample_number: read_int_32,
-      #         sync_sample_number: read_int_32
+      #         shadowed_sample_number: read_int,
+      #         sync_sample_number: read_int
       #       }
       #     }
       #   })
@@ -847,10 +849,10 @@ module FormatParser
       # Parse a sync sample box.
       # def stss(_)
       #   fields = read_version_and_flags
-      #   entry_count = read_int_32
+      #   entry_count = read_int
       #   fields.merge!({
       #     entry_count: entry_count,
-      #     entries: entry_count.times.map { { sample_number: read_int_32 } }
+      #     entries: entry_count.times.map { { sample_number: read_int } }
       #   })
       #   [fields, nil]
       # end
@@ -858,26 +860,26 @@ module FormatParser
       # Parse a sample size box.
       # def stsz(_)
       #   fields = read_version_and_flags
-      #   sample_size = read_int_32
-      #   sample_count = read_int_32
+      #   sample_size = read_int
+      #   sample_count = read_int
       #   fields.merge!({
       #     sample_size: sample_size,
       #     sample_count: sample_count,
       #   })
-      #   fields[:entries] = sample_count.times.map { { entry_size: read_int_32 } } if sample_size == 0
+      #   fields[:entries] = sample_count.times.map { { entry_size: read_int } } if sample_size == 0
       #   [fields, nil]
       # end
 
       # Parse a decoding time to sample box.
       def stts(_)
         fields = read_version_and_flags
-        entry_count = read_int_32
+        entry_count = read_int
         fields.merge!({
           entry_count: entry_count,
           entries: entry_count.times.map do
             {
-              sample_count: read_int_32,
-              sample_delta: read_int_32
+              sample_count: read_int,
+              sample_delta: read_int
             }
           end
         })
@@ -887,8 +889,8 @@ module FormatParser
       # Parse a compact sample size box.
       # def stz2(size)
       #   fields = read_version_and_flags.merge({
-      #     field_size: skip_bytes(3) { read_int_8 },
-      #     sample_count: read_int_32
+      #     field_size: skip_bytes(3) { read_int(n: 1) },
+      #     sample_count: read_int
       #   })
       #   # TODO: Handling for parsing entry sizes dynamically based on field size.
       #   skip_bytes(size - 12)
@@ -898,19 +900,19 @@ module FormatParser
       # Parse a sub-sample information box.
       # def subs(_)
       #   fields = read_version_and_flags
-      #   entry_count = read_int_32
+      #   entry_count = read_int
       #   fields[:entries] = entry_count.times.map do
-      #     sample_delta = read_int_32
-      #     subsample_count = read_int_16
+      #     sample_delta = read_int
+      #     subsample_count = read_int(n: 2)
       #     {
       #       sample_delta: sample_delta,
       #       subsample_count: subsample_count,
       #       subsample_information: subsample_count.times.map do
       #         {
-      #           subsample_size: version == 1 ? read_int_32 : read_int_16,
-      #           subsample_priority: read_int_8,
-      #           discardable: read_int_8,
-      #           codec_specific_parameters: read_int_32
+      #           subsample_size: version == 1 ? read_int : read_int(n: 2),
+      #           subsample_priority: read_int(n: 1),
+      #           discardable: read_int(n: 1),
+      #           codec_specific_parameters: read_int
       #         }
       #       end
       #     }
@@ -922,13 +924,13 @@ module FormatParser
       # def tfra(_)
       #   fields = read_version_and_flags
       #   version = fields[:version]
-      #   fields[:track_id] = read_int_32
+      #   fields[:track_id] = read_int
       #   skip_bytes(3)
-      #   tmp = read_int_8
+      #   tmp = read_int(n: 1)
       #   size_of_traf_number = (tmp >> 4) & 0x3
       #   size_of_trun_number = (tmp >> 2) & 0x3
       #   size_of_sample_number = tmp & 0x3
-      #   entry_count = read_int_32
+      #   entry_count = read_int
       #   fields.merge!({
       #     size_of_traf_number: size_of_traf_number,
       #     size_of_trun_number: size_of_trun_number,
@@ -936,8 +938,8 @@ module FormatParser
       #     entry_count: entry_count,
       #     entries: entry_count.times.map do
       #       entry = {
-      #         time: version == 1 ? read_int_64 : read_int_32,
-      #         moof_offset: version == 1 ? read_int_64 : read_int_32
+      #         time: version == 1 ? read_int(n: 8) : read_int,
+      #         moof_offset: version == 1 ? read_int(n: 8) : read_int
       #       }
       #       # TODO: Handling for parsing traf_number, trun_number and sample_number dynamically based on their sizes.
       #       skip_bytes(size_of_traf_number + size_of_trun_number + size_of_sample_number + 3)
@@ -952,16 +954,16 @@ module FormatParser
         fields = read_version_and_flags
         version = fields[:version]
         fields.merge!({
-          creation_time: version == 1 ? read_int_64 : read_int_32,
-          modification_time: version == 1 ? read_int_64 : read_int_32,
-          track_id: read_int_32,
-          duration: skip_bytes(4) { version == 1 ? read_int_64 : read_int_32 },
-          layer: skip_bytes(8) { read_int_16 },
-          alternate_group: read_int_16,
-          volume: read_fixed_point_16,
+          creation_time: version == 1 ? read_int(n: 8) : read_int,
+          modification_time: version == 1 ? read_int(n: 8) : read_int,
+          track_id: read_int,
+          duration: skip_bytes(4) { version == 1 ? read_int(n: 8) : read_int },
+          layer: skip_bytes(8) { read_int(n: 2) },
+          alternate_group: read_int(n: 2),
+          volume: read_fixed_point(n: 2, signed: true),
           matrix: skip_bytes(2) { read_matrix },
-          width: read_fixed_point_32,
-          height: read_fixed_point_32
+          width: read_fixed_point(n: 4),
+          height: read_fixed_point(n: 4)
         })
         [fields, nil]
       end
@@ -969,11 +971,11 @@ module FormatParser
       # Parse a track extends box.
       # def trex(_)
       #   fields = read_version_and_flags.merge({
-      #     track_id: read_int_32,
-      #     default_sample_description_index: read_int_32,
-      #     default_sample_duration: read_int_32,
-      #     default_sample_size: read_int_32,
-      #     default_sample_flags: read_int_32
+      #     track_id: read_int,
+      #     default_sample_description_index: read_int,
+      #     default_sample_duration: read_int,
+      #     default_sample_size: read_int,
+      #     default_sample_flags: read_int
       #   })
       #   [fields, nil]
       # end
@@ -981,8 +983,8 @@ module FormatParser
       # Parse a track selection box.
       # def tsel(size)
       #   fields = read_version_and_flags.merge({
-      #     switch_group: read_int_32,
-      #     attribute_list: ((size - 8) / 4).times.map { read_int_32 }
+      #     switch_group: read_int,
+      #     attribute_list: ((size - 8) / 4).times.map { read_int }
       #   })
       #   [fields, nil]
       # end
@@ -992,7 +994,7 @@ module FormatParser
         compatible_brands_count = (size - 8) / 4
         fields = {
           major_brand: read_string(4),
-          minor_version: read_int_32,
+          minor_version: read_int,
           compatible_brands: compatible_brands_count.times.map { read_string(4) }
         }
         [fields, nil]
@@ -1008,8 +1010,8 @@ module FormatParser
       # Parse a video media header box.
       # def vmhd(_)
       #   fields = read_version_and_flags.merge({
-      #     graphics_mode: read_int_16,
-      #     op_color: (1..3).map { read_int_16 }
+      #     graphics_mode: read_int(n: 2),
+      #     op_color: (1..3).map { read_int(n: 2) }
       #   })
       #   [fields, nil]
       # end
@@ -1029,13 +1031,7 @@ module FormatParser
       #
       # See https://developer.apple.com/library/archive/documentation/QuickTime/QTFF/QTFFChap4/qtff4.html#//apple_ref/doc/uid/TP40000939-CH206-18737.
       def read_matrix
-        9.times.map do |i|
-          if i % 3 == 2
-            read_fixed_point_32_2_30
-          else
-            read_fixed_point_32
-          end
-        end
+        Matrix.build(3) { |_, c| read_fixed_point(fractional_digits: c % 3 == 2 ? 30 : 16, signed: true) }
       end
 
       # Parse an box's version and flags.
@@ -1044,7 +1040,7 @@ module FormatParser
       # associated flags. Both of these are often 0.
       def read_version_and_flags
         {
-          version: read_int_8,
+          version: read_int(n: 1),
           flags: read_bytes(3)
         }
       end
