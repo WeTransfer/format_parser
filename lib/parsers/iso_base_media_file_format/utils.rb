@@ -4,10 +4,10 @@ require 'matrix'
 
 module FormatParser::ISOBaseMediaFileFormat::Utils
   def codecs(box_tree)
-    video_trak_boxes(box_tree).map do |trak_box|
+    video_trak_boxes(box_tree).flat_map do |trak_box|
       stsd_box = trak_box['mdia']['minf']['stbl']['stsd']
       stsd_box.children.map(&:type)
-    end.flatten.uniq
+    end.uniq
   end
 
   def dimensions(box_tree)
