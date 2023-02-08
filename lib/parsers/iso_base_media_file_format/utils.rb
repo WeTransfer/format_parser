@@ -45,7 +45,7 @@ module FormatParser::ISOBaseMediaFileFormat::Utils
   end
 
   def frame_rate(box_tree)
-    frame_rates = video_trak_boxes(box_tree).each_with_object([]) do |trak_box, frame_rates|
+    video_trak_boxes(box_tree).each_with_object([]) do |trak_box, frame_rates|
       mdia_box = trak_box['mdia']
       mdhd_box = mdia_box['mdhd']
       stts_box = mdia_box['minf']['stbl']['stts']
@@ -62,8 +62,7 @@ module FormatParser::ISOBaseMediaFileFormat::Utils
         # Variable frame rate
         frame_rates.push(*(stts_entries.map { |entry| frame_rate_for_entry[entry] }))
       end
-    end.uniq
-    frame_rates.length == 1 ? frame_rates[0] : frame_rates
+    end.uniq[0]
   end
 
   private
