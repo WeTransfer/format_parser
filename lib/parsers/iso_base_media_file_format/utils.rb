@@ -63,6 +63,7 @@ module FormatParser::ISOBaseMediaFileFormat::Utils
         frame_rates.push(*(stts_entries.map { |entry| frame_rate_for_entry[entry] }))
       end
     end.uniq[0]
+    # TODO: Properly account for and represent variable frame-rates.
   end
 
   private
