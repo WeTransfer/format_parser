@@ -1,4 +1,11 @@
 module FormatParser::IOUtils
+  INTEGER_DIRECTIVES = {
+    1 => 'C',
+    2 => 'S',
+    4 => 'L',
+    8 => 'Q'
+  }
+
   class InvalidRead < ArgumentError
   end
 
@@ -26,41 +33,19 @@ module FormatParser::IOUtils
     nil
   end
 
-  def read_int_8
-    read_bytes(1).unpack('C').first
+  # Read an integer.
+  # @param [Integer] n Number of bytes. Defaults to 4 (32-bit).
+  # @param [Boolean] signed Signed if true, Unsigned if false. Defaults to false. (unsigned)
+  # @param [Boolean] big_endian Big-endian if true, little-endian if false. Defaults to true (big-endian).
+  def read_int(n: 4, signed: false, big_endian: true)
+    directive = INTEGER_DIRECTIVES[n]
+    directive.downcase! if signed
+    directive += (big_endian ? ">" : "<") if n > 1
+    read_bytes(n).unpack(directive).first
   end
 
-  def read_int_16
-    read_bytes(2).unpack('n').first
-  end
-
-  def read_int_32
-    read_bytes(4).unpack('N').first
-  end
-
-  def read_int_64
-    read_bytes(8).unpack('Q>').first
-  end
-
-  def read_little_endian_int_16
-    read_bytes(2).unpack('v').first
-  end
-
-  def read_little_endian_int_32
-    read_bytes(4).unpack('V').first
-  end
-
-  def read_fixed_point_16
-    read_bytes(2).unpack('C2')
-  end
-
-  def read_fixed_point_32
-    read_bytes(4).unpack('n2')
-  end
-
-  def read_fixed_point_32_2_30
-    n = read_int_32
-    [n >> 30, n & 0x3fffffff]
+  def read_fixed_point(fractional_digits: 16, **kwargs)
+    read_int(**kwargs) / 2.0**fractional_digits
   end
 
   # 'n' is the number of bytes to read

@@ -69,7 +69,7 @@ class FormatParser::WebpParser
     # The subsequent 4 bytes contain the image width and height, respectively, as 14-bit unsigned little endian
     # integers (minus one). The 4 remaining bits consist of a 1-bit flag indicating whether alpha is used, and a 3-bit
     # version that is always zero.
-    dimensions = read_little_endian_int_32
+    dimensions = read_int(big_endian: false)
     width = (dimensions & 0x3fff) + 1
     height = (dimensions >> 14 & 0x3fff) + 1
     has_transparency = (dimensions >> 28 & 0x1) == 1
@@ -92,7 +92,7 @@ class FormatParser::WebpParser
     #   - E = Set if file contains Exif metadata.
     #   - X = Set if file contains XMP metadata.
     #   - A = Set if file is an animated image.
-    flags = read_int_8
+    flags = read_int(n: 1)
     has_transparency = flags & 0x10 != 0
     has_exif_metadata = flags & 0x08 != 0
     has_xmp_metadata = flags & 0x04 != 0

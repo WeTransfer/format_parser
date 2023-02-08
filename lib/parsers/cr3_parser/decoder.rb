@@ -5,7 +5,7 @@ class FormatParser::CR3Parser::Decoder < FormatParser::ISOBaseMediaFileFormat::D
 
   protected
 
-  ATOM_PARSERS = ATOM_PARSERS.merge({
+  BOX_PARSERS = BOX_PARSERS.merge({
     'CMT1' => :cmt1
   })
   CANON_METADATA_CONTAINER_UUID = '85c0b687820f11e08111f4ce462b6a48'
@@ -26,7 +26,7 @@ class FormatParser::CR3Parser::Decoder < FormatParser::ISOBaseMediaFileFormat::D
     usertype = read_bytes(16).unpack('H*').first
     fields = { usertype: usertype }
     children = if usertype == CANON_METADATA_CONTAINER_UUID
-      build_atom_tree(size - 16)
+      build_box_tree(size - 16)
     else
       skip_bytes(size - 16)
     end

@@ -184,7 +184,7 @@ describe FormatParser do
         'FormatParser::GIFParser',
         'Class',
         'FormatParser::PNGParser',
-        'FormatParser::MOOVParser',
+        'FormatParser::MP4Parser',
         'FormatParser::CR2Parser',
         'FormatParser::CR3Parser',
         'FormatParser::DPXParser',

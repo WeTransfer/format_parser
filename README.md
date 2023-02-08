@@ -28,6 +28,10 @@ and [dimensions,](https://github.com/sstephenson/dimensions) borrowing from them
 * JPEG
 * M3U
 * M4A
+* M4B
+* M4P
+* M4R
+* M4V
 * MOV
 * MP3
 * MP4
@@ -195,15 +199,14 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 ### M3U
 - The M3U fixture files were created by one of the project maintainers
 
-### M4A
-- fixture.m4a was created by one of the project maintainers and is MIT licensed
-
-### MOOV
-- bmff.mp4 is borrowed from the [bmff](https://github.com/zuku/bmff) project
-- Test_Circular MOV files were created by one of the project maintainers and are MIT licensed
+### MOV
+- Fixtures were downloaded from https://pixabay.com/ (with some modifications) and are subject to the [Pixabay Licence](https://pixabay.com/service/license/). 
 
 ### MP3
 - Cassy.mp3 has been produced by WeTransfer and may be used with the library for the purposes of testing
+
+### MP4
+- Fixtures were downloaded from https://pixabay.com/ (with some modifications) and are subject to the [Pixabay Licence](https://pixabay.com/service/license/). 
 
 ### MPEG
 - The files (video 1 to 4) were downloaded from https://standaloneinstaller.com/blog/big-list-of-sample-videos-for-testers-124.html.

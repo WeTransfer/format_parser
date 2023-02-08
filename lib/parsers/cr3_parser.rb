@@ -14,15 +14,17 @@ class FormatParser::CR3Parser
 
     return unless matches_cr3_definition?
 
-    atom_tree = Decoder.new.build_atom_tree(0xffffffff, @buf)
-    moov_atom = atom_tree.find { |atom| atom.type == 'moov' }
-    cmt1_atom = moov_atom&.find_first_descendent(['CMT1'])
-    return unless cmt1_atom
+    box_tree = Measurometer.instrument('format_parser.cr3_parser.decoder.build_box_tree') do
+      Decoder.new.build_box_tree(0xffffffff, @buf)
+    end
+    moov_box = box_tree.find { |box| box.type == 'moov' }
+    cmt1_box = moov_box&.find_first_descendent(['CMT1'])
+    return unless cmt1_box
 
-    width = cmt1_atom.fields[:image_width]
-    height = cmt1_atom.fields[:image_length]
-    rotated = cmt1_atom.fields[:rotated]
-    orientation = cmt1_atom.fields[:orientation_sym]
+    width = cmt1_box[:image_width]
+    height = cmt1_box[:image_length]
+    rotated = cmt1_box[:rotated]
+    orientation = cmt1_box[:orientation_sym]
     FormatParser::Image.new(
       format: :cr3,
       content_type: CR3_MIME_TYPE,
@@ -32,8 +34,8 @@ class FormatParser::CR3Parser
       display_width_px: rotated ? height : width,
       display_height_px: rotated ? width : height,
       intrinsics: {
-        atom_tree: atom_tree,
-        exif: cmt1_atom.fields,
+        box_tree: box_tree,
+        exif: cmt1_box.fields,
       },
     )
   end
