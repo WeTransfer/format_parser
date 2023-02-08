@@ -1,3 +1,6 @@
+## 2.4.1
+* Revert change where variable frame rates in MOV and MP4 files would result in an array value for `frame_rate`.
+
 ## 2.4.0
 * Adapt the ISOBMFF based decoder for parsing MOV and MP4 parsing.
 * Fix MOV/MP4 issues:
