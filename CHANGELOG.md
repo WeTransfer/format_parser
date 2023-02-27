@@ -1,3 +1,8 @@
+## 2.4.2
+* Improve resiliency in ISOBMFF parsing to missing mandatory boxes and fields.
+* Simplify ISOBMFF frame rate calculations.
+* Refactor.
+
 ## 2.4.1
 * Revert change where variable frame rates in MOV and MP4 files would result in an array value for `frame_rate`.
 
