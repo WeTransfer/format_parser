@@ -30,7 +30,7 @@ class FormatParser::MOVParser
       frame_rate: frame_rate(box_tree),
       media_duration_seconds: duration(box_tree),
       content_type: MOV_MIME_TYPE,
-      codecs: codecs(box_tree),
+      codecs: video_codecs(box_tree),
       intrinsics: box_tree
     )
   end
