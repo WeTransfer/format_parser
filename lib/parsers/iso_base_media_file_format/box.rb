@@ -40,10 +40,10 @@ module FormatParser
       # @param [Array<String>] types The box type(s) to search for.
       # @return [Array<Box>]
       def all_descendents(*types)
-        children.map do |child|
+        children.flat_map do |child|
           descendents = child.all_descendents(*types)
           types.include?(child.type) ? [child] + descendents : descendents
-        end.flatten
+        end
       end
 
       # Find and return all descendents that exists at the given path.
