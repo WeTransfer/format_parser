@@ -11,7 +11,7 @@ module FormatParser
       def dimensions(box_tree)
         moov_box = box_tree.find { |box| box.type == 'moov' }
         return unless moov_box
-        movie_matrix = moov_box.first_child('mvhd')&.fields&.[](:matrix) || IDENTITY_MATRIX
+        movie_matrix = moov_box.first_child('mvhd')&.dig(:fields, :matrix) || IDENTITY_MATRIX
         extreme_coordinates = video_trak_boxes(box_tree).each_with_object({}) do |trak_box, extreme_coordinates|
           tkhd_box = trak_box.first_child('tkhd')
           next unless tkhd_box
@@ -51,7 +51,7 @@ module FormatParser
           next unless mdhd_box && stts_box
 
           timescale = mdhd_box.fields[:timescale]&.to_f
-          sample_delta = stts_box.fields[:entries]&.[](0)&.[](:sample_delta)
+          sample_delta = stts_box.dig(:fields, :entries, 0, :sample_delta)
 
           next unless timescale && sample_delta
 
