@@ -62,9 +62,9 @@ module FormatParser
       end
 
       def video_codecs(box_tree)
-        video_trak_boxes(box_tree).map do |trak_box|
-          trak_box.all_descendents_by_path(%w[mdia minf stbl stsd]).map { |stsd_box| stsd_box.children.map(&:type) }
-        end.flatten.compact.uniq
+        video_trak_boxes(box_tree).flat_map do |trak_box|
+          trak_box.all_descendents_by_path(%w[mdia minf stbl stsd]).flat_map { |stsd_box| stsd_box.children.map(&:type) }
+        end.compact.uniq
       end
 
       private

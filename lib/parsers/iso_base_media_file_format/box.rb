@@ -51,7 +51,7 @@ module FormatParser
         next_type, *remaining_path = path
         matching_children = all_children(next_type)
         return matching_children if remaining_path.empty?
-        matching_children.map { |child| child.all_descendents_by_path(remaining_path) }.flatten
+        matching_children.flat_map { |child| child.all_descendents_by_path(remaining_path) }
       end
 
       # Find and return the first descendent (using depth-first search) of a given type.
