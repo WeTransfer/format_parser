@@ -46,7 +46,7 @@ module FormatParser
         end
       end
 
-      # Find and return all descendents that exists at the given path.
+      # Find and return all descendents that exist at the given path.
       #
       # @param [Array<String>] path The path to search at.
       # @return [Array<Box>]
