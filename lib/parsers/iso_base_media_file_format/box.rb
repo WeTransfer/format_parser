@@ -24,7 +24,7 @@ module FormatParser
       # @param [String] type The box type to search for.
       # @return [Boolean]
       def child?(type)
-        !(children.select { |child| child.type == type }).empty?
+        children.any? { |child| child.type == type }
       end
 
       # Return the first child with one of the given types.
