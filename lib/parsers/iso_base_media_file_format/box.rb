@@ -1,7 +1,7 @@
 module FormatParser
   module ISOBaseMediaFileFormat
     class Box < Struct.new(:type, :position, :size, :fields, :children)
-      def initialize(type, position, size, fields = nil, children = nil)
+      def initialize(*args)
         super
         self.fields ||= {}
         self.children ||= []
