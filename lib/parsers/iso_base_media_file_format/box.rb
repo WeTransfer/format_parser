@@ -1,14 +1,10 @@
 module FormatParser
   module ISOBaseMediaFileFormat
-    class Box
-      attr_reader :type, :position, :size, :fields, :children
-
+    class Box < Struct.new(:type, :position, :size, :fields, :children)
       def initialize(type, position, size, fields = nil, children = nil)
-        @type = type
-        @position = position
-        @size = size
-        @fields = fields || {}
-        @children = children || []
+        super
+        self.fields ||= {}
+        self.children ||= []
       end
 
       # Return all children with one of the given type(s).
