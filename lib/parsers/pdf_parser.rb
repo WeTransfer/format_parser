@@ -6,7 +6,7 @@ class FormatParser::PDFParser
   #
   # There are however exceptions, which are left out for now.
   #
-  PDF_MARKER = /%PDF-1\.[0-8]{1}/
+  PDF_MARKER = /%PDF-[1-2]\.[0-8]{1}/
   PDF_CONTENT_TYPE = 'application/pdf'
 
   def likely_match?(filename)
@@ -16,7 +16,8 @@ class FormatParser::PDFParser
   def call(io)
     io = FormatParser::IOConstraint.new(io)
 
-    return unless safe_read(io, 9) =~ PDF_MARKER
+    header = safe_read(io, 9)
+    return unless header =~ PDF_MARKER
 
     FormatParser::Document.new(format: :pdf, content_type: PDF_CONTENT_TYPE)
   end
