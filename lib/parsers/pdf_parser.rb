@@ -6,7 +6,7 @@ class FormatParser::PDFParser
   #
   # There are however exceptions, which are left out for now.
   #
-  PDF_MARKER = /%PDF-[1-2]\.[0-8]{1}/
+  PDF_MARKER = /%PDF-[12]\.[0-8]{1}/
   PDF_CONTENT_TYPE = 'application/pdf'
 
   def likely_match?(filename)
