@@ -55,16 +55,6 @@ describe FormatParser::PDFParser do
       parsed_pdf = parse_pdf 'PDF 2.0 with offset start.pdf'
       expect(parsed_pdf).to be_nil
     end
-
-    describe 'PDF file with a correct header but no valid content' do
-      # parsed_pdf = parse_pdf 'broken.pdf'
-      pending 'does not parse succesfully'
-    end
-
-    describe 'when exceeding the PDF read limit' do
-      # parsed_pdf = parse_pdf 'read_limit.pdf'
-      pending 'does not parse succesfully'
-    end
   end
 end
 
