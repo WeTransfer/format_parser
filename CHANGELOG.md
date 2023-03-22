@@ -1,3 +1,7 @@
+## 2.4.2
+* Added support for PDF 2.0
+* Expanded test coverage for PDF parsing
+
 ## 2.4.1
 * Revert change where variable frame rates in MOV and MP4 files would result in an array value for `frame_rate`.
 
