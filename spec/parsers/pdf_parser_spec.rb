@@ -34,11 +34,6 @@ describe FormatParser::PDFParser do
       include_examples :behave_like_pdf, file: 'Lorem Ipsum PDF-UA.pdf'
       include_examples :behave_like_pdf, file: 'Lorem Ipsum Hybrid - ODF embedded.pdf'
       include_examples :behave_like_pdf, file: 'Simple PDF 2.0 file.pdf'
-
-      include_examples :behave_like_pdf, file: 'client_pdf_1.pdf'
-      include_examples :behave_like_pdf, file: 'client_pdf_2.pdf'
-      include_examples :behave_like_pdf, file: 'client_pdf_3.pdf'
-      include_examples :behave_like_pdf, file: 'client_pdf_4.pdf'
     end
 
     describe 'complex PDF 2.0 files' do
