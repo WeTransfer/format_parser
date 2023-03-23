@@ -20,6 +20,8 @@ class FormatParser::PDFParser
     return unless header =~ PDF_MARKER
 
     FormatParser::Document.new(format: :pdf, content_type: PDF_CONTENT_TYPE)
+  rescue FormatParser::IOUtils::InvalidRead
+    nil
   end
 
   FormatParser.register_parser new, natures: :document, formats: :pdf, priority: 3

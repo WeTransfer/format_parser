@@ -55,6 +55,12 @@ describe FormatParser::PDFParser do
       parsed_pdf = parse_pdf 'PDF 2.0 with offset start.pdf'
       expect(parsed_pdf).to be_nil
     end
+
+    it 'exceeds the PDF read limit' do
+      parsed_pdf = parse_pdf 'exceed_PDF_read_limit.pdf'
+      expect(parsed_pdf).to be_nil
+    end
+
   end
 end
 
