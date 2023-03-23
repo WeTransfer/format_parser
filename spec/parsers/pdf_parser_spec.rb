@@ -1,8 +1,7 @@
 require 'spec_helper'
 
 describe FormatParser::PDFParser do
-
-  def parse_pdf (pdf_filename)
+  def parse_pdf(pdf_filename)
     subject.call(
       File.open(
         Pathname.new(fixtures_dir).join('PDF').join(pdf_filename),
@@ -60,8 +59,5 @@ describe FormatParser::PDFParser do
       parsed_pdf = parse_pdf 'exceed_PDF_read_limit.pdf'
       expect(parsed_pdf).to be_nil
     end
-
   end
 end
-
-
