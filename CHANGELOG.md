@@ -1,13 +1,20 @@
 ## 2.4.3
-* Adapt the `ISOBMFF` based decoder for parsing `MOV` and `MP4` parsing.
-* Fix `MOV`/`MP4` issues:
-  * `MP4` files being misidentified as `MOV` files.
-  * Dimensions being miscalculated when files include multiple tracks or transformations.
-* Added support for `PDF` 2.0
-* Expanded test coverage for `PDF` parsing
-* Improve resiliency in `ISOBMFF` parsing to missing mandatory boxes and fields.
-* Simplify `ISOBMFF` frame rate calculations.
+* Improve resiliency in ISOBMFF parsing to missing mandatory boxes and fields.
+* Simplify ISOBMFF frame rate calculations.
 * Refactor.
+
+## 2.4.2 (yanked)
+* Added support for PDF 2.0
+* Expanded test coverage for PDF parsing
+
+## 2.4.1 (yanked)
+* Revert change where variable frame rates in MOV and MP4 files would result in an array value for `frame_rate`.
+
+## 2.4.0 (yanked)
+* Adapt the ISOBMFF based decoder for parsing MOV and MP4 parsing.
+* Fix MOV/MP4 issues:
+  * MP4 files being misidentified as MOV files.
+  * Dimensions being miscalculated when files include multiple tracks or transformations.
 
 ## 2.3.0
 * Add support for `RW2` files.
