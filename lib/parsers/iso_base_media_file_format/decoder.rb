@@ -10,64 +10,12 @@
 #   methods with tests down-the-line.
 
 require 'matrix'
+require 'parsers/iso_base_media_file_format/box'
 
 module FormatParser
   module ISOBaseMediaFileFormat
     class Decoder
       include FormatParser::IOUtils
-
-      class Box < Struct.new(:type, :position, :size, :fields, :children)
-        def initialize(type, position, size, fields = nil, children = nil)
-          super
-          self.fields ||= {}
-          self.children ||= []
-        end
-
-        def [](index)
-          if index.is_a?(Symbol)
-            fields[index]
-          elsif index.is_a?(String)
-            children.find { |child| child.type == index }
-          else
-            children[index]
-          end
-        end
-
-        # Find and return the first descendent (using depth-first search) of a given type.
-        #
-        # @param [Array<String>] types
-        # @return [Box, nil]
-        def find_first_descendent(types)
-          children.each do |child|
-            return child if types.include?(child.type)
-            if (descendent = child.find_first_descendent(types))
-              return descendent
-            end
-          end
-          nil
-        end
-
-        def include?(key)
-          if key.is_a?(Symbol)
-            fields.include?(key)
-          elsif key.is_a?(String)
-            children.include?(key)
-          else
-            false
-          end
-        end
-
-        # Find and return all descendents of a given type.
-        #
-        # @param [Array<String>] types
-        # @return [Array<Box>]
-        def select_descendents(types)
-          children.map do |child|
-            descendents = child.select_descendents(types)
-            types.include?(child.type) ? [child] + descendents : descendents
-          end.flatten
-        end
-      end
 
       # Attempt to build the ISOBMFF box tree represented in the given IO object.
       #

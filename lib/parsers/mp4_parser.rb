@@ -41,7 +41,7 @@ class FormatParser::MP4Parser
     when VIDEO_FORMATS
       width, height = dimensions(box_tree)
       FormatParser::Video.new(
-        codecs: codecs(box_tree),
+        codecs: video_codecs(box_tree),
         content_type: VIDEO_MIMETYPE,
         format: file_format,
         frame_rate: frame_rate(box_tree),
@@ -65,8 +65,8 @@ class FormatParser::MP4Parser
   private
 
   def file_format(box_tree)
-    major_brand = box_tree.find { |box| box.type == 'ftyp' }[:major_brand]
-    BRAND_FORMATS[major_brand.downcase]
+    major_brand = box_tree.find { |box| box.type == 'ftyp' }&.fields[:major_brand]
+    BRAND_FORMATS[major_brand.downcase] if major_brand
   end
 
   def matches_mp4_definition?

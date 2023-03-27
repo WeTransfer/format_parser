@@ -18,13 +18,13 @@ class FormatParser::CR3Parser
       Decoder.new.build_box_tree(0xffffffff, @buf)
     end
     moov_box = box_tree.find { |box| box.type == 'moov' }
-    cmt1_box = moov_box&.find_first_descendent(['CMT1'])
+    cmt1_box = moov_box&.first_descendent('CMT1')
     return unless cmt1_box
 
-    width = cmt1_box[:image_width]
-    height = cmt1_box[:image_length]
-    rotated = cmt1_box[:rotated]
-    orientation = cmt1_box[:orientation_sym]
+    width = cmt1_box.fields[:image_width]
+    height = cmt1_box.fields[:image_length]
+    rotated = cmt1_box.fields[:rotated]
+    orientation = cmt1_box.fields[:orientation_sym]
     FormatParser::Image.new(
       format: :cr3,
       content_type: CR3_MIME_TYPE,
