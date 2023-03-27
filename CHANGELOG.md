@@ -1,4 +1,4 @@
-## 2.4.0
+## 2.4.3
 * Adapt the `ISOBMFF` based decoder for parsing `MOV` and `MP4` parsing.
 * Fix `MOV`/`MP4` issues:
   * `MP4` files being misidentified as `MOV` files.
