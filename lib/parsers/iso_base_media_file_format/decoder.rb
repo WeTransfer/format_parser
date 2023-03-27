@@ -129,10 +129,15 @@ module FormatParser
       # @return [Box, nil]
       def parse_box
         position = @buf.pos
-
         size = read_int
         type = read_string(4)
-        size = read_int(n: 8) if size == 1
+
+        if size == 1
+          size = read_int(n: 8)
+        elsif size == 0
+          size = @buf.size - position
+        end
+
         body_size = size - (@buf.pos - position)
         next_box_position = position + size
 

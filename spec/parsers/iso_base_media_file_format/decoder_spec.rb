@@ -113,5 +113,30 @@ describe FormatParser::ISOBaseMediaFileFormat::Decoder do
       it('parses usertype') { expect(result[0].fields).to include({ usertype: usertype }) }
       it('skips children') { expect(result[0].children).to eq([]) }
     end
+
+    context 'when parsing a box with 0 size' do
+      let(:io) do
+        # foo
+        # moov
+        # |-> bar
+        # |-> baz
+        input = [0x8].pack('N') + 'foo ' + [0x0].pack('N') + 'moov' + [0x8].pack('N') + 'bar ' + [0x8].pack('N') + 'baz '
+        StringIO.new(input)
+      end
+      let(:result) { subject.build_box_tree(0xFF, io) }
+
+      it('reads the rest of the file') do
+        expect(result.length).to eq(2)
+        expect(io.pos).to eq(0x20)
+      end
+
+      it('parses correctly') do
+        expect(result[0].type).to eq('foo ')
+        expect(result[1].type).to eq('moov')
+        expect(result[1].children.length).to eq(2)
+        expect(result[1].children[0].type).to eq('bar ')
+        expect(result[1].children[1].type).to eq('baz ')
+      end
+    end
   end
 end
