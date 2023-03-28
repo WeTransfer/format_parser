@@ -35,15 +35,41 @@ describe FormatParser::MOVParser do
       context "for #{path}" do
         let(:result) { subject.call(File.open(path, 'rb')) }
 
-        it('should not be nil') { expect(result).not_to be_nil }
-        it('should have video nature') { expect(result.nature).to eq(:video) }
-        it('should have MOV video content type') { expect(result.content_type).to eq('video/quicktime') }
-        it('should have MOV video format') { expect(result.format).to eq(:mov) }
-        it('should have a non-zero height ') { expect(result.height_px).to be > 0 }
-        it('should have a non-zero width') { expect(result.width_px).to be > 0 }
-        it('should have a non-zero duration') { expect(result.media_duration_seconds).to be > 0 }
-        it('should have a non-nil frame rate') { expect(result.frame_rate).not_to be_nil }
-        it('should have intrinsics') { expect(result.intrinsics).not_to be_nil }
+        it 'should not be nil' do
+          expect(result).not_to be_nil
+        end
+
+        it 'should have video nature' do
+          expect(result.nature).to eq(:video)
+        end
+
+        it 'should have MOV video content type' do
+          expect(result.content_type).to eq('video/quicktime')
+        end
+
+        it 'should have MOV video format' do
+          expect(result.format).to eq(:mov)
+        end
+
+        it 'should have a non-zero height ' do
+          expect(result.height_px).to be > 0
+        end
+
+        it 'should have a non-zero width' do
+          expect(result.width_px).to be > 0
+        end
+
+        it 'should have a non-zero duration' do
+          expect(result.media_duration_seconds).to be > 0
+        end
+
+        it 'should have a non-nil frame rate' do
+          expect(result.frame_rate).not_to be_nil
+        end
+
+        it 'should have intrinsics' do
+          expect(result.intrinsics).not_to be_nil
+        end
       end
     end
 
@@ -51,7 +77,9 @@ describe FormatParser::MOVParser do
       context "for #{path}" do
         let(:result) { subject.call(File.open(path, 'rb')) }
 
-        it('should be nil') { expect(result).to be_nil }
+        it 'should be nil' do
+          expect(result).to be_nil
+        end
       end
     end
 
@@ -61,10 +89,21 @@ describe FormatParser::MOVParser do
         subject.call(File.open(path, 'rb'))
       end
 
-      it('should have the correct height') { expect(result.height_px).to eq(360) }
-      it('should have the correct width') { expect(result.width_px).to eq(640) }
-      it('should have the correct duration') { expect(result.media_duration_seconds.truncate(2)).to eq(9.36) }
-      it('should have the correct frame rate') { expect(result.frame_rate).to eq(30) }
+      it 'should have the correct height' do
+        expect(result.height_px).to eq(360)
+      end
+
+      it 'should have the correct width' do
+        expect(result.width_px).to eq(640)
+      end
+
+      it 'should have the correct duration' do
+        expect(result.media_duration_seconds.truncate(2)).to eq(9.36)
+      end
+
+      it 'should have the correct frame rate' do
+        expect(result.frame_rate).to eq(30)
+      end
     end
 
     context "for a scaled MOV video" do
@@ -73,8 +112,13 @@ describe FormatParser::MOVParser do
         subject.call(File.open(path, 'rb'))
       end
 
-      it('should have the correct height') { expect(result.height_px).to eq(720) }
-      it('should have the correct width') { expect(result.width_px).to eq(1280) }
+      it 'should have the correct height' do
+        expect(result.height_px).to eq(720)
+      end
+
+      it 'should have the correct width' do
+        expect(result.width_px).to eq(1280)
+      end
     end
 
     context "for a rotated MOV video" do
@@ -83,8 +127,13 @@ describe FormatParser::MOVParser do
         subject.call(File.open(path, 'rb'))
       end
 
-      it('should have the correct height') { expect(result.height_px).to eq(640) }
-      it('should have the correct width') { expect(result.width_px).to eq(360) }
+      it 'should have the correct height' do
+        expect(result.height_px).to eq(640)
+      end
+
+      it 'should have the correct width' do
+        expect(result.width_px).to eq(360)
+      end
     end
   end
 end
