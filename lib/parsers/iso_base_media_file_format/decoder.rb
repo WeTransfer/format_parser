@@ -116,7 +116,7 @@ module FormatParser
         'trak' => :container,
         # 'trex' => :trex,
         # 'tsel' => :tsel,
-        'udta' => :container,
+        # 'udta' => :container,
         # 'url ' => :dref_url,
         # 'urn ' => :dref_urn,
         'uuid' => :uuid,
