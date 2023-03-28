@@ -35,15 +35,41 @@ describe FormatParser::MP4Parser do
       context "for #{path}" do
         let(:result) { subject.call(File.open(path, 'rb')) }
 
-        it('should not be nil') { expect(result).not_to be_nil }
-        it('should have video nature') { expect(result.nature).to eq(:video) }
-        it('should have MP4 video content type') { expect(result.content_type).to eq('video/mp4') }
-        it('should have MP4 video format') { expect([:mp4, :mv4]).to include(result.format) }
-        it('should have a non-zero height ') { expect(result.height_px).to be > 0 }
-        it('should have a non-zero width') { expect(result.width_px).to be > 0 }
-        it('should have a non-zero duration') { expect(result.media_duration_seconds).to be > 0 }
-        it('should have a non-nil frame rate') { expect(result.frame_rate).not_to be_nil }
-        it('should have intrinsics') { expect(result.intrinsics).not_to be_nil }
+        it 'should not be nil' do
+          expect(result).not_to be_nil
+        end
+
+        it 'should have video nature' do
+          expect(result.nature).to eq(:video)
+        end
+
+        it 'should have MP4 video content type' do
+          expect(result.content_type).to eq('video/mp4')
+        end
+
+        it 'should have MP4 video format' do
+          expect([:mp4, :mv4]).to include(result.format)
+        end
+
+        it 'should have a non-zero height ' do
+          expect(result.height_px).to be > 0
+        end
+
+        it 'should have a non-zero width' do
+          expect(result.width_px).to be > 0
+        end
+
+        it 'should have a non-zero duration' do
+          expect(result.media_duration_seconds).to be > 0
+        end
+
+        it 'should have a non-nil frame rate' do
+          expect(result.frame_rate).not_to be_nil
+        end
+
+        it 'should have intrinsics' do
+          expect(result.intrinsics).not_to be_nil
+        end
       end
     end
 
@@ -51,12 +77,29 @@ describe FormatParser::MP4Parser do
       context "for #{path}" do
         let(:result) { subject.call(File.open(path, 'rb')) }
 
-        it('should not be nil') { expect(result).not_to be_nil }
-        it('should have audio nature') { expect(result.nature).to eq(:audio) }
-        it('should have MP4 audio content type') { expect(result.content_type).to eq('audio/mp4') }
-        it('should have MP4 audio format') { expect([:m4a, :m4b, :m4p, :m4r]).to include(result.format) }
-        it('should have a non-zero duration') { expect(result.media_duration_seconds).to be > 0 }
-        it('should have intrinsics') { expect(result.intrinsics).not_to be_nil }
+        it 'should not be nil' do
+          expect(result).not_to be_nil
+        end
+
+        it 'should have audio nature' do
+          expect(result.nature).to eq(:audio)
+        end
+
+        it 'should have MP4 audio content type' do
+          expect(result.content_type).to eq('audio/mp4')
+        end
+
+        it 'should have MP4 audio format' do
+          expect([:m4a, :m4b, :m4p, :m4r]).to include(result.format)
+        end
+
+        it 'should have a non-zero duration' do
+          expect(result.media_duration_seconds).to be > 0
+        end
+
+        it 'should have intrinsics' do
+          expect(result.intrinsics).not_to be_nil
+        end
       end
     end
 
@@ -64,7 +107,9 @@ describe FormatParser::MP4Parser do
       context "for #{path}" do
         let(:result) { subject.call(File.open(path, 'rb')) }
 
-        it('should be nil') { expect(result).to be_nil }
+        it 'should be nil' do
+          expect(result).to be_nil
+        end
       end
     end
 
@@ -74,10 +119,21 @@ describe FormatParser::MP4Parser do
         subject.call(File.open(path, 'rb'))
       end
 
-      it('should have the correct height') { expect(result.height_px).to eq(360) }
-      it('should have the correct width') { expect(result.width_px).to eq(640) }
-      it('should have the correct duration') { expect(result.media_duration_seconds.truncate(2)).to eq(9.36) }
-      it('should have the correct frame rate') { expect(result.frame_rate).to eq(30) }
+      it 'should have the correct height' do
+        expect(result.height_px).to eq(360)
+      end
+
+      it 'should have the correct width' do
+        expect(result.width_px).to eq(640)
+      end
+
+      it 'should have the correct duration' do
+        expect(result.media_duration_seconds.truncate(2)).to eq(9.36)
+      end
+
+      it 'should have the correct frame rate' do
+        expect(result.frame_rate).to eq(30)
+      end
     end
 
     context "for a scaled MP4 video" do
@@ -86,8 +142,13 @@ describe FormatParser::MP4Parser do
         subject.call(File.open(path, 'rb'))
       end
 
-      it('should have the correct height') { expect(result.height_px).to eq(720) }
-      it('should have the correct width') { expect(result.width_px).to eq(1280) }
+      it 'should have the correct height' do
+        expect(result.height_px).to eq(720)
+      end
+
+      it 'should have the correct width' do
+        expect(result.width_px).to eq(1280)
+      end
     end
 
     context "for a rotated MP4 video" do
@@ -96,8 +157,13 @@ describe FormatParser::MP4Parser do
         subject.call(File.open(path, 'rb'))
       end
 
-      it('should have the correct height') { expect(result.height_px).to eq(640) }
-      it('should have the correct width') { expect(result.width_px).to eq(360) }
+      it 'should have the correct height' do
+        expect(result.height_px).to eq(640)
+      end
+
+      it 'should have the correct width' do
+        expect(result.width_px).to eq(360)
+      end
     end
 
     context "for a multi-track MP4 video" do
@@ -106,9 +172,17 @@ describe FormatParser::MP4Parser do
         subject.call(File.open(path, 'rb'))
       end
 
-      it('should have the correct height') { expect(result.height_px).to eq(1280) }
-      it('should have the correct width') { expect(result.width_px).to eq(1024) }
-      it('should have the correct frame rate') { expect(result.frame_rate).to eq(24) }
+      it 'should have the correct height' do
+        expect(result.height_px).to eq(1280)
+      end
+
+      it 'should have the correct width' do
+        expect(result.width_px).to eq(1024)
+      end
+
+      it 'should have the correct frame rate' do
+        expect(result.frame_rate).to eq(24)
+      end
     end
   end
 end

@@ -48,12 +48,29 @@ describe FormatParser::ISOBaseMediaFileFormat::Decoder do
       end
       let(:result) { subject.build_box_tree(0xFF, io) }
 
-      it('parses successfully') { expect(result.length).to eq(1) }
-      it('parses the correct type') { expect(result[0].type).to eq('foo ') }
-      it('parses the correct position') { expect(result[0].position).to eq(0) }
-      it('parses the correct size') { expect(result[0].size).to eq(0x14) }
-      it('skips additional fields') { expect(result[0].fields).to eq({}) }
-      it('skips children') { expect(result[0].children).to eq([]) }
+      it 'parses successfully' do
+        expect(result.length).to eq(1)
+      end
+
+      it 'parses the correct type' do
+        expect(result[0].type).to eq('foo ')
+      end
+
+      it 'parses the correct position' do
+        expect(result[0].position).to eq(0)
+      end
+
+      it 'parses the correct size' do
+        expect(result[0].size).to eq(0x14)
+      end
+
+      it 'skips additional fields' do
+        expect(result[0].fields).to eq({})
+      end
+
+      it 'skips children' do
+        expect(result[0].children).to eq([])
+      end
     end
 
     context 'when parsing a container box' do
@@ -66,12 +83,29 @@ describe FormatParser::ISOBaseMediaFileFormat::Decoder do
       end
       let(:result) { subject.build_box_tree(0xFF, io) }
 
-      it('parses successfully') { expect(result.length).to eq(1) }
-      it('parses the correct type') { expect(result[0].type).to eq('moov') }
-      it('parses the correct position') { expect(result[0].position).to eq(0) }
-      it('parses the correct size') { expect(result[0].size).to eq(0x18) }
-      it('skips additional fields') { expect(result[0].fields).to eq({}) }
-      it('parses children') { expect(result[0].children.length).to eq(2) }
+      it 'parses successfully' do
+        expect(result.length).to eq(1)
+      end
+
+      it 'parses the correct type' do
+        expect(result[0].type).to eq('moov')
+      end
+
+      it 'parses the correct position' do
+        expect(result[0].position).to eq(0)
+      end
+
+      it 'parses the correct size' do
+        expect(result[0].size).to eq(0x18)
+      end
+
+      it 'skips additional fields' do
+        expect(result[0].fields).to eq({})
+      end
+
+      it 'parses children' do
+        expect(result[0].children.length).to eq(2)
+      end
     end
 
     context 'when parsing an empty box' do
@@ -83,17 +117,32 @@ describe FormatParser::ISOBaseMediaFileFormat::Decoder do
       end
       let(:result) { subject.build_box_tree(0xFF, io) }
 
-      it('parses successfully') { expect(result.length).to eq(1) }
-      it('parses the correct type') { expect(result[0].type).to eq('nmhd') }
-      it('parses the correct position') { expect(result[0].position).to eq(0) }
-      it('parses the correct size') { expect(result[0].size).to eq(0x18) }
-      it('parses version and flags') do
+      it 'parses successfully' do
+        expect(result.length).to eq(1)
+      end
+
+      it 'parses the correct type' do
+        expect(result[0].type).to eq('nmhd')
+      end
+
+      it 'parses the correct position' do
+        expect(result[0].position).to eq(0)
+      end
+
+      it 'parses the correct size' do
+        expect(result[0].size).to eq(0x18)
+      end
+
+      it 'parses version and flags' do
         expect(result[0].fields).to include({
           version: 1,
           flags: 'fla'
         })
       end
-      it('skips children') { expect(result[0].children).to eq([]) }
+
+      it 'skips children' do
+        expect(result[0].children).to eq([])
+      end
     end
 
     context 'when parsing a uuid box' do
@@ -106,12 +155,29 @@ describe FormatParser::ISOBaseMediaFileFormat::Decoder do
       end
       let(:result) { subject.build_box_tree(0xFF, io) }
 
-      it('parses successfully') { expect(result.length).to eq(1) }
-      it('parses the correct type') { expect(result[0].type).to eq('uuid') }
-      it('parses the correct position') { expect(result[0].position).to eq(0) }
-      it('parses the correct size') { expect(result[0].size).to eq(0x20) }
-      it('parses usertype') { expect(result[0].fields).to include({ usertype: usertype }) }
-      it('skips children') { expect(result[0].children).to eq([]) }
+      it 'parses successfully' do
+        expect(result.length).to eq(1)
+      end
+
+      it 'parses the correct type' do
+        expect(result[0].type).to eq('uuid')
+      end
+
+      it 'parses the correct position' do
+        expect(result[0].position).to eq(0)
+      end
+
+      it 'parses the correct size' do
+        expect(result[0].size).to eq(0x20)
+      end
+
+      it 'parses usertype' do
+        expect(result[0].fields).to include({ usertype: usertype })
+      end
+
+      it 'skips children' do
+        expect(result[0].children).to eq([])
+      end
     end
 
     context 'when parsing a box with 0 size' do
@@ -125,12 +191,12 @@ describe FormatParser::ISOBaseMediaFileFormat::Decoder do
       end
       let(:result) { subject.build_box_tree(0xFF, io) }
 
-      it('reads the rest of the file') do
+      it 'reads the rest of the file' do
         expect(result.length).to eq(2)
         expect(io.pos).to eq(0x20)
       end
 
-      it('parses correctly') do
+      it 'parses correctly' do
         expect(result[0].type).to eq('foo ')
         expect(result[1].type).to eq('moov')
         expect(result[1].children.length).to eq(2)
