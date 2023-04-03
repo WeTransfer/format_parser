@@ -1,3 +1,6 @@
+## 2.4.5
+* Disable `udta` ISOBMFF box parsing, since their contents are not guaranteed to be consistent with the spec.
+
 ## 2.4.4
 * Prevent infinite loops when parsing ISOBMFF boxes with size = 0 (meaning that the box extends to the end of the file).
 
