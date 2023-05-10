@@ -5,7 +5,7 @@ class FormatParser::MP4Parser
   include FormatParser::ISOBaseMediaFileFormat
   include FormatParser::ISOBaseMediaFileFormat::Utils
 
-  MAGIC_BYTES = /^ftyp(iso[m2]|mp4[12]|m4[abprv]|avc1|xavc)$/i
+  MAGIC_BYTES = /^ftyp(iso[m2]|mp4[12]|m4[abprv] |avc1|xavc)$/i
 
   BRAND_FORMATS = {
     'isom' => :mp4, # Prohibited as a major brand by ISO/IEC 14496-12 sec 6.3 paragraph 2, but occasionally used.
