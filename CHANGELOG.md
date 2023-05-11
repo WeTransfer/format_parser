@@ -1,3 +1,6 @@
+## 2.4.6
+* Add `avc1` and `xavc` as brand codes in the mp4 format parser to allow more file types to be parsed correctly.
+
 ## 2.4.5
 * Disable `udta` ISOBMFF box parsing, since their contents are not guaranteed to be consistent with the spec.
 
