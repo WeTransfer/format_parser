@@ -1,4 +1,4 @@
-## 2.4.6
+## 2.5.0
 * Add `avc1` and `xavc` as brand codes in the mp4 format parser to allow more file types to be parsed correctly.
 
 ## 2.4.5
