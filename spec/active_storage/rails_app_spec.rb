@@ -12,7 +12,7 @@ describe 'Rails app with ActiveStorage and format-parser', skip: skip_reason do
   describe 'local hosting with ActiveStorage disk adapter' do
     it 'parse local file with format_parser' do
       clean_env do
-        cmd = 'ruby spec/integration/active_storage/rails_app.rb'
+        cmd = 'bundle exec ruby spec/integration/active_storage/rails_app.rb'
         cmd_status = ruby_script_runner(cmd)
         expect(cmd_status[:stdout].last).to match(/1 runs, 3 assertions, 0 failures, 0 errors, 0 skips/)
         expect(cmd_status[:exitstatus]).to eq(0)
