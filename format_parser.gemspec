@@ -38,7 +38,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'measurometer'
 
   spec.add_development_dependency 'parallel_tests'
-  spec.add_development_dependency 'rails', '6.0.6'
+  spec.add_development_dependency 'rails', '6.0.3'
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'rspec'
   spec.add_development_dependency 'simplecov'
