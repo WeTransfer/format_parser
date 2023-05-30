@@ -175,7 +175,7 @@ module FormatParser::EXIFParser
   def exif_from_tiff_io(constrained_io, should_include_sub_ifds = false)
     Measurometer.instrument('format_parser.exif_parser.exif_from_tiff_io') do
       extended_io = IOExt.new(constrained_io)
-      exif_raw_data = EXIFR::TIFF.new(extended_io)
+      exif_raw_data = EXIFR::TIFF.new(extended_io, load_thumbnails: false)
 
       return unless exif_raw_data
 
