@@ -32,7 +32,7 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'exifr', '>= 1.3.8'
+  spec.add_dependency 'exifr', '>= 1.4.0'
   spec.add_dependency 'id3tag', '>= 0.14.2'
   spec.add_dependency 'matrix'
   spec.add_dependency 'measurometer'
