@@ -1,3 +1,6 @@
+## 2.6.0
+* Prevent the default loading of thumbnails on TIFF-based formats to improve I/O.
+
 ## 2.5.0
 * Add `avc1` and `xavc` as brand codes in the mp4 format parser to allow more file types to be parsed correctly.
 
