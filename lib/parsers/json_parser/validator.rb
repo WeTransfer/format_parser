@@ -1,13 +1,24 @@
-# todo: Add a description of what this validator does
-#   types:
-#   - object
-#   - array
-#   - string (double quotes and escape chars)
-#   - Literal (numbers, booleans and keywords like null, undefined, etc.)
+##
+# This class checks whether a given file is a valid JSON file.
+# The validation process DOES NOT assemble an object with the contents of the JSON file in memory,
+# Instead, it implements a simple state machine that digests the contents of the file while traversing
+# the hierarchy of nodes in the document.
+#
+# Although this is based on the IETF standard (https://www.rfc-editor.org/rfc/rfc8259),
+# it does cut a few corners for the sake of simplicity. For instance, instead of validating
+# Numbers, "true", "false" and "null" tokens, it supports a type called Literal to hold generic sequences of characters.
+# This decision makes the implementation simpler while being a good-enough approach to identify JSON files.
+#
+# There is also a cap. Large files are not read all the way through. Instead, if the beginning of file is
+# JSON-compliant, it is assumed that the file is a JSON file.
+
 class FormatParser::JSONParser::Validator
 
   class JSONParserError < StandardError
   end
+
+  # todo: remove debug and puts calls
+  # todo: improve testing by providing better observability of the nodes loaded
 
   MAX_SAMPLE_SIZE = 1024
   MAX_LITERAL_SIZE = 30 # much larger then necessary.
@@ -16,7 +27,6 @@ class FormatParser::JSONParser::Validator
 
   def initialize(io)
     @io = io
-    # node types: :array, :object, :string, :literal
     @parent_nodes = []
     @current_node = nil
     @current_state = :awaiting_root_node

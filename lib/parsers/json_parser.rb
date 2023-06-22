@@ -4,16 +4,11 @@ class FormatParser::JSONParser
 
   JSON_MIME_TYPE = 'application/json'
 
-  # Detecting encoding: https://www.rfc-editor.org/rfc/rfc4627#section-3
-  # parsing content
-
   def likely_match?(filename)
     filename =~ /\.json$/i
   end
 
   def call(io)
-
-    # todo: should not raise errors
     io = FormatParser::IOConstraint.new(io)
     io.seek(0)
     validator = Validator.new(io)

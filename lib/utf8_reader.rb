@@ -1,4 +1,9 @@
-# todo: describe this and document methods
+##
+# This class Reads individual characters from files using UTF-8 encoding
+# This deals with two main concerns:
+#   - Variable byte length of characters
+#   - Reducing the number of read operations by loading bytes in chunks
+
 class FormatParser::UTF8Reader
   READ_CHUNK_SIZE = 128
 
