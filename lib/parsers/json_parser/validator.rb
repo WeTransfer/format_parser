@@ -1,4 +1,9 @@
 # todo: Add a description of what this validator does
+#   types:
+#   - object
+#   - array
+#   - string (double quotes and escape chars)
+#   - Literal (numbers, booleans and keywords like null, undefined, etc.)
 class FormatParser::JSONParser::Validator
 
   class JSONParserError < StandardError
@@ -6,13 +11,8 @@ class FormatParser::JSONParser::Validator
   # validate encoding
   # limit: 4k?
 
-  # types:
-  #   - object
-  #   - array
-  #   - string (double quotes and escape chars)
-  #   - Literal (numbers, booleans and keywords like null, undefined, etc.)
-
   MAX_LITERAL_SIZE = 30 # much larger then necessary.
+  ESCAPE_CHAR = "\\"
 
   def initialize(io)
     @io = io
@@ -20,9 +20,9 @@ class FormatParser::JSONParser::Validator
     @parent_nodes = []
     @current_node = nil
     @current_state = :awaiting_root_node
-    @escape_next = []
+    @escape_next = false
     @current_literal_size = 0
-    @pos = 0 # todo: increment properly
+    @pos = 0
 
     @all_parsers = {}
 
@@ -95,6 +95,7 @@ class FormatParser::JSONParser::Validator
         close_array(c)
     }
 
+    #todo: remove detects
     when_its :reading_literal, ->(c) {
       detect_valid_literal_char(c) or (
         detect_literal_end(c) and (
@@ -120,7 +121,7 @@ class FormatParser::JSONParser::Validator
   end
 
   def read_whitespace(c)
-    is_whitespace(c)
+    whitespace?(c)
   end
 
   def read_colon(c)
@@ -132,11 +133,18 @@ class FormatParser::JSONParser::Validator
   end
 
   def read_valid_string_char(c)
-    # todo
-    # any char except quotation mark, reverse solidus, and the control characters (U+0000 through U+001F).
-    # todo: should not accept unescaped line breaks
-    # todo: should handle escaped chars
-    true
+    if @escape_next
+      puts "escaped: #{c}"
+      @escape_next = false
+      return true
+    end
+
+    if c == ESCAPE_CHAR
+      @escape_next = true
+      puts "escaping next char"
+      return true
+    end
+    !control_char?(c) and c != "\""
   end
 
   def detect_valid_literal_char(c)
@@ -162,7 +170,7 @@ class FormatParser::JSONParser::Validator
 
   # Object: {"k1":"val", "k2":[1,2,3], "k4": undefined, "k5": {"l1": 6}}
   def start_object(c)
-    return false if is_whitespace(c)
+    return false if whitespace?(c)
     return false unless c == "{"
 
     start_node(:object)
@@ -171,7 +179,7 @@ class FormatParser::JSONParser::Validator
   end
 
   def close_object(c)
-    return false if is_whitespace(c)
+    return false if whitespace?(c)
     return false unless @current_node == :object and c == "}"
 
     close_node
@@ -189,7 +197,7 @@ class FormatParser::JSONParser::Validator
   end
 
   def close_array(c)
-    return false if is_whitespace(c)
+    return false if whitespace?(c)
     return false unless @current_node == :array and c == "]"
 
     close_node
@@ -205,6 +213,7 @@ class FormatParser::JSONParser::Validator
     true
   end
   def close_attribute_key(c)
+    return false if @escape_next
     return false unless c == "\""
     close_node
     @current_state = :awaiting_object_colon_separator
@@ -221,6 +230,7 @@ class FormatParser::JSONParser::Validator
   end
 
   def close_string(c)
+    return false if @escape_next
     return false unless c == "\""
     close_node
     @current_state = :awaiting_next_or_close
@@ -241,7 +251,7 @@ class FormatParser::JSONParser::Validator
     return false if @current_node != :literal
     raise JSONParserError, "Literal to large at #{@pos}" if @current_literal_size > MAX_LITERAL_SIZE
 
-    if is_whitespace(c) or c == "," or c == "]" or c == "}"
+    if whitespace?(c) or c == "," or c == "]" or c == "}"
       close_node
       @current_state = :awaiting_next_or_close
       return true
@@ -267,9 +277,14 @@ class FormatParser::JSONParser::Validator
     raise JSONParserError, "Unexpected char #{char} in position #{@pos}"
   end
 
-  def is_whitespace(c)
-    # todo: make this UTF8
+  def whitespace?(c)
     c == " " or c == "\t" or c == "\n" or c == "\r"
+  end
+
+  def control_char?(c)
+    # control characters: (U+0000 through U+001F)
+    utf8_code = c.unpack('U*')[0]
+    utf8_code <= 31
   end
 
   def debug(msg)

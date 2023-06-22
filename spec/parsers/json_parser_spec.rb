@@ -54,6 +54,15 @@ describe FormatParser::JSONParser do
       expect(parsed.format).to eq(:json)
       expect(parsed.content_type).to eq('application/json')
     end
+
+    it "is able to parse files with escaped chars in strings" do
+      parsed = parse 'escaped_strings.json'
+
+      expect(parsed).not_to be_nil
+      expect(parsed.nature).to eq(:text)
+      expect(parsed.format).to eq(:json)
+      expect(parsed.content_type).to eq('application/json')
+    end
   end
 
   describe 'Invalid JSON files' do
