@@ -47,7 +47,12 @@ describe FormatParser::JSONParser do
     end
 
     it "is able to parse files with nested objects and arrays" do
-      expect(true).to eq(false)
+      parsed = parse 'nested_objects.json'
+
+      expect(parsed).not_to be_nil
+      expect(parsed.nature).to eq(:text)
+      expect(parsed.format).to eq(:json)
+      expect(parsed.content_type).to eq('application/json')
     end
   end
 

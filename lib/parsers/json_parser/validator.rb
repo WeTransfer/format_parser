@@ -1,5 +1,8 @@
+# todo: Add a description of what this validator does
 class FormatParser::JSONParser::Validator
 
+  class JSONParserError < StandardError
+  end
   # validate encoding
   # limit: 4k?
 
@@ -18,7 +21,6 @@ class FormatParser::JSONParser::Validator
     @current_node = nil
     @current_state = :awaiting_root_node
     @escape_next = []
-    @root_closed = false
     @current_literal_size = 0
     @pos = 0 # todo: increment properly
 
@@ -35,71 +37,75 @@ class FormatParser::JSONParser::Validator
       debug "#{@pos}: #{c}\t\t state: #{@current_state} \t\t current: #{@current_node} "
       parse_char c
     end
+
+    puts "Final node is: #{@current_node}"
+    puts "Final state is: #{@current_state}"
+    raise JSONParserError, "Incomplete JSON file" if @current_state != :closed
   end
 
   private
 
   def setup_transitions
     when_its :awaiting_root_node, ->(c) {
-        is_whitespace(c) or
-          detect_object_start(c) or
-          detect_array_start(c)
+      read_whitespace(c) or
+        start_object(c) or
+        start_array(c)
     }
 
     when_its :awaiting_object_attribute_key, ->(c) {
-        is_whitespace(c) or
-          detect_string_start(c, :reading_object_attribute_key)
+      read_whitespace(c) or
+        start_attribute_key(c)
     }
 
     when_its :reading_object_attribute_key, ->(c) {
-      detect_string_end(c, :awaiting_object_colon_separator) or
-        detect_string_content_char(c)
+      close_attribute_key(c) or
+        read_valid_string_char(c)
     }
 
     when_its :awaiting_object_colon_separator, ->(c) {
-      is_whitespace(c) or
-        detect_colon_object_separator(c)
+      read_whitespace(c) or
+        read_colon(c)
     }
 
     when_its :awaiting_object_attribute_value, ->(c) {
-        is_whitespace(c) or
-          detect_object_start(c) or
-          detect_array_start(c) or
-          detect_string_start(c) or
-          detect_literal_start(c)
+      read_whitespace(c) or
+        start_object(c) or
+        start_array(c) or
+        start_string(c) or
+        start_literal(c)
     }
 
     when_its :awaiting_array_value, ->(c) {
-      is_whitespace(c) or
-        detect_object_start(c) or
-        detect_array_start(c) or
-        detect_string_start(c) or
-        detect_literal_start(c)
+      read_whitespace(c) or
+        start_object(c) or
+        start_array(c) or
+        start_string(c) or
+        start_literal(c)
     }
 
     when_its :reading_string, ->(c) {
-      detect_string_end(c, :awaiting_next_or_close) or
-        detect_string_content_char(c)
+      close_string(c) or
+        read_valid_string_char(c)
     }
 
     when_its :awaiting_next_or_close, ->(c) {
-      is_whitespace(c) or
-        detect_comma_separator(c) or
-        detect_object_close(c) or
-        detect_array_close(c)
+      read_whitespace(c) or
+        read_comma_separator(c) or
+        close_object(c) or
+        close_array(c)
     }
 
     when_its :reading_literal, ->(c) {
       detect_valid_literal_char(c) or (
         detect_literal_end(c) and (
-          is_whitespace(c) or
-          detect_comma_separator(c) or
-          detect_array_close(c) or
-          detect_object_close(c)))
+          read_whitespace(c) or
+          read_comma_separator(c) or
+          close_array(c) or
+          close_object(c)))
     }
 
     when_its :closed, ->(c) {
-      is_whitespace(c)
+      read_whitespace(c)
     }
   end
 
@@ -113,9 +119,11 @@ class FormatParser::JSONParser::Validator
     reject_char(c) unless accepted
   end
 
+  def read_whitespace(c)
+    is_whitespace(c)
+  end
 
-  def detect_colon_object_separator(c)
-    return false unless @current_state == :awaiting_object_colon_separator
+  def read_colon(c)
     if c == ":"
       @current_state = :awaiting_object_attribute_value
       return true
@@ -123,7 +131,7 @@ class FormatParser::JSONParser::Validator
     false
   end
 
-  def detect_string_content_char(c)
+  def read_valid_string_char(c)
     # todo
     # any char except quotation mark, reverse solidus, and the control characters (U+0000 through U+001F).
     # todo: should not accept unescaped line breaks
@@ -143,25 +151,17 @@ class FormatParser::JSONParser::Validator
     false
   end
 
-  def detect_comma_separator(c)
+  def read_comma_separator(c)
     if c == ","
-      if @current_node == :object
-        @current_state = :awaiting_object_attribute_key
-        return true
-      end
-      if @current_node == :array
-        @current_state = :awaiting_array_value
-        return true
-      end
-
-      raise "Unexpected configuration."
+      @current_state = :awaiting_object_attribute_key if @current_node == :object
+      @current_state = :awaiting_array_value if @current_node == :array
+      return true
     end
-
     false
   end
 
   # Object: {"k1":"val", "k2":[1,2,3], "k4": undefined, "k5": {"l1": 6}}
-  def detect_object_start(c)
+  def start_object(c)
     return false if is_whitespace(c)
     return false unless c == "{"
 
@@ -170,17 +170,17 @@ class FormatParser::JSONParser::Validator
     true
   end
 
-  def detect_object_close(c)
+  def close_object(c)
     return false if is_whitespace(c)
     return false unless @current_node == :object and c == "}"
 
     close_node
-    @current_state = :awaiting_next_or_close
+    @current_state = :awaiting_next_or_close unless @current_node.nil?
     true
   end
 
   # Array: [1, "two", true, undefined, {}, []]
-  def detect_array_start(c)
+  def start_array(c)
     return false unless c == "["
 
     start_node(:array)
@@ -188,33 +188,47 @@ class FormatParser::JSONParser::Validator
     true
   end
 
-  def detect_array_close(c)
+  def close_array(c)
     return false if is_whitespace(c)
     return false unless @current_node == :array and c == "]"
 
+    close_node
+    @current_state = :awaiting_next_or_close unless @current_node.nil?
+    true
+  end
+
+  def start_attribute_key(c)
+    return false unless c == "\""
+
+    start_node(:string)
+    @current_state = :reading_object_attribute_key
+    true
+  end
+  def close_attribute_key(c)
+    return false unless c == "\""
+    close_node
+    @current_state = :awaiting_object_colon_separator
+    true
+  end
+
+  # Strings: "Foo"
+  def start_string(c)
+    return false unless c == "\""
+
+    start_node(:string)
+    @current_state = :reading_string
+    true
+  end
+
+  def close_string(c)
+    return false unless c == "\""
     close_node
     @current_state = :awaiting_next_or_close
     true
   end
 
-  # Strings: "Foo"
-  def detect_string_start(c, next_state = :reading_string)
-    return false unless c == "\""
-
-    start_node(:string)
-    @current_state = next_state
-    true
-  end
-
-  def detect_string_end(c, state_after_close)
-    return false unless c == "\""
-    close_node
-    @current_state = state_after_close
-    true
-  end
-
   # literals: null, undefined, true, false, NaN, infinity, -123.456e10 -123,456e10
-  def detect_literal_start(c)
+  def start_literal(c)
     return false unless detect_valid_literal_char(c)
 
     start_node(:literal)
@@ -225,9 +239,7 @@ class FormatParser::JSONParser::Validator
 
   def detect_literal_end(c)
     return false if @current_node != :literal
-
-    # todo: should we raise this here?
-    raise "Literal to large at #{@pos}" if @current_literal_size > MAX_LITERAL_SIZE
+    raise JSONParserError, "Literal to large at #{@pos}" if @current_literal_size > MAX_LITERAL_SIZE
 
     if is_whitespace(c) or c == "," or c == "]" or c == "}"
       close_node
@@ -240,11 +252,8 @@ class FormatParser::JSONParser::Validator
 
   def start_node(node_type)
     debug "start: #{node_type}"
-    # node types: :array, :object, :string, :number, :boolean
     @parent_nodes.push(@current_node)
     @current_node = node_type
-    # states: :awaiting_root_node, :awaiting_attribute_value, :awaiting_attribute_key, :awaiting_array_value, :closed
-    #         :reading_literal, :reading_string
     @current_state = :awaiting_root_node
   end
 
@@ -255,7 +264,7 @@ class FormatParser::JSONParser::Validator
   end
 
   def reject_char(char)
-    raise "Unexpected char #{char} in position #{@pos}"
+    raise JSONParserError, "Unexpected char #{char} in position #{@pos}"
   end
 
   def is_whitespace(c)
@@ -266,5 +275,4 @@ class FormatParser::JSONParser::Validator
   def debug(msg)
     puts msg
   end
-  # extend self
 end

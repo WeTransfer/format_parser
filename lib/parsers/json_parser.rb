@@ -24,6 +24,8 @@ class FormatParser::JSONParser
       format: :json,
       content_type: JSON_MIME_TYPE,
     )
+  rescue Validator::JSONParserError
+    nil
   end
   FormatParser.register_parser new, natures: :text, formats: :json
 end

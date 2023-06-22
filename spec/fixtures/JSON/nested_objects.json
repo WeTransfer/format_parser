@@ -1,0 +1,17 @@
+[
+  {"key1": "value👏"},
+  {"key2": "another_value"},
+  {"an_array": [
+    1,
+    null,
+    {
+      "name": "child",
+      "child_attr1": 1,
+      "child_attr2": "2",
+      "child_attr3": {
+        "name": "grandchild",
+        "attr": -213.456221
+      }
+    }
+  ]}
+]
