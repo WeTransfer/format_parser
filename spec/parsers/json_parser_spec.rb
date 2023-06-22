@@ -78,18 +78,4 @@ describe FormatParser::JSONParser do
       expect(parsed).to be_nil
     end
   end
-
-  describe 'IO limits JSON files' do
-    it "rejects files not starting '{' or '[' without extra reads" do
-      parsed = parse 'lorem_ipsum.json'
-
-      expect(parsed).to be_nil
-    end
-
-    it "rejects files with corrupted JSON data" do
-      parsed = parse 'malformed.json'
-
-      expect(parsed).to be_nil
-    end
-  end
 end

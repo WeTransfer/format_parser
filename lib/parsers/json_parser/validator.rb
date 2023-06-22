@@ -8,9 +8,8 @@ class FormatParser::JSONParser::Validator
 
   class JSONParserError < StandardError
   end
-  # validate encoding
-  # limit: 4k?
 
+  MAX_SAMPLE_SIZE = 1024
   MAX_LITERAL_SIZE = 30 # much larger then necessary.
   ESCAPE_CHAR = "\\"
   LITERALS_CHAR_TEMPLATE = /\w|[+\-.]/ # alphanumerics, "+", "-" and "."
@@ -39,8 +38,13 @@ class FormatParser::JSONParser::Validator
       parse_char c
     end
 
-    puts "Final node is: #{@current_node}"
-    puts "Final state is: #{@current_state}"
+    # Halt validation if the sampling limit is reached.
+    if @pos >= MAX_SAMPLE_SIZE
+      return false if @current_node == :awaiting_root_node
+      return true
+    end
+
+    # Raising error in case the EOF is reached earlier than expected
     raise JSONParserError, "Incomplete JSON file" if @current_state != :closed
   end
 
