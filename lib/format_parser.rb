@@ -17,6 +17,7 @@ module FormatParser
   require_relative 'read_limits_config'
   require_relative 'remote_io'
   require_relative 'io_constraint'
+  require_relative 'utf8_reader'
   require_relative 'care'
   require_relative 'active_storage/blob_analyzer'
   require_relative 'text'
