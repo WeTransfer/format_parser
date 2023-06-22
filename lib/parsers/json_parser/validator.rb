@@ -13,6 +13,7 @@ class FormatParser::JSONParser::Validator
 
   MAX_LITERAL_SIZE = 30 # much larger then necessary.
   ESCAPE_CHAR = "\\"
+  LITERALS_CHAR_TEMPLATE = /\w|[+\-.]/ # alphanumerics, "+", "-" and "."
 
   def initialize(io)
     @io = io
@@ -148,10 +149,7 @@ class FormatParser::JSONParser::Validator
   end
 
   def detect_valid_literal_char(c)
-    # todo: bring this pattern outside
-    pattern = /\w|[\+\-\.]/ # numbers, letters, +, -, periods
-
-    if pattern === c
+    if LITERALS_CHAR_TEMPLATE === c
       @current_literal_size += 1
       return true
     end
