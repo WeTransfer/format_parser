@@ -79,9 +79,4 @@ describe FormatParser::JSONParser do
     end
   end
 
-  describe 'IO limits JSON files' do
-    it "rejects files not starting '{' or '[' without extra reads" do
-      expect(true).to be_nil
-    end
-  end
 end

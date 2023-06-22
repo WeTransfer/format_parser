@@ -19,10 +19,12 @@ class FormatParser::JSONParser::Validator
 
   # todo: remove debug and puts calls
   # todo: improve testing by providing better observability of the nodes loaded
+  # todo: test IO limits and/or MAX_SAMPLE_SIZE
 
   MAX_SAMPLE_SIZE = 1024
   MAX_LITERAL_SIZE = 30 # much larger then necessary.
   ESCAPE_CHAR = "\\"
+  WHITESPACE_CHARS = [" ", "\t", "\n", "\r"]
   LITERALS_CHAR_TEMPLATE = /\w|[+\-.]/ # alphanumerics, "+", "-" and "."
 
   def initialize(io)
@@ -110,10 +112,9 @@ class FormatParser::JSONParser::Validator
         close_array(c)
     }
 
-    #todo: remove detects
     when_its :reading_literal, ->(c) {
-      detect_valid_literal_char(c) or (
-        detect_literal_end(c) and (
+      read_valid_literal_char(c) or (
+        close_literal(c) and (
           read_whitespace(c) or
           read_comma_separator(c) or
           close_array(c) or
@@ -162,8 +163,8 @@ class FormatParser::JSONParser::Validator
     !control_char?(c) and c != "\""
   end
 
-  def detect_valid_literal_char(c)
-    if LITERALS_CHAR_TEMPLATE === c
+  def read_valid_literal_char(c)
+    if valid_literal_char?(c)
       @current_literal_size += 1
       return true
     end
@@ -251,7 +252,7 @@ class FormatParser::JSONParser::Validator
 
   # literals: null, undefined, true, false, NaN, infinity, -123.456e10 -123,456e10
   def start_literal(c)
-    return false unless detect_valid_literal_char(c)
+    return false unless valid_literal_char?(c)
 
     start_node(:literal)
     @current_state = :reading_literal
@@ -259,8 +260,7 @@ class FormatParser::JSONParser::Validator
     true
   end
 
-  def detect_literal_end(c)
-    return false if @current_node != :literal
+  def close_literal(c)
     raise JSONParserError, "Literal to large at #{@pos}" if @current_literal_size > MAX_LITERAL_SIZE
 
     if whitespace?(c) or c == "," or c == "]" or c == "}"
@@ -290,13 +290,17 @@ class FormatParser::JSONParser::Validator
   end
 
   def whitespace?(c)
-    c == " " or c == "\t" or c == "\n" or c == "\r"
+    WHITESPACE_CHARS.include?(c)
   end
 
   def control_char?(c)
     # control characters: (U+0000 through U+001F)
     utf8_code = c.unpack('U*')[0]
     utf8_code <= 31
+  end
+
+  def valid_literal_char?(c)
+    LITERALS_CHAR_TEMPLATE === c
   end
 
   def debug(msg)
