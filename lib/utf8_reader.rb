@@ -7,6 +7,9 @@
 class FormatParser::UTF8Reader
   READ_CHUNK_SIZE = 128
 
+  class UTF8CharReaderError < StandardError
+  end
+
   def initialize(io)
     @io = io
     @chunk = []
@@ -24,7 +27,10 @@ class FormatParser::UTF8Reader
       read_byte
     end
 
-    as_bytes.pack('c*').force_encoding('UTF-8')
+    char = as_bytes.pack('c*').force_encoding('UTF-8')
+    raise UTF8CharReaderError unless char.valid_encoding?
+
+    char
   end
 
   private

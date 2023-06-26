@@ -60,6 +60,8 @@ class FormatParser::JSONParser::Validator
     # Raising error in case the EOF is reached earlier than expected
     raise JSONParserError, "Incomplete JSON file" if @current_state != :closed
     true
+  rescue  FormatParser::UTF8Reader::UTF8CharReaderError
+    raise JSONParserError, "Invalid UTF-8 character"
   end
 
   def stats(node_type)
