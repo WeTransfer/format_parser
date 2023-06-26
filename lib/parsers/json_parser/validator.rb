@@ -17,10 +17,7 @@ class FormatParser::JSONParser::Validator
   class JSONParserError < StandardError
   end
 
-  # todo: remove debug and puts calls
-  # todo: improve testing by providing better observability of the nodes loaded
   # todo: test long number array file
-  # todo: test IO limits and/or MAX_SAMPLE_SIZE
 
   MAX_SAMPLE_SIZE = 1024
   MAX_LITERAL_SIZE = 30 # much larger then necessary.
@@ -54,7 +51,6 @@ class FormatParser::JSONParser::Validator
 
     while (c = char_reader.read_char)
       @pos += 1
-      debug "#{@pos}: #{c}\t\t state: #{@current_state} \t\t current: #{@current_node} "
       parse_char c
 
       # Halt validation if the sampling limit is reached.
@@ -165,14 +161,12 @@ class FormatParser::JSONParser::Validator
 
   def read_valid_string_char(c)
     if @escape_next
-      puts "escaped: #{c}"
       @escape_next = false
       return true
     end
 
     if c == ESCAPE_CHAR
       @escape_next = true
-      puts "escaping next char"
       return true
     end
     !control_char?(c) and c != "\""
@@ -301,7 +295,6 @@ class FormatParser::JSONParser::Validator
 
   # Marks the closure of a node (object, array, string or literal)
   def end_node
-    debug "close: #{@current_node}"
     @current_node = @parent_nodes.pop
     @current_state = :closed if @current_node.nil?
   end
@@ -322,9 +315,5 @@ class FormatParser::JSONParser::Validator
 
   def valid_literal_char?(c)
     LITERALS_CHAR_TEMPLATE === c
-  end
-
-  def debug(msg)
-    puts msg
   end
 end
