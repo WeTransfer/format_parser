@@ -1,7 +1,7 @@
 ##
 # This class checks whether a given file is a valid JSON file.
 # The validation process DOES NOT assemble an object with the contents of the JSON file in memory,
-# Instead, it implements a simple state machine that digests the contents of the file while traversing
+# Instead, it implements a simple state-machine-like that digests the contents of the file while traversing
 # the hierarchy of nodes in the document.
 #
 # Although this is based on the IETF standard (https://www.rfc-editor.org/rfc/rfc8259),
@@ -19,24 +19,32 @@ class FormatParser::JSONParser::Validator
 
   # todo: remove debug and puts calls
   # todo: improve testing by providing better observability of the nodes loaded
+  # todo: test long number array file
   # todo: test IO limits and/or MAX_SAMPLE_SIZE
 
   MAX_SAMPLE_SIZE = 1024
   MAX_LITERAL_SIZE = 30 # much larger then necessary.
   ESCAPE_CHAR = "\\"
   WHITESPACE_CHARS = [" ", "\t", "\n", "\r"]
-  LITERALS_CHAR_TEMPLATE = /\w|[+\-.]/ # alphanumerics, "+", "-" and "."
+  LITERALS_CHAR_TEMPLATE = /\w|[+\-.]/ # any alphanumeric, "+", "-" and "."
 
   def initialize(io)
     @io = io
+    @current_node = nil # :object, :array, :string, :literal
     @parent_nodes = []
-    @current_node = nil
     @current_state = :awaiting_root_node
     @escape_next = false
     @current_literal_size = 0
     @pos = 0
 
     @all_parsers = {}
+
+    @execution_stats = {
+      array: 0,
+      object: 0,
+      literal: 0,
+      string: 0
+    }
 
     setup_transitions
   end
@@ -48,16 +56,21 @@ class FormatParser::JSONParser::Validator
       @pos += 1
       debug "#{@pos}: #{c}\t\t state: #{@current_state} \t\t current: #{@current_node} "
       parse_char c
-    end
 
-    # Halt validation if the sampling limit is reached.
-    if @pos >= MAX_SAMPLE_SIZE
-      return false if @current_node == :awaiting_root_node
-      return true
+      # Halt validation if the sampling limit is reached.
+      if @pos >= MAX_SAMPLE_SIZE
+        raise JSONParserError, "Invalid JSON file" if @current_state == :awaiting_root_node
+        return false
+      end
     end
 
     # Raising error in case the EOF is reached earlier than expected
     raise JSONParserError, "Incomplete JSON file" if @current_state != :closed
+    true
+  end
+
+  def stats(node_type)
+    @execution_stats[node_type]
   end
 
   private
@@ -71,7 +84,8 @@ class FormatParser::JSONParser::Validator
 
     when_its :awaiting_object_attribute_key, ->(c) {
       read_whitespace(c) or
-        start_attribute_key(c)
+        start_attribute_key(c) or
+        close_object(c)
     }
 
     when_its :reading_object_attribute_key, ->(c) {
@@ -97,7 +111,8 @@ class FormatParser::JSONParser::Validator
         start_object(c) or
         start_array(c) or
         start_string(c) or
-        start_literal(c)
+        start_literal(c) or
+        close_array(c)
     }
 
     when_its :reading_string, ->(c) {
@@ -186,7 +201,7 @@ class FormatParser::JSONParser::Validator
     return false if whitespace?(c)
     return false unless c == "{"
 
-    start_node(:object)
+    begin_node(:object)
     @current_state = :awaiting_object_attribute_key
     true
   end
@@ -195,7 +210,7 @@ class FormatParser::JSONParser::Validator
     return false if whitespace?(c)
     return false unless @current_node == :object and c == "}"
 
-    close_node
+    end_node
     @current_state = :awaiting_next_or_close unless @current_node.nil?
     true
   end
@@ -204,7 +219,7 @@ class FormatParser::JSONParser::Validator
   def start_array(c)
     return false unless c == "["
 
-    start_node(:array)
+    begin_node(:array)
     @current_state = :awaiting_array_value
     true
   end
@@ -213,7 +228,7 @@ class FormatParser::JSONParser::Validator
     return false if whitespace?(c)
     return false unless @current_node == :array and c == "]"
 
-    close_node
+    end_node
     @current_state = :awaiting_next_or_close unless @current_node.nil?
     true
   end
@@ -221,14 +236,15 @@ class FormatParser::JSONParser::Validator
   def start_attribute_key(c)
     return false unless c == "\""
 
-    start_node(:string)
+    begin_node(:string)
     @current_state = :reading_object_attribute_key
     true
   end
+
   def close_attribute_key(c)
     return false if @escape_next
     return false unless c == "\""
-    close_node
+    end_node
     @current_state = :awaiting_object_colon_separator
     true
   end
@@ -237,7 +253,7 @@ class FormatParser::JSONParser::Validator
   def start_string(c)
     return false unless c == "\""
 
-    start_node(:string)
+    begin_node(:string)
     @current_state = :reading_string
     true
   end
@@ -245,7 +261,7 @@ class FormatParser::JSONParser::Validator
   def close_string(c)
     return false if @escape_next
     return false unless c == "\""
-    close_node
+    end_node
     @current_state = :awaiting_next_or_close
     true
   end
@@ -254,7 +270,7 @@ class FormatParser::JSONParser::Validator
   def start_literal(c)
     return false unless valid_literal_char?(c)
 
-    start_node(:literal)
+    begin_node(:literal)
     @current_state = :reading_literal
     @current_literal_size = 1
     true
@@ -264,7 +280,7 @@ class FormatParser::JSONParser::Validator
     raise JSONParserError, "Literal to large at #{@pos}" if @current_literal_size > MAX_LITERAL_SIZE
 
     if whitespace?(c) or c == "," or c == "]" or c == "}"
-      close_node
+      end_node
       @current_state = :awaiting_next_or_close
       return true
     end
@@ -272,14 +288,19 @@ class FormatParser::JSONParser::Validator
     false
   end
 
-  def start_node(node_type)
-    debug "start: #{node_type}"
+  # Marks the creation of a node (object, array, string or literal)
+  def begin_node(node_type)
+    # Accounting for the new node
+    @execution_stats[node_type] ||= 0
+    @execution_stats[node_type] += 1
+
+    # Managing the node execution stack
     @parent_nodes.push(@current_node)
     @current_node = node_type
-    @current_state = :awaiting_root_node
   end
 
-  def close_node
+  # Marks the closure of a node (object, array, string or literal)
+  def end_node
     debug "close: #{@current_node}"
     @current_node = @parent_nodes.pop
     @current_state = :closed if @current_node.nil?
