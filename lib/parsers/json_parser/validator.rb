@@ -17,8 +17,6 @@ class FormatParser::JSONParser::Validator
   class JSONParserError < StandardError
   end
 
-  # todo: test long number array file
-
   MAX_SAMPLE_SIZE = 1024
   MAX_LITERAL_SIZE = 30 # much larger then necessary.
   ESCAPE_CHAR = "\\"

@@ -236,6 +236,14 @@ describe FormatParser::JSONParser::Validator do
       expect(v.stats(:string)).to be 3
     end
 
+    it "recognizes strings containing excaped characters" do
+      v = load_string '["ab\"c", "6\\2=3"]'
+
+      completed = v.validate
+      expect(completed).to be true
+      expect(v.stats(:string)).to be 2
+    end
+
     it "recognizes strings containing UTF8 characters" do
       v = load_string '["abc😃🐶👀", "😃2🐶3👀"]'
 
