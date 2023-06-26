@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe FormatParser::JSONParser::Validator do
-
   def load_file(file_name)
     io = File.open(Pathname.new(fixtures_dir).join('JSON').join(file_name), 'rb')
     FormatParser::JSONParser::Validator.new(io)
@@ -46,7 +45,6 @@ describe FormatParser::JSONParser::Validator do
         v.validate
       }.to raise_error(FormatParser::JSONParser::Validator::JSONParserError)
     end
-
   end
 
   describe 'When reading objects' do
@@ -251,7 +249,6 @@ describe FormatParser::JSONParser::Validator do
       expect(completed).to be true
       expect(v.stats(:string)).to be 2
     end
-
   end
 
   describe 'When reading literals' do
@@ -306,5 +303,4 @@ describe FormatParser::JSONParser::Validator do
       expect(completed).to be false
     end
   end
-
 end

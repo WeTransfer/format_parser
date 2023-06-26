@@ -95,7 +95,6 @@ describe FormatParser::JSONParser do
       expect(parsed.content_type).to eq('application/json')
       expect(io.bytes).to be < file_size
     end
-
   end
 
   describe 'When reading objects invalid JSON files' do
@@ -116,5 +115,4 @@ describe FormatParser::JSONParser do
       expect(io.reads).to eq(1)
     end
   end
-
 end

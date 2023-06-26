@@ -13,7 +13,6 @@
 # JSON-compliant, it is assumed that the file is a JSON file.
 
 class FormatParser::JSONParser::Validator
-
   class JSONParserError < StandardError
   end
 
