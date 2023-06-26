@@ -12,7 +12,7 @@ class FormatParser::UTF8Reader
 
   def initialize(io)
     @io = io
-    @chunk = []
+    @chunk = ""
     @index = 0
     @eof = false
   end
@@ -28,9 +28,11 @@ class FormatParser::UTF8Reader
     end
 
     char = as_bytes.pack('c*').force_encoding('UTF-8')
-    raise UTF8CharReaderError unless char.valid_encoding?
+    raise UTF8CharReaderError, "Invalid UTF-8 character" unless char.valid_encoding?
 
     char
+  rescue TypeError
+    raise UTF8CharReaderError, "Invalid UTF-8 character"
   end
 
   private
@@ -46,6 +48,7 @@ class FormatParser::UTF8Reader
   def manage_data_chunk
     return if @index < @chunk.length
     @chunk = @io.read(READ_CHUNK_SIZE)
+    @chunk ||= ""
     @index = 0
     @eof = true if @chunk.nil? or @chunk.length < READ_CHUNK_SIZE
   end
