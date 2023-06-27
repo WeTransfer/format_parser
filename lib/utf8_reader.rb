@@ -59,7 +59,7 @@ class FormatParser::UTF8Reader
     # 1110____ (3 bytes) 224
     # 11110___ (4 bytes) 240
     case first_byte
-    when 240..Float::INFINITY then 4
+    when 240.. then 4
     when 224..239 then 3
     when 192..223 then 2
     else 1

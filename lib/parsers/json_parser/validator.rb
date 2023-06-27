@@ -76,23 +76,23 @@ class FormatParser::JSONParser::Validator
       read_whitespace(c) or
         start_object(c) or
         start_array(c)
-      end
+    end
 
     when_its :awaiting_object_attribute_key, ->(c) do
       read_whitespace(c) or
         start_attribute_key(c) or
         close_object(c)
-      end
+    end
 
     when_its :reading_object_attribute_key, ->(c) do
       close_attribute_key(c) or
         read_valid_string_char(c)
-      end
+    end
 
     when_its :awaiting_object_colon_separator, ->(c) do
       read_whitespace(c) or
         read_colon(c)
-      end
+    end
 
     when_its :awaiting_object_attribute_value, ->(c) do
       read_whitespace(c) or
@@ -100,7 +100,7 @@ class FormatParser::JSONParser::Validator
         start_array(c) or
         start_string(c) or
         start_literal(c)
-      end
+    end
 
     when_its :awaiting_array_value, ->(c) do
       read_whitespace(c) or
@@ -109,19 +109,19 @@ class FormatParser::JSONParser::Validator
         start_string(c) or
         start_literal(c) or
         close_array(c)
-      end
+    end
 
     when_its :reading_string, ->(c) do
       close_string(c) or
         read_valid_string_char(c)
-      end
+    end
 
     when_its :awaiting_next_or_close, ->(c) do
       read_whitespace(c) or
         read_comma_separator(c) or
         close_object(c) or
         close_array(c)
-      end
+    end
 
     when_its :reading_literal, ->(c) do
       read_valid_literal_char(c) or (
@@ -130,11 +130,11 @@ class FormatParser::JSONParser::Validator
           read_comma_separator(c) or
           close_array(c) or
           close_object(c)))
-      end
+    end
 
     when_its :closed, ->(c) do
       read_whitespace(c)
-      end
+    end
   end
 
   def when_its(state, act)
