@@ -33,17 +33,17 @@ describe FormatParser::JSONParser::Validator do
     end
 
     it "rejects strings as root nodes" do
-      expect {
+      expect do
         v = load_string '"this is a string"'
         v.validate
-      }.to raise_error(FormatParser::JSONParser::Validator::JSONParserError)
+        end.to raise_error(FormatParser::JSONParser::Validator::JSONParserError)
     end
 
     it "rejects literals as root nodes" do
-      expect {
+      expect do
         v = load_string 'true'
         v.validate
-      }.to raise_error(FormatParser::JSONParser::Validator::JSONParserError)
+        end.to raise_error(FormatParser::JSONParser::Validator::JSONParserError)
     end
   end
 
@@ -118,20 +118,20 @@ describe FormatParser::JSONParser::Validator do
     end
 
     it "rejects objects without double-quoted attribute names" do
-      expect {
+      expect do
         v = load_string '{a:"b",c:"d"}'
         v.validate
-      }.to raise_error(FormatParser::JSONParser::Validator::JSONParserError)
+        end.to raise_error(FormatParser::JSONParser::Validator::JSONParserError)
     end
 
     it "rejects objects without comma separators" do
-      expect {
+      expect do
         v = load_string '{
           "a":"b"
           "c":"d"
         }'
         v.validate
-      }.to raise_error(FormatParser::JSONParser::Validator::JSONParserError)
+        end.to raise_error(FormatParser::JSONParser::Validator::JSONParserError)
     end
   end
 
@@ -215,13 +215,13 @@ describe FormatParser::JSONParser::Validator do
     end
 
     it "rejects arrays without comma separators" do
-      expect {
+      expect do
         v = load_string '[
           "abc"
           "def"
         ]'
         v.validate
-      }.to raise_error(FormatParser::JSONParser::Validator::JSONParserError)
+        end.to raise_error(FormatParser::JSONParser::Validator::JSONParserError)
     end
   end
 
@@ -279,12 +279,12 @@ describe FormatParser::JSONParser::Validator do
 
   describe 'When reading invalid JSON content' do
     it "rejects truncated JSON content" do
-      expect {
+      expect do
         v = load_string '[{
           "a": ["abc","def"],
           "b": 4'
         v.validate
-      }.to raise_error(FormatParser::JSONParser::Validator::JSONParserError)
+        end.to raise_error(FormatParser::JSONParser::Validator::JSONParserError)
     end
   end
 
