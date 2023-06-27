@@ -296,6 +296,13 @@ describe FormatParser::JSONParser::Validator do
         expect(completed).to be false
     end
 
+    it "Returns 'false' without throwing errors when for long non-formatted JSON files" do
+      v = load_file 'long_file_valid_non_formatted.json'
+
+      completed = v.validate
+      expect(completed).to be false
+    end
+
     it "Returns 'false' without throwing errors when the initial chunk of a file is a valid JSON even if there's an issue later" do
       v = load_file 'long_file_malformed.json'
 
