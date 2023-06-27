@@ -10,7 +10,6 @@ class FormatParser::JSONParser
 
   def call(io)
     io = FormatParser::IOConstraint.new(io)
-    io.seek(0)
     validator = Validator.new(io)
 
     validator.validate
