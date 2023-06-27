@@ -58,9 +58,11 @@ class FormatParser::UTF8Reader
     # 110_____ (2 bytes) 192
     # 1110____ (3 bytes) 224
     # 11110___ (4 bytes) 240
-    return 4 if first_byte >= 240
-    return 3 if first_byte >= 224
-    return 2 if first_byte >= 192
-    1
+    case first_byte
+    when 240..Float::INFINITY then 4
+    when 224..239 then 3
+    when 192..223 then 2
+    else 1
+    end
   end
 end
