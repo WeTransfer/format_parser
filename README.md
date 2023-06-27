@@ -26,6 +26,7 @@ and [dimensions,](https://github.com/sstephenson/dimensions) borrowing from them
 * HEIC
 * HEIF
 * JPEG
+* JSON
 * M3U
 * M4A
 * M4B
