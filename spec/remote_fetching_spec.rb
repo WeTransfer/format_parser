@@ -117,10 +117,10 @@ describe 'Fetching data from HTTP remotes' do
 
   describe "correctly parses files over HTTP without filename hint" do
     nature_fixture_dirs = {
-      :document => ['PDF'],
-      :audio => ['AAC', 'AIFF', 'FLAC', 'MP3', 'WAV'],
-      :video => ['MOV', 'MP4'],
-      :image => ['ARW', 'CR2', 'CR3', 'GIF', 'JPG', 'NEF', 'PNG', 'PSD', 'RW2', 'TIF', 'WEBP']
+      document: ['PDF'],
+      audio: ['AAC', 'AIFF', 'FLAC', 'MP3', 'WAV'],
+      video: ['MOV', 'MP4'],
+      image: ['ARW', 'CR2', 'CR3', 'GIF', 'JPG', 'NEF', 'PNG', 'PSD', 'RW2', 'TIF', 'WEBP']
     }
     nature_fixture_dirs.each { |nature, dirs|
       dirs.each do |file_type_dir|
@@ -140,7 +140,6 @@ describe 'Fetching data from HTTP remotes' do
             expect(file_information.nature).to eq(nature)
             expect(file_information.format == expected_format).to be_truthy
           end
-
         end
       end
     }

@@ -199,9 +199,11 @@ describe FormatParser do
     it 'ensures that MP3 parser is the last one among all' do
       parsers = FormatParser.parsers_for(
         [:audio, :image, :document, :text, :video, :archive],
-        [:aac, :aiff, :arw, :bmp, :cr2, :cr3, :dpx, :fdx, :flac, :gif, :heif, :heic,
-                        :jpg, :json, :m3u, :mov, :mp3, :mp4, :m4a, :m4b, :m4p, :m4r, :m4v, :mpg,
-                        :mpeg, :nef, :ogg, :pdf, :png, :psd, :rw2, :tif, :wav, :webp, :zip]
+        [
+          :aac, :aiff, :arw, :bmp, :cr2, :cr3, :dpx, :fdx, :flac, :gif, :heif, :heic,
+          :jpg, :json, :m3u, :mov, :mp3, :mp4, :m4a, :m4b, :m4p, :m4r, :m4v, :mpg,
+          :mpeg, :nef, :ogg, :pdf, :png, :psd, :rw2, :tif, :wav, :webp, :zip
+        ]
       )
 
       parser_class_names = parsers.map { |parser| parser.class.name }

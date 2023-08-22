@@ -95,7 +95,6 @@ class FormatParser::MP3Parser
 
     io.seek(ignore_bytes_at_head)
 
-
     maybe_xing_header, initial_frames = parse_mpeg_frames(io)
 
     return if initial_frames.empty?
