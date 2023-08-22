@@ -104,6 +104,58 @@ describe 'Fetching data from HTTP remotes' do
     expect(file_information.format).to eq(:png)
   end
 
+  describe 'correctly parses WAV files without falling back to another filetype' do
+    ['c_8kmp316.wav', 'c_SCAM_MIC_SOL001_RUN001.wav'].each do |filename|
+      it "parses WAV file #{filename}" do
+        remote_url = 'http://localhost:9399/WAV/' + filename
+        file_information = FormatParser.parse_http(remote_url)
+        expect(file_information).not_to be_nil
+        expect(file_information.format).to eq(:wav)
+      end
+    end
+  end
+
+  describe "correctly parses files over HTTP without filename hint" do
+    nature_fixture_dirs = {
+      :document => ['PDF'],
+      :audio => ['AAC', 'AIFF', 'FLAC', 'MP3', 'WAV'],
+      :video => ['MOV', 'MP4'],
+      :image => ['ARW', 'CR2', 'CR3', 'GIF', 'JPG', 'NEF', 'PNG', 'PSD', 'RW2', 'TIF', 'WEBP']
+    }
+    nature_fixture_dirs.each { |nature, dirs|
+      dirs.each do |file_type_dir|
+        Dir.glob(fixtures_dir + "/#{file_type_dir}/*.*").each do |file_path|
+          file_name = File.basename(file_path)
+          next if file_name.include? "invalid"
+
+          expected_format = file_type_dir.downcase.to_sym
+          if file_type_dir == 'HEIF'
+            expected_format = File.extname(file_name).delete('.').downcase.to_sym
+          end
+
+          it "parses #{file_type_dir} file: #{file_name}" do
+            url = "http://localhost:9399/#{file_type_dir}/#{file_name}?some_param=test".gsub(' ', '%20')
+            file_information = FormatParser.parse_http(url)
+            expect(file_information).not_to be_nil
+            expect(file_information.nature).to eq(nature)
+            expect(file_information.format == expected_format).to be_truthy
+          end
+
+        end
+      end
+    }
+
+    # Dir.glob(fixtures_dir + "/HEIF/*.*").each do |file_path|
+    #   file_name = File.basename(file_path)
+    #   next if file_name.include? "invalid"
+    #
+    #   expected_format = file_type_dir.downcase.to_sym
+    #   it "parses #{file_type_dir} file: #{file_name}" do
+    #     parseFile(file_type_dir, file_name, nature, expected_format)
+    #   end
+    # end
+  end
+
   describe 'when parsing remote fixtures' do
     Dir.glob(fixtures_dir + '/**/*.*').sort.each do |fixture_path|
       filename = File.basename(fixture_path)

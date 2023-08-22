@@ -46,17 +46,17 @@ describe FormatParser::PDFParser do
 
   describe 'broken PDF files should not parse' do
     it 'PDF with missing version header' do
-      parsed_pdf = parse_pdf 'not_a.pdf'
+      parsed_pdf = parse_pdf 'invalid_not_a.pdf'
       expect(parsed_pdf).to be_nil
     end
 
     it 'PDF 2.0 with offset start' do
-      parsed_pdf = parse_pdf 'PDF 2.0 with offset start.pdf'
+      parsed_pdf = parse_pdf 'invalid PDF 2.0 with offset start.pdf'
       expect(parsed_pdf).to be_nil
     end
 
     it 'exceeds the PDF read limit' do
-      parsed_pdf = parse_pdf 'exceed_PDF_read_limit.pdf'
+      parsed_pdf = parse_pdf 'invalid_exceed_PDF_read_limit.pdf'
       expect(parsed_pdf).to be_nil
     end
   end

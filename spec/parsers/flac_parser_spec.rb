@@ -55,7 +55,7 @@ describe FormatParser::FLACParser do
   end
 
   it 'raises an error when sample rate is 0' do
-    fpath = fixtures_dir + 'FLAC/sample_rate_0.flac'
+    fpath = fixtures_dir + 'FLAC/invalid_sample_rate_0.flac'
 
     expect {
       subject.call(File.open(fpath, 'rb'))

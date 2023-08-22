@@ -7,7 +7,7 @@ describe FormatParser::WebpParser do
   end
 
   it 'does not parse files with an unrecognised variant' do
-    result = subject.call(File.open(fixtures_dir + 'WEBP/unrecognised-variant.webp', 'rb'))
+    result = subject.call(File.open(fixtures_dir + 'WEBP/invalid-unrecognised-variant.webp', 'rb'))
     expect(result).to be_nil
   end
 

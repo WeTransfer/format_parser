@@ -236,7 +236,7 @@ Unless specified otherwise in this section the fixture files are MIT licensed an
 ### WAV
 - c_11k16bitpcm.wav and c_8kmp316.wav are from [Wikipedia WAV](https://en.wikipedia.org/wiki/WAV#Comparison_of_coding_schemes), retrieved January 7, 2018
 - c_39064__alienbomb__atmo-truck.wav is from [freesound](https://freesound.org/people/alienbomb/sounds/39064/) and is CC0 licensed
-- c_M1F1-Alaw-AFsp.wav and d_6_Channel_ID.wav are from a [McGill Engineering site](http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Samples.html)
+- c_M1F1-Alaw-AFsp.wav and invalid_d_6_Channel_ID.wav are from a [McGill Engineering site](http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Samples.html)
 
 ### WEBP
 - With the exception of extended-animation.webp, which was obtained from Wikimedia Commons and is Creative Commons
