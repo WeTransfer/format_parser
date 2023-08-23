@@ -44,7 +44,7 @@ describe FormatParser do
       end
     end
 
-    it "fixtures without 'invalid' in the filename should be successfully parsed" do
+    it "fixtures without 'invalid' in the filename should be parsed successfully" do
       Dir.glob(fixtures_dir + '/**/*.*').sort.each do |fixture_path|
         file_name = File.basename(fixture_path)
         next if file_name.include? "invalid"
