@@ -34,6 +34,26 @@ describe FormatParser do
       end
     end
 
+    it "fixtures with 'invalid' in the filename should fail to parse" do
+      Dir.glob(fixtures_dir + '/**/*.*').sort.each do |fixture_path|
+        file_name = File.basename(fixture_path)
+        next unless file_name.include? "invalid"
+        File.open(fixture_path, 'rb') do |file|
+          FormatParser.parse(file)
+        end
+      end
+    end
+
+    it "fixtures without 'invalid' in the filename should be successfully parsed" do
+      Dir.glob(fixtures_dir + '/**/*.*').sort.each do |fixture_path|
+        file_name = File.basename(fixture_path)
+        next if file_name.include? "invalid"
+        File.open(fixture_path, 'rb') do |file|
+          FormatParser.parse(file)
+        end
+      end
+    end
+
     it 'triggers parsers in a certain order that corresponds to the parser priorities' do
       file_contents = StringIO.new('a' * 4096)
 
