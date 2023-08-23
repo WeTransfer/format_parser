@@ -138,7 +138,7 @@ describe 'Fetching data from HTTP remotes' do
             file_information = FormatParser.parse_http(url)
             expect(file_information).not_to be_nil
             expect(file_information.nature).to eq(nature)
-            expect(file_information.format == expected_format).to be_truthy
+            expect(file_information.format).to eq(expected_format)
           end
         end
       end
