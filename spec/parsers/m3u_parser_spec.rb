@@ -11,7 +11,7 @@ describe FormatParser::M3UParser do
   end
 
   describe 'an m3u file with missing header' do
-    let(:m3u_file) { 'plain_text.m3u' }
+    let(:m3u_file) { 'invalid_plain_text.m3u' }
 
     it 'does not parse the file successfully' do
       expect(parsed_m3u).to be_nil

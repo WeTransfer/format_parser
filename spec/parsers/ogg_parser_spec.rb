@@ -13,7 +13,7 @@ describe FormatParser::OggParser do
   end
 
   it 'skips a file if it contains more than MAX_POSSIBLE_OGG_PAGE_SIZE bytes of garbage at the end' do
-    parse_result = subject.call(File.open(__dir__ + '/../fixtures/Ogg/with_garbage_at_the_end.ogg', 'rb'))
+    parse_result = subject.call(File.open(__dir__ + '/../fixtures/Ogg/invalid_with_garbage_at_the_end.ogg', 'rb'))
     expect(parse_result).to be_nil
   end
 
