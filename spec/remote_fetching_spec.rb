@@ -143,16 +143,6 @@ describe 'Fetching data from HTTP remotes' do
         end
       end
     }
-
-    # Dir.glob(fixtures_dir + "/HEIF/*.*").each do |file_path|
-    #   file_name = File.basename(file_path)
-    #   next if file_name.include? "invalid"
-    #
-    #   expected_format = file_type_dir.downcase.to_sym
-    #   it "parses #{file_type_dir} file: #{file_name}" do
-    #     parseFile(file_type_dir, file_name, nature, expected_format)
-    #   end
-    # end
   end
 
   describe 'when parsing remote fixtures' do
