@@ -36,6 +36,9 @@ module FormatParser
   # The value will ensure the parser having it will be applied to the file last.
   LEAST_PRIORITY = 99
 
+  @registered_natures = []
+  @registered_formats = []
+
   # Register a parser object to be used to perform file format detection. Each parser FormatParser
   # provides out of the box registers itself using this method.
   #
@@ -69,9 +72,7 @@ module FormatParser
       @parser_priorities ||= {}
       @parser_priorities[callable_parser] = priority
 
-      @registered_natures ||= []
       @registered_natures |= parser_provided_natures
-      @registered_formats ||= []
       @registered_formats |= parser_provided_formats
     end
   end
