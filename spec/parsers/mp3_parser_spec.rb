@@ -36,6 +36,12 @@ describe FormatParser::MP3Parser do
     expect(parsed).to be_nil
   end
 
+  it 'does not misdetect a WAV' do
+    fpath = fixtures_dir + '/WAV/c_SCAM_MIC_SOL001_RUN001.wav'
+    parsed = subject.call(File.open(fpath, 'rb'))
+    expect(parsed).to be_nil
+  end
+
   describe 'title/artist/album attributes' do
     let(:parsed) { subject.call(File.open(fpath, 'rb')) }
 

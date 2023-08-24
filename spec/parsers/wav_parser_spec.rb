@@ -48,7 +48,7 @@ describe FormatParser::WAVParser do
 
   it "cannot parse file with audio format different from 1 and no 'fact' chunk" do
     expect {
-      subject.call(File.open(__dir__ + '/../fixtures/WAV/d_6_Channel_ID.wav', 'rb'))
+      subject.call(File.open(__dir__ + '/../fixtures/WAV/invalid_d_6_Channel_ID.wav', 'rb'))
     }.to raise_error(FormatParser::IOUtils::InvalidRead)
   end
 end

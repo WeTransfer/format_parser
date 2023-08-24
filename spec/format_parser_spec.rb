@@ -34,6 +34,26 @@ describe FormatParser do
       end
     end
 
+    it "fixtures with 'invalid' in the filename should fail to parse" do
+      Dir.glob(fixtures_dir + '/**/*.*').sort.each do |fixture_path|
+        file_name = File.basename(fixture_path)
+        next unless file_name.include? "invalid"
+        File.open(fixture_path, 'rb') do |file|
+          FormatParser.parse(file)
+        end
+      end
+    end
+
+    it "fixtures without 'invalid' in the filename should be parsed successfully" do
+      Dir.glob(fixtures_dir + '/**/*.*').sort.each do |fixture_path|
+        file_name = File.basename(fixture_path)
+        next if file_name.include? "invalid"
+        File.open(fixture_path, 'rb') do |file|
+          FormatParser.parse(file)
+        end
+      end
+    end
+
     it 'triggers parsers in a certain order that corresponds to the parser priorities' do
       file_contents = StringIO.new('a' * 4096)
 
@@ -189,11 +209,19 @@ describe FormatParser do
         'FormatParser::CR3Parser',
         'FormatParser::DPXParser',
         'FormatParser::FLACParser',
-        'FormatParser::MP3Parser',
         'FormatParser::OggParser',
         'FormatParser::TIFFParser',
-        'FormatParser::WAVParser'
+        'FormatParser::WAVParser',
+        'FormatParser::MP3Parser'
       ])
+    end
+
+    it 'ensures that MP3 parser is the last one among all' do
+      natures = FormatParser.registered_natures
+      formats = FormatParser.registered_formats
+      prioritised_parsers = FormatParser.parsers_for(natures, formats)
+      parser_class_names = prioritised_parsers.map { |parser| parser.class.name }
+      expect(parser_class_names.last).to eq 'FormatParser::MP3Parser'
     end
   end
 

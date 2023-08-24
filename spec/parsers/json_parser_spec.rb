@@ -99,7 +99,7 @@ describe FormatParser::JSONParser do
 
   describe 'When reading objects invalid JSON files' do
     it "rejects files with corrupted JSON data" do
-      io = load_file 'malformed.json'
+      io = load_file 'invalid_malformed.json'
 
       parsed = subject.call(io)
 
@@ -107,7 +107,7 @@ describe FormatParser::JSONParser do
     end
 
     it "rejects invalid files early without reading the whole content" do
-      io = load_file 'lorem_ipsum.json'
+      io = load_file 'invalid_lorem_ipsum.json'
 
       parsed = subject.call(io)
 

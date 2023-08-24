@@ -104,6 +104,43 @@ describe 'Fetching data from HTTP remotes' do
     expect(file_information.format).to eq(:png)
   end
 
+  describe 'correctly parses WAV files without falling back to another filetype' do
+    ['c_8kmp316.wav', 'c_SCAM_MIC_SOL001_RUN001.wav'].each do |filename|
+      it "parses WAV file #{filename}" do
+        remote_url = 'http://localhost:9399/WAV/' + filename
+        file_information = FormatParser.parse_http(remote_url)
+        expect(file_information).not_to be_nil
+        expect(file_information.format).to eq(:wav)
+      end
+    end
+  end
+
+  describe "correctly parses files over HTTP without filename hint" do
+    Dir.glob(fixtures_dir + '/**/*.*').sort.each do |fixture_path|
+      file_name = File.basename(fixture_path)
+      next if file_name.include? "invalid"
+
+      file_type_dir = fixture_path.delete_prefix(fixtures_dir).delete_suffix(file_name)
+      file_type_dir.delete_prefix!('/').delete_suffix!('/')
+      next if file_type_dir.empty?
+
+      # skipping this one because it's a special case
+      next if file_name == "arch_many_entries.zip"
+
+      it "parses #{file_type_dir} file: #{file_name}" do
+        url = "http://localhost:9399/#{file_type_dir}/#{file_name}?some_param=test".gsub(' ', '%20')
+        result_with_hint = FormatParser.parse_http(url, filename_hint: file_name)
+        result_no_hint = FormatParser.parse_http(url)
+
+        expect(result_with_hint).not_to be_nil
+        expect(result_no_hint).not_to be_nil
+
+        expect(result_no_hint.nature).to eq(result_with_hint.nature)
+        expect(result_no_hint.format).to eq(result_with_hint.format)
+      end
+    end
+  end
+
   describe 'when parsing remote fixtures' do
     Dir.glob(fixtures_dir + '/**/*.*').sort.each do |fixture_path|
       filename = File.basename(fixture_path)

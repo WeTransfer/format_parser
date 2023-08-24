@@ -76,6 +76,11 @@ class FormatParser::MP3Parser
     io.seek(0)
     return if TIFF_HEADER_BYTES.include?(safe_read(io, 4))
 
+    # Prevention against parsing WAV files.
+    io.seek(0)
+    wav_chunk_id, _wav_size, wav_riff_type = safe_read(io, 12).unpack('a4la4')
+    return if wav_chunk_id == 'RIFF' || wav_riff_type == 'WAVE'
+
     # Read all the ID3 tags (or at least attempt to)
     io.seek(0)
     id3v1 = ID3Extraction.attempt_id3_v1_extraction(io)
@@ -315,5 +320,5 @@ class FormatParser::MP3Parser
     end
   end
 
-  FormatParser.register_parser new, natures: :audio, formats: :mp3, priority: 99
+  FormatParser.register_parser new, natures: :audio, formats: :mp3, priority: 101
 end
