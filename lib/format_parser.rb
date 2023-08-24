@@ -68,7 +68,20 @@ module FormatParser
       end
       @parser_priorities ||= {}
       @parser_priorities[callable_parser] = priority
+
+      @registered_natures ||= []
+      @registered_natures |= parser_provided_natures
+      @registered_formats ||= []
+      @registered_formats |= parser_provided_formats
     end
+  end
+
+  def self.registered_natures
+    @registered_natures
+  end
+
+  def self.registered_formats
+    @registered_formats
   end
 
   # Deregister a parser object (makes FormatParser forget this parser existed). Is mostly used in
