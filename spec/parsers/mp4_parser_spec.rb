@@ -31,6 +31,17 @@ describe FormatParser::MP4Parser do
       end
     end
 
+    context "when the 'ftyp' box can't be parsed" do
+      let(:result) do
+        path = fixtures_dir + '/MP4/invalid/inconsistent_ftyp_box.mp4'
+        subject.call(File.open(path, 'rb'))
+      end
+
+      it 'should be nil' do
+        expect(result).to be_nil
+      end
+    end
+
     Dir.glob(fixtures_dir + '/MP4/valid/video/*.*').sort.each do |path|
       context "for #{path}" do
         let(:result) { subject.call(File.open(path, 'rb')) }
