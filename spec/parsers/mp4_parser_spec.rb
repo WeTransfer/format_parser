@@ -31,10 +31,11 @@ describe FormatParser::MP4Parser do
       end
     end
 
-    context "when the 'ftyp' box can't be parsed" do
+    context "when when magic bytes are present but the 'ftyp' box can't be parsed" do
       let(:result) do
-        path = fixtures_dir + '/MP4/invalid/inconsistent_ftyp_box.mp4'
-        subject.call(File.open(path, 'rb'))
+        input = [0xFF].pack('N') + 'ftyp' + 'avc1 ' + [0x1].pack('N')
+        io = StringIO.new(input)
+        subject.call(io)
       end
 
       it 'should be nil' do
