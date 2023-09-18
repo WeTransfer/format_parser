@@ -32,14 +32,13 @@ describe FormatParser::MP4Parser do
     end
 
     context "when when magic bytes are present but the 'ftyp' box can't be parsed" do
-      let(:result) do
+      let(:io) do
         input = [0xFF].pack('N') + 'ftyp' + 'avc1 ' + [0x1].pack('N')
-        io = StringIO.new(input)
-        subject.call(io)
+        StringIO.new(input)
       end
 
       it 'should be nil' do
-        expect(result).to be_nil
+        expect(subject.call(io)).to be_nil
       end
     end
 
