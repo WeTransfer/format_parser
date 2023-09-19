@@ -31,6 +31,17 @@ describe FormatParser::MP4Parser do
       end
     end
 
+    context "when when magic bytes are present but the 'ftyp' box can't be parsed" do
+      let(:io) do
+        input = [0xFF].pack('N') + 'ftyp' + 'avc1 ' + [0x1].pack('N')
+        StringIO.new(input)
+      end
+
+      it 'should be nil' do
+        expect(subject.call(io)).to be_nil
+      end
+    end
+
     Dir.glob(fixtures_dir + '/MP4/valid/video/*.*').sort.each do |path|
       context "for #{path}" do
         let(:result) { subject.call(File.open(path, 'rb')) }

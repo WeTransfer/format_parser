@@ -67,7 +67,7 @@ class FormatParser::MP4Parser
   private
 
   def file_format(box_tree)
-    major_brand = box_tree.find { |box| box.type == 'ftyp' }&.fields[:major_brand]
+    major_brand = box_tree.find { |box| box.type == 'ftyp' }&.fields&.[](:major_brand)
     BRAND_FORMATS[major_brand.downcase] if major_brand
   end
 
