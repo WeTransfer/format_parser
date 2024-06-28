@@ -1,3 +1,6 @@
+## 2.8.0
+* Add support for Ruby 3.2 and 3.3
+
 ## 2.7.2
 * Improved stability for mp4 parser when dealing with corrupted FTYP boxes.
 
