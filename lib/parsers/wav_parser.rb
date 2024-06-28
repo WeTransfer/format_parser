@@ -32,7 +32,6 @@ class FormatParser::WAVParser
       when 'data'
         return unless fmt_processed # the 'data' chunk cannot preceed the 'fmt ' chunk
         return file_info(fmt_data, chunk_size)
-        safe_skip(io, chunk_size)
       else
         # Skip this chunk until a known chunk is encountered
         safe_skip(io, chunk_size)
@@ -66,8 +65,9 @@ class FormatParser::WAVParser
   end
 
   def file_info(fmt_data, data_size)
-    return unless fmt_data[:sample_rate] > 0
-    sample_frames = data_size / (fmt_data[:bits_per_sample] / 8)
+    return unless fmt_data[:channels] > 0 && fmt_data[:bits_per_sample] > 0 && fmt_data[:byte_rate] > 0
+    # NOTE: Each sample includes information for each channel
+    sample_frames = data_size / (fmt_data[:channels] * fmt_data[:bits_per_sample] / 8)
     duration_in_seconds = data_size / fmt_data[:byte_rate].to_f
     FormatParser::Audio.new(
       format: :wav,
