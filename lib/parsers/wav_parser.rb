@@ -20,11 +20,7 @@ class FormatParser::WAVParser
     # with the exception that the Format chunk must precede the Data chunk.
     # The specification does not require the Format chunk to be the first chunk
     # after the RIFF header.
-    # http://soundfile.sapp.org/doc/WaveFormat/
-    # For WAVE files containing PCM audio format we parse the 'fmt ' and
-    # 'data' chunks while for non PCM audio formats the 'fmt ' and 'fact'
-    # chunks. In the latter case the order fo appearence of the chunks is
-    # arbitrary.
+    # https://www.mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
     fmt_processed = false
     fmt_data = {}
     loop do
@@ -48,7 +44,8 @@ class FormatParser::WAVParser
     # The size of the fmt chunk is at least 16 bytes. If the format tag's value is not
     # 1 compression might be in use for storing the data
     # and the fmt chunk might contain extra fields appended to it.
-    # The last 4 fields of the fmt tag are always:
+    # The first 6 fields of the fmt tag are always:
+    # * unsigned short     audio format
     # * unsigned short     channels
     # * unsigned long      samples per sec
     # * unsigned long      average bytes per sec
