@@ -26,25 +26,17 @@ class FormatParser::WAVParser
     # chunks. In the latter case the order fo appearence of the chunks is
     # arbitrary.
     fmt_processed = false
-    fact_processed = false
     fmt_data = {}
-    total_sample_frames = 0
     loop do
       chunk_type, chunk_size = safe_read(io, 8).unpack('a4l')
       case chunk_type
       when 'fmt ' # watch out: the chunk ID of the format chunk ends with a space
         fmt_data = unpack_fmt_chunk(io, chunk_size)
-        return process_non_pcm(fmt_data, total_sample_frames) if fmt_data[:audio_format] != 1 and fact_processed
         fmt_processed = true
       when 'data'
         return unless fmt_processed # the 'data' chunk cannot preceed the 'fmt ' chunk
-        return process_pcm(fmt_data, chunk_size) if fmt_data[:audio_format] == 1
+        return file_info(fmt_data, chunk_size)
         safe_skip(io, chunk_size)
-      when 'fact'
-        total_sample_frames = safe_read(io, 4).unpack('l').first
-        safe_skip(io, chunk_size - 4)
-        return process_non_pcm(fmt_data, total_sample_frames) if fmt_processed and fmt_data[:audio_format] != 1
-        fact_processed = true
       else
         # Skip this chunk until a known chunk is encountered
         safe_skip(io, chunk_size)
@@ -76,19 +68,10 @@ class FormatParser::WAVParser
     }
   end
 
-  def process_pcm(fmt_data, data_size)
-    return unless fmt_data[:channels] > 0 and fmt_data[:bits_per_sample] > 0
-    sample_frames = data_size / (fmt_data[:channels] * fmt_data[:bits_per_sample] / 8)
-    file_info(fmt_data, sample_frames)
-  end
-
-  def process_non_pcm(fmt_data, total_sample_frames)
-    file_info(fmt_data, total_sample_frames)
-  end
-
-  def file_info(fmt_data, sample_frames)
+  def file_info(fmt_data, data_size)
     return unless fmt_data[:sample_rate] > 0
-    duration_in_seconds = sample_frames / fmt_data[:sample_rate].to_f
+    sample_frames = data_size / (fmt_data[:bits_per_sample] / 8)
+    duration_in_seconds = data_size / fmt_data[:byte_rate].to_f
     FormatParser::Audio.new(
       format: :wav,
       num_audio_channels: fmt_data[:channels],
