@@ -46,9 +46,10 @@ describe FormatParser::WAVParser do
     expect(parse_result.media_duration_seconds).to be_within(0.01).of(13.81)
   end
 
-  it "cannot parse file with audio format different from 1 and no 'fact' chunk" do
+  it "can parse file with audio format different from 1 and no 'fact' chunk" do
+    # NOTE: This is a regression. Previously, we used to discard non-PCM files that did not contain the fact chunk. Now we are attempting a best-effort in extracting the metadata that is available
     expect {
       subject.call(File.open(__dir__ + '/../fixtures/WAV/invalid_d_6_Channel_ID.wav', 'rb'))
-    }.to raise_error(FormatParser::IOUtils::InvalidRead)
+    }.not_to raise_error
   end
 end
