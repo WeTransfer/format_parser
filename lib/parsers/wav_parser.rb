@@ -21,22 +21,30 @@ class FormatParser::WAVParser
     # The specification does not require the Format chunk to be the first chunk
     # after the RIFF header.
     # https://www.mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
-    fmt_processed = false
     fmt_data = {}
+    data_size = 0
+    total_sample_frames = nil
     loop do
       chunk_type, chunk_size = safe_read(io, 8).unpack('a4l')
       case chunk_type
       when 'fmt ' # watch out: the chunk ID of the format chunk ends with a space
         fmt_data = unpack_fmt_chunk(io, chunk_size)
-        fmt_processed = true
       when 'data'
-        return unless fmt_processed # the 'data' chunk cannot preceed the 'fmt ' chunk
-        return file_info(fmt_data, chunk_size)
+        data_size = chunk_size
+      when 'fact'
+        total_sample_frames = safe_read(io, 4).unpack('l').first
+        safe_skip(io, chunk_size - 4)
       else
         # Skip this chunk until a known chunk is encountered
         safe_skip(io, chunk_size)
       end
+    rescue FormatParser::IOUtils::InvalidRead
+      # We've reached EOF, so it's time to make the most out of the metadata we
+      # managed to parse
+      break
     end
+
+    file_info(fmt_data, data_size, total_sample_frames)
   end
 
   def unpack_fmt_chunk(io, chunk_size)
@@ -64,10 +72,10 @@ class FormatParser::WAVParser
     }
   end
 
-  def file_info(fmt_data, data_size)
+  def file_info(fmt_data, data_size, sample_frames)
     # NOTE: Each sample includes information for each channel
-    sample_frames = data_size / (fmt_data[:channels] * fmt_data[:bits_per_sample] / 8) if fmt_data[:channels] > 0 && fmt_data[:bits_per_sample] > 0
-    duration_in_seconds = data_size / fmt_data[:byte_rate].to_f if fmt_data[:byte_rate] > 0
+    sample_frames ||= data_size / (fmt_data[:channels] * fmt_data[:bits_per_sample] / 8) if fmt_data[:channels] > 0 && fmt_data[:bits_per_sample] > 0
+    duration_in_seconds = sample_frames / fmt_data[:sample_rate].to_f if fmt_data[:sample_rate] > 0
     FormatParser::Audio.new(
       format: :wav,
       num_audio_channels: fmt_data[:channels],
