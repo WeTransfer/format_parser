@@ -1,3 +1,12 @@
+## 2.7.2
+* Improved stability for mp4 parser when dealing with corrupted FTYP boxes.
+
+## 2.7.1
+* Fixed bug with WAV file wrongly parsed as MP3.
+
+## 2.7.0
+* JSON format support.
+
 ## 2.6.0
 * Prevent the default loading of thumbnails on TIFF-based formats to improve I/O.
 
