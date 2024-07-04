@@ -59,16 +59,14 @@ class FormatParser::WAVParser
     # * unsigned short     block align
     # * unsigned short     bits per sample
 
-    fmt_info = safe_read(io, 16).unpack('S_2I2S_2')
+    _, channels, sample_rate, byte_rate, _, bits_per_sample = safe_read(io, 16).unpack('S_2I2S_2')
     safe_skip(io, chunk_size - 16) # skip the extra fields
 
     {
-      audio_format: fmt_info[0],
-      channels: fmt_info[1],
-      sample_rate: fmt_info[2],
-      byte_rate: fmt_info[3],
-      block_align: fmt_info[4],
-      bits_per_sample: fmt_info[5],
+      channels: channels,
+      sample_rate: sample_rate,
+      byte_rate: byte_rate,
+      bits_per_sample: bits_per_sample,
     }
   end
 
