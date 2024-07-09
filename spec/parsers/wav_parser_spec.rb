@@ -46,9 +46,14 @@ describe FormatParser::WAVParser do
     expect(parse_result.media_duration_seconds).to be_within(0.01).of(13.81)
   end
 
-  it "cannot parse file with audio format different from 1 and no 'fact' chunk" do
-    expect {
-      subject.call(File.open(__dir__ + '/../fixtures/WAV/invalid_d_6_Channel_ID.wav', 'rb'))
-    }.to raise_error(FormatParser::IOUtils::InvalidRead)
+  it 'returns correct info about non pcm files with no fact chunk' do
+    parse_result = subject.call(File.open(__dir__ + '/../fixtures/WAV/d_6_Channel_ID.wav', 'rb'))
+
+    expect(parse_result.nature).to eq(:audio)
+    expect(parse_result.format).to eq(:wav)
+    expect(parse_result.num_audio_channels).to eq(6)
+    expect(parse_result.audio_sample_rate_hz).to eq(44100)
+    expect(parse_result.media_duration_frames).to eq(257411)
+    expect(parse_result.media_duration_seconds).to be_within(0.01).of(5.83)
   end
 end
