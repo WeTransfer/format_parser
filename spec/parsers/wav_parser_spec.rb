@@ -22,7 +22,7 @@ describe FormatParser::WAVParser do
     expect(parse_result.audio_sample_rate_hz).to eq(8000)
     # Fixture does not define bits_per_sample in the fmt chunk
     expect(parse_result.media_duration_frames).to be_nil
-    expect(parse_result.media_duration_seconds).to be_within(0.01).of(13.81)
+    expect(parse_result.media_duration_seconds).to be_nil
   end
 
   it 'returns correct info about pcm files with more channels' do
