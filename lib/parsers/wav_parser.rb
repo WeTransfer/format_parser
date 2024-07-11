@@ -70,7 +70,7 @@ class FormatParser::WAVParser
   def file_info(fmt_data, data_size)
     # NOTE: Each sample includes information for each channel
     sample_frames = data_size / (fmt_data[:channels] * fmt_data[:bits_per_sample] / 8) if fmt_data[:channels] > 0 && fmt_data[:bits_per_sample] > 0
-    duration_in_seconds = data_size / fmt_data[:byte_rate].to_f if fmt_data[:byte_rate] > 0
+    duration_in_seconds = sample_frames / fmt_data[:sample_rate].to_f if sample_frames && fmt_data[:byte_rate] > 0
     FormatParser::Audio.new(
       format: :wav,
       num_audio_channels: fmt_data[:channels],
