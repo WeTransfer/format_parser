@@ -1,3 +1,6 @@
+## 2.10.0
+* Improve WAV parser by focusing on performance rather than on attempting a best-effort when extracting metadata from files that do not strictly follow the format spec.
+
 ## 2.9.0
 * Improve WAV parser by performing a best-effort when extracting metadata from files that do not strictly follow the format spec.
 
