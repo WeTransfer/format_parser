@@ -5,12 +5,9 @@ def skip_reason
     'Skipping because JRuby have randon failing issue'
   elsif RUBY_VERSION.to_f < 2.5
     'Skipping because Rails testing script use Rails 6, who does not support Ruby bellow 2.5'
-  else
-    'Skipping because this test randomly started failing for every version - mismatching default gem versions.'
   end
 end
 
-# TODO: Investigate and fix this test
 describe 'Rails app with ActiveStorage and format-parser', skip: skip_reason do
   describe 'local hosting with ActiveStorage disk adapter' do
     it 'parse local file with format_parser' do
