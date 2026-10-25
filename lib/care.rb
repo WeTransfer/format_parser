@@ -115,7 +115,7 @@ class Care
       else # We only have one page
         # Optimize a little. If we only have one page that we need to read from
         # - which is likely going to be the case *often* we can avoid allocating
-        # a new string for the joined pages and juse use the only page
+        # a new string for the joined pages and just use the only page
         # directly as the slab. Since it might contain a `nil` and we do
         # not join (which casts nils to strings) we take care of that too
         relevant_pages.first || ''

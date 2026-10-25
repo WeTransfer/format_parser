@@ -155,7 +155,7 @@ class FormatParser::RemoteIO
       # We return `nil` if we tried to read past the end of the IO,
       # which satisfies the Ruby IO convention. The caller should deal with `nil` being the result of a read()
       # S3 will also handily _not_ supply us with the Content-Range of the actual resource, so we
-      # cannot hint size with this response - at lease not when working with S3
+      # cannot hint size with this response - at least not when working with S3
       nil
     when Net::HTTPServerError
       Measurometer.increment_counter('format_parser.remote_io.upstream50x_errors', 1)

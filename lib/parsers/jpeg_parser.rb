@@ -46,7 +46,7 @@ class FormatParser::JPEGParser
     # ambiguously capture things like JPEGs embedded in ID3
     # tags of MP3s - these _are_ JPEGs but we care much
     # more about the top-level "wrapper" file, not about
-    # it's bits and bobs
+    # its bits and bobs
     return unless safe_read(@buf, 2) == JPEG_SOI_MARKER_HEAD
 
     markers_start_at = @buf.pos

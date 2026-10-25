@@ -17,7 +17,7 @@ class FormatParser::JSONParser::Validator
   end
 
   MAX_SAMPLE_SIZE = 1024
-  MAX_LITERAL_SIZE = 30 # much larger then necessary.
+  MAX_LITERAL_SIZE = 30 # much larger than necessary.
   ESCAPE_CHAR = "\\"
   WHITESPACE_CHARS = [" ", "\t", "\n", "\r"]
   ENDING_VALUE_CHARS = [",", "]", "}"]
@@ -271,7 +271,7 @@ class FormatParser::JSONParser::Validator
   end
 
   def close_literal(c)
-    raise JSONParserError, "Literal to large at #{@pos}" if @current_literal_size > MAX_LITERAL_SIZE
+    raise JSONParserError, "Literal too large at #{@pos}" if @current_literal_size > MAX_LITERAL_SIZE
 
     if whitespace?(c) || ENDING_VALUE_CHARS.include?(c)
       end_node

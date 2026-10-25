@@ -36,7 +36,7 @@ class FormatParser::MPEGParser
   def self.call(io)
     return unless matches_mpeg_header?(io)
 
-    # We are looping though the stream because there can be several sequence headers and some of them are not useful.
+    # We are looping through the stream because there can be several sequence headers and some of them are not useful.
     # If we detect that the header is not useful, then we look for the next one for SEEK_FOR_SEQUENCE_HEADER_TIMES_LIMIT
     # If we reach the EOF, then the mpg is likely to be corrupted and we return nil
     MAX_BLOCK_READS.times do

@@ -28,8 +28,8 @@ class FormatParser::WebpParser
     # 0...3   | "RIFF" (Since WebP is based on the RIFF file container format).
     # 4...7   | The size of the file in bytes - 8 bytes.
     # 8...11  | "WEBP" (To signify that this is a WebP file).
-    # 12...15 | The VB8 variant in use ("VB8 ", "VP8L" or "VB8X")
-    # 16...19 | The length of the VB8 data in bytes (i.e. The size of the file - 20 bytes).
+    # 12...15 | The VP8 variant in use ("VP8 ", "VP8L" or "VP8X")
+    # 16...19 | The length of the VP8 data in bytes (i.e. The size of the file - 20 bytes).
     riff, webp, variant = safe_read(@buf, 20).unpack('A4x4A4A4')
     return unless riff == 'RIFF' && webp == 'WEBP'
     read_data(variant)

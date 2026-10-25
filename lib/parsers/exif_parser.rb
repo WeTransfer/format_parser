@@ -159,7 +159,7 @@ module FormatParser::EXIFParser
       # The EXIF tags get appended to the file, so the ones coming _later_
       # are more specific and potentially overwrite the earlier ones. Walk
       # through the frames in reverse (starting with one that comes last)
-      # and if it contans the requisite EXIF property, return the value
+      # and if it contains the requisite EXIF property, return the value
       # from that tag.
       @multiple_exif_results.reverse_each do |exif_tag_frame|
         value_of = exif_tag_frame.public_send(*a)
